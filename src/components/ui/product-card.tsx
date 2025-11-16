@@ -5,6 +5,7 @@ import Image from "next/image";
 import IconButton from "@/components/ui/icon-button";
 import { Heart, ShoppingBag, Eye, Star } from "lucide-react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface ProductCardProps {
   data: Product;
@@ -21,12 +22,14 @@ const ProductCard: React.FC<ProductCardProps> = ({
 }) => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [imageError, setImageError] = useState(false);
-
+  const router = useRouter();
   const handleFavorite = () => {
     setIsFavorite(!isFavorite);
     onToggleFavorite?.();
   };
-
+  const handleClick = () => {
+    router.push(`/product/${data.id}`);
+  };
   const discountPercent =
     data.originalPrice && data.price
       ? Math.round(
@@ -35,7 +38,10 @@ const ProductCard: React.FC<ProductCardProps> = ({
       : 0;
 
   return (
-    <div className="group cursor-pointer bg-white rounded-md border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden">
+    <div
+      onClick={handleClick}
+      className="group cursor-pointer bg-white rounded-md border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden"
+    >
       {/* IMAGE WRAPPER */}
       <div className="relative aspect-square bg-gray-100 overflow-hidden">
         <Image
@@ -150,7 +156,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
         {/* PRICE (Shopee + VND + v0 typography) */}
         <div className="flex items-center gap-2 pt-1">
-          <span className="text-lg font-bold text-red-500">
+          <span className="text-lg font-bold text-black-500">
             {new Intl.NumberFormat("vi-VN", {
               style: "currency",
               currency: "VND",
