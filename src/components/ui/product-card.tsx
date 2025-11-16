@@ -3,33 +3,47 @@
 import { Product } from "@/types";
 import Image from "next/image";
 import IconButton from "@/components/ui/icon-button";
-import { Heart, ShoppingBag, Eye, Star } from "lucide-react";
-import { useState } from "react";
+import { Heart, ShoppingBag, Eye, Star, X } from "lucide-react";
+import { MouseEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface ProductCardProps {
   data: Product;
   onAddToCart?: () => void;
-  onViewDetails?: () => void;
   onToggleFavorite?: () => void;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
   data,
   onAddToCart,
-  onViewDetails,
   onToggleFavorite,
 }) => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [quickViewOpen, setQuickViewOpen] = useState(false);
+
   const router = useRouter();
-  const handleFavorite = () => {
+
+  const handleFavorite = (event: MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
     setIsFavorite(!isFavorite);
     onToggleFavorite?.();
   };
+
   const handleClick = () => {
     router.push(`/product/${data.id}`);
   };
+
+  const handleQuickView = (event: MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    setQuickViewOpen(true);
+  };
+
   const discountPercent =
     data.originalPrice && data.price
       ? Math.round(
@@ -56,7 +70,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           onError={() => setImageError(true)}
         />
 
-        {/* BADGE (V0 UI + your logic) */}
+        {/* BADGE */}
         {(data.badge || (discountPercent > 0 && data.price)) && (
           <div className="absolute top-2 left-2 flex gap-2">
             {data.badge && (
@@ -72,24 +86,75 @@ const ProductCard: React.FC<ProductCardProps> = ({
           </div>
         )}
 
-        {/* OUT OF STOCK */}
-        {data.inStock === false && (
-          <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-            <span className="text-white font-semibold">Hết hàng</span>
-          </div>
-        )}
-
-        {/* ACTION BUTTONS (V0 Style – modern) */}
+        {/* ACTION BUTTONS */}
         <div className="absolute inset-0 bg-black/10 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end justify-center pb-4">
           <div className="flex gap-3 scale-75 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-300">
-            <IconButton
-              onClick={onViewDetails}
-              icon={<Eye size={20} className="text-gray-700" />}
-              className="bg-white hover:bg-gray-100 shadow"
-            />
+            <Popover open={quickViewOpen} onOpenChange={setQuickViewOpen}>
+              <PopoverTrigger asChild>
+                <IconButton
+                  onClick={handleQuickView}
+                  icon={<Eye size={20} className="text-gray-700" />}
+                  className="bg-white hover:bg-gray-100 shadow"
+                />
+              </PopoverTrigger>
+              <PopoverContent
+                className="w-96 p-4 bg-white rounded-md shadow-lg z-50"
+                side="right"
+                align="start"
+              >
+                <div className="flex justify-end mb-2">
+                  <IconButton
+                    onClick={() => setQuickViewOpen(false)}
+                    icon={<X size={20} />}
+                    className="bg-gray-100 hover:bg-gray-200 shadow"
+                  />
+                </div>
+                <div className="flex flex-col gap-3">
+                  <Image
+                    src={data.images[0]?.url || "/placeholder.svg"}
+                    alt={data.name}
+                    width={300}
+                    height={300}
+                    className="object-contain"
+                  />
+                  <h3 className="font-bold text-lg">{data.name}</h3>
+                  <p className="text-gray-600 line-clamp-3">
+                    {data.description}
+                  </p>
+                  <div className="flex items-center gap-2 pt-1">
+                    <span className="text-lg font-bold text-black">
+                      {new Intl.NumberFormat("vi-VN", {
+                        style: "currency",
+                        currency: "VND",
+                      }).format(Number(data.price))}
+                    </span>
+                    {data.originalPrice && data.originalPrice > data.price && (
+                      <span className="text-sm text-gray-400 line-through">
+                        {new Intl.NumberFormat("vi-VN").format(
+                          Number(data.originalPrice)
+                        )}
+                        ₫
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onAddToCart?.();
+                    }}
+                    className="w-full py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition"
+                  >
+                    Add To Card
+                  </button>
+                </div>
+              </PopoverContent>
+            </Popover>
 
             <IconButton
-              onClick={onAddToCart}
+              onClick={(e) => {
+                e.stopPropagation();
+                onAddToCart?.();
+              }}
               icon={<ShoppingBag size={20} className="text-gray-700" />}
               className="bg-white hover:bg-gray-100 shadow"
               disabled={data.inStock === false}
@@ -97,7 +162,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           </div>
         </div>
 
-        {/* FAVORITE BUTTON (Your logic + v0 UI) */}
+        {/* FAVORITE BUTTON */}
         <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           <IconButton
             onClick={handleFavorite}
@@ -116,21 +181,17 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
       {/* PRODUCT INFO */}
       <div className="p-3 space-y-2">
-        {/* Category */}
         {data.category && (
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
             {data.category.name}
           </p>
         )}
 
-        {/* NAME */}
         <h3 className="font-semibold text-gray-800 line-clamp-2 group-hover:text-primary transition-colors duration-200">
           {data.name}
         </h3>
 
-        {/* RATING + SOLD (Shopee style) */}
         <div className="flex items-center gap-2 text-xs text-gray-500">
-          {/* Stars */}
           <div className="flex items-center gap-0.5">
             {[...Array(5)].map((_, i) => (
               <Star
@@ -144,8 +205,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
               />
             ))}
           </div>
-
-          {/* Sold */}
           {data.sold && (
             <>
               <span>•</span>
@@ -154,9 +213,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
           )}
         </div>
 
-        {/* PRICE (Shopee + VND + v0 typography) */}
         <div className="flex items-center gap-2 pt-1">
-          <span className="text-lg font-bold text-black-500">
+          <span className="text-lg font-bold text-black">
             {new Intl.NumberFormat("vi-VN", {
               style: "currency",
               currency: "VND",

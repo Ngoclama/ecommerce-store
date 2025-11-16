@@ -17,7 +17,7 @@ const Billboard: React.FC<BillboardProps> = ({ data }) => {
         {/* Nội dung */}
         <div className="relative h-full flex flex-col justify-center items-start text-left gap-6 px-6 sm:px-12">
           <h1 className="font-extrabold text-white text-4xl sm:text-5xl lg:text-6xl max-w-xl leading-tight drop-shadow-2xl">
-            {data.label}
+            {data?.label}
           </h1>
 
           <p className="text-white/90 text-lg sm:text-xl max-w-lg leading-relaxed">
