@@ -279,7 +279,7 @@ export default function Footer() {
               <Label htmlFor="mail" className="block font-medium">
                 Newsletter
               </Label>
-              <div className="flex gap-2">
+              <div className="flex gap-2" suppressHydrationWarning>
                 <Input
                   type="email"
                   id="mail"
@@ -287,9 +287,7 @@ export default function Footer() {
                   placeholder="Your email"
                   className="h-8 text-sm"
                 />
-                <Button size="sm" suppressHydrationWarning>
-                  Submit
-                </Button>
+                <Button size="sm"> Submit</Button>
               </div>
               <span className="text-muted-foreground block text-sm"></span>
             </div>

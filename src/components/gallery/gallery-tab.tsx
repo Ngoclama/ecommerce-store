@@ -1,7 +1,6 @@
-"use client";
-
 import Image from "next/image";
 import { Tab } from "@headlessui/react";
+
 import { cn } from "@/lib/utils";
 import { Image as ImageType } from "@/types";
 
@@ -11,15 +10,10 @@ interface GalleryTabProps {
 
 const GalleryTab: React.FC<GalleryTabProps> = ({ image }) => {
   return (
-    <Tab
-      className={cn(
-        "relative flex aspect-square w-24 h-24 cursor-pointer items-center justify-center rounded-md border border-white/10 bg-white/10 text-white backdrop-blur-sm transition hover:opacity-80",
-        "focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-gray-900"
-      )}
-    >
+    <Tab className="relative flex items-center justify-center w-full h-24 cursor-pointer aspect-square rounded-md bg-gray-100">
       {({ selected }) => (
-        <>
-          <span className="absolute inset-0 aspect-square h-full w-full overflow-hidden rounded-md">
+        <div>
+          <span className="absolute inset-0 w-full h-full overflow-hidden rounded-md aspect-square">
             <Image
               fill
               src={image.url}
@@ -30,10 +24,10 @@ const GalleryTab: React.FC<GalleryTabProps> = ({ image }) => {
           <span
             className={cn(
               "absolute inset-0 rounded-md ring-2 ring-offset-2",
-              selected ? "ring-white" : "ring-transparent"
+              selected ? "ring-black" : "ring-transparent"
             )}
           />
-        </>
+        </div>
       )}
     </Tab>
   );

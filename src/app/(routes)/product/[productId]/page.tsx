@@ -4,12 +4,26 @@ import Gallery from "@/components/gallery";
 import Info from "@/components/info";
 import ProductList from "@/components/product-list";
 import Container from "@/components/ui/container";
+import NoResult from "@/components/ui/result";
 
 type Params = Promise<{ productId: string }>;
 
 const ProductPage = async ({ params }: { params: Params }) => {
   const { productId } = await params;
   const product = await getProduct(productId);
+
+  if (!product) {
+    return (
+      <div className="bg-white">
+        <Container>
+          <div className="px-4 py-10 sm:px-6 lg:px-8">
+            <NoResult />
+          </div>
+        </Container>
+      </div>
+    );
+  }
+
   const suggestProducts = await getProducts({
     categoryId: product?.category?.id,
   });

@@ -8,12 +8,23 @@ import { useState } from "react";
 import GalleryZoomModal from "./GalleryZoomModal";
 
 interface GalleryProps {
-  images: ImageType[];
+  images?: ImageType[];
 }
 
-const Gallery: React.FC<GalleryProps> = ({ images }) => {
+const Gallery: React.FC<GalleryProps> = ({ images = [] }) => {
   const [zoomOpen, setZoomOpen] = useState(false);
   const [zoomIndex, setZoomIndex] = useState(0);
+
+  if (!images.length) {
+    return (
+      <div className="flex items-center justify-center w-full h-full">
+        <div className="w-full h-full rounded-lg bg-gray-200 flex items-center justify-center">
+          <p className="text-gray-500">No Image</p>
+        </div>
+      </div>
+    );
+  }
+  
   return (
     <>
       <Tab.Group as="div" className="flex flex-col-reverse">

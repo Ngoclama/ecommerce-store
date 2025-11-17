@@ -13,7 +13,7 @@ export interface Category {
 export interface Product {
   id: string;
   category: Category;
-  name: string;
+  name:string;
   description: string;
   size: Size;
   color: Color;
@@ -26,6 +26,9 @@ export interface Product {
   originalPrice?: number;
   badge?: string;
   inStock?: boolean;
+}
+export interface CartItem extends Product {
+  quantity: number;
 }
 
 export interface Image {
