@@ -121,38 +121,59 @@ export function NavbarActions() {
                           </div>
 
                           {/* Quantity Controls */}
-                          <div className="flex items-center w-32 border border-gray-300 rounded-lg overflow-hidden mt-2">
-                            <button
+                          <div className="flex items-center w-40 border border-gray-300 rounded-lg overflow-hidden mt-2 ">
+                            {/* nút - */}
+                            <Button
+                              variant={"outline"}
                               onClick={() =>
                                 cart.decreaseQuantity(item.cartItemId)
                               }
-                              className="flex-1 h-8 flex justify-center items-center border-r border-gray-300 text-gray-700 hover:bg-gray-100 transition"
+                              className="w-8 h-8 flex justify-center items-center  text-gray-700 hover:bg-gray-100 transition"
                             >
+                              -
                               <Minus size={14} />
-                            </button>
+                            </Button>
+                            <Button
+                              variant={"outline"}
+                              onClick={() =>
+                                cart.increaseQuantity(item.cartItemId)
+                              }
+                              className="w-8 h-8 flex justify-center items-center  text-gray-700 hover:bg-gray-100 transition"
+                            >
+                              +
+                              <Minus size={14} />
+                            </Button>
 
+                            {/* input số */}
                             <input
                               type="number"
-                              min={1}
-                              value={item.quantity}
+                              min={0}
+                              value={item.quantity === 0 ? "" : item.quantity}
                               onChange={(e) => {
-                                const val = parseInt(e.target.value);
-                                if (!isNaN(val) && val > 0) {
-                                  cart.setQuantity(item.cartItemId, val);
+                                const val = e.target.value;
+
+                                if (val === "") {
+                                  cart.setQuantity(item.cartItemId, 0);
+                                  return;
+                                }
+
+                                const num = parseInt(val);
+                                if (!isNaN(num) && num >= 0) {
+                                  cart.setQuantity(item.cartItemId, num);
                                 }
                               }}
                               className="flex-1 h-8 text-center text-sm font-medium outline-none border-none"
                             />
 
-                            {/* nút + bên ngoài */}
-                            <button
+                            {/* nút + */}
+                            {/* <Button
                               onClick={() =>
                                 cart.increaseQuantity(item.cartItemId)
                               }
-                              className="flex-1 h-8 flex justify-center items-center border-l border-gray-300 text-gray-700 hover:bg-gray-100 transition"
+                              className="w-8 h-8 flex justify-center items-center border-l border-gray-300 text-gray-700 hover:bg-gray-100 transition"
                             >
-                              <span className="text-base font-bold">+</span>
-                            </button>
+                              <Plus size={14} />
+                            </Button> */}
                           </div>
                         </div>
 
@@ -164,13 +185,16 @@ export function NavbarActions() {
                               currency: "VND",
                             }).format(item.price * item.quantity)}
                           </span>
-                          <Button
-                            size="sm"
-                            onClick={() => cart.removeItem(item.cartItemId)}
-                            className="px-2 py-1"
-                          >
-                            <X size={14} />
-                          </Button>
+                          <div className="pt-4">
+                            <Button
+                              variant={"outline"}
+                              size="sm"
+                              onClick={() => cart.removeItem(item.cartItemId)}
+                              className="px-2 py-1 pt-1.5 rounded-lg hover:bg-slate-100 transition"
+                            >
+                              <X size={14} />
+                            </Button>
+                          </div>
                         </div>
                       </li>
                     ))}

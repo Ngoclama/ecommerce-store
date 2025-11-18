@@ -17,6 +17,7 @@ interface CartStore {
   increaseQuantity: (cartItemId: string) => void;
   decreaseQuantity: (cartItemId: string) => void;
   setQuantity: (cartItemId: string, quantity: number) => void;
+  updateQuantity: (id: string, quantity: number) => void;
 }
 
 const useCart = create(
@@ -69,9 +70,21 @@ const useCart = create(
       setQuantity: (id: string, quantity: number) =>
         set((state) => ({
           items: state.items.map((item) =>
-            item.cartItemId === id ? { ...item, quantity } : item
+            item.cartItemId === id
+              ? { ...item, quantity: Math.max(1, quantity) }
+              : item
           ),
         })),
+      updateQuantity: (id, quantity) =>
+        set((state) => {
+          const newQuantity = Math.max(1, quantity); // tránh về 0 hoặc âm
+          return {
+            items: state.items.map((item) =>
+              item.cartItemId === id ? { ...item, quantity: newQuantity } : item
+            ),
+          };
+        }),
+
       decreaseQuantity: (cartItemId: string) => {
         set({
           items: get().items.map((item) =>

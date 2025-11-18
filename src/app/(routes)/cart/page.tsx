@@ -3,10 +3,10 @@
 import Container from "@/components/ui/container";
 import useCart from "@/hooks/use-cart";
 import CartItem from "./components/cart-item";
-import { useCallback } from "react";
-import { Button } from "@/components/ui/button";
 import Summary from "./components/summary";
+import { useCallback } from "react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 const CartPage = () => {
   const cart = useCart();
@@ -17,11 +17,6 @@ const CartPage = () => {
     }
     toast.success("Cart cleared.");
   }, [cart]);
-
-  const totalPrice = cart.items.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
 
   return (
     <div className="bg-white">
@@ -38,27 +33,20 @@ const CartPage = () => {
                 {cart.items.map((item) => (
                   <CartItem key={item.cartItemId} data={item} />
                 ))}
+                <div className=" pt-4 text-black ">
+                  <Button
+                    variant="outline"
+                    onClick={onClearCart}
+                    className="cursor-pointer"
+                  >
+                    Clear Cart
+                  </Button>
+                </div>
               </div>
 
               {/* Right side: Summary */}
               <div className="lg:col-span-1">
                 <Summary />
-
-                <div className="mt-6 flex flex-col gap-4 p-4 border rounded-xl shadow-sm">
-                  <Button variant="destructive" onClick={onClearCart}>
-                    Clear Cart
-                  </Button>
-
-                  <div className="text-xl font-semibold flex justify-between items-center">
-                    <span>Total:</span>
-                    <span>
-                      {new Intl.NumberFormat("vi-VN", {
-                        style: "currency",
-                        currency: "VND",
-                      }).format(totalPrice)}
-                    </span>
-                  </div>
-                </div>
               </div>
             </div>
           )}
