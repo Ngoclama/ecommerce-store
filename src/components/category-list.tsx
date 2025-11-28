@@ -1,6 +1,10 @@
+"use client";
+
 import { Category } from "@/types";
 import Link from "next/link";
 import Image from "next/image";
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 interface CategoryListProps {
   items: Category[];
@@ -9,24 +13,35 @@ interface CategoryListProps {
 const CategoryList: React.FC<CategoryListProps> = ({ items }) => {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-      {items.map((item) => (
-        <Link
+      {items.map((item, index) => (
+        <motion.div
           key={item.id}
-          href={`/category/${item.id}`}
-          className="group block bg-gray-100 dark:bg-gray-800 rounded-lg p-4 text-center hover:shadow-lg transition-shadow"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: index * 0.05 }}
         >
-          <div className="relative h-24 w-24 mx-auto mb-4">
-            <Image
-              src={item.billboard.imageUrl || "/placeholder.png"}
-              alt={item.name}
-              fill
-              className="object-cover rounded-full"
-            />
-          </div>
-          <h3 className="text-lg font-semibold group-hover:text-primary transition-colors">
-            {item.name}
-          </h3>
-        </Link>
+          <Link
+            href={`/category/${item.id}`}
+            className={cn(
+              "group block bg-white p-4 text-center",
+              "hover:opacity-80 transition-opacity duration-300"
+            )}
+          >
+            {item.billboard && (
+              <div className="relative aspect-square mx-auto mb-3">
+                <Image
+                  src={item.billboard.imageUrl || "/placeholder.png"}
+                  alt={item.name}
+                  fill
+                  className="object-cover transition-opacity duration-500 group-hover:opacity-90"
+                />
+              </div>
+            )}
+            <h3 className="text-xs font-light text-black uppercase tracking-wider">
+              {item.name}
+            </h3>
+          </Link>
+        </motion.div>
       ))}
     </div>
   );

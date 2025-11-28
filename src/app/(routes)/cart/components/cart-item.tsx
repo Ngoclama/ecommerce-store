@@ -1,7 +1,9 @@
 "use client";
 
 import Currency from "@/components/ui/currency";
-import useCart, { CartItem as CartItemType } from "@/hooks/use-cart";
+// [FIX 1] Import CartItemType từ @/types
+import useCart from "@/hooks/use-cart";
+import { CartItem as CartItemType } from "@/types";
 import { X, Plus, Minus, Pencil } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -15,22 +17,16 @@ interface CartItemProps {
 const CartItem: React.FC<CartItemProps> = ({ data }) => {
   const cart = useCart();
 
-  return (
-    <div className="border border-gray-300 rounded-xl p-5 mb-4 bg-white shadow-sm">
-      {/* TOP ROW */}
-      <div className="flex items-start gap-4">
-        {/* Delete button */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => cart.removeItem(data.cartItemId)}
-          className="rounded-full hover:bg-red-100"
-        >
-          <X className="h-4 w-4 text-red-500" />
-        </Button>
+  // [FIX TỒN KHO] Kiểm tra xem có thể tăng tiếp không
+  const canIncrease =
+    data.inventory !== undefined && data.quantity < data.inventory;
 
+  return (
+    <div className="border-b border-gray-200 pb-6 mb-6 bg-white">
+      {/* TOP ROW - Aigle Style */}
+      <div className="flex items-start gap-4">
         {/* Image */}
-        <div className="relative w-28 h-28 rounded-lg overflow-hidden flex-shrink-0">
+        <div className="relative w-24 h-24 overflow-hidden shrink-0 bg-gray-50">
           <Image
             fill
             src={data.images?.[0]?.url || "/placeholder.png"}
@@ -41,61 +37,63 @@ const CartItem: React.FC<CartItemProps> = ({ data }) => {
 
         {/* Product info */}
         <div className="flex-1">
-          <Link href={`/product/${data.id}`}>
-            <p className="text-base font-semibold text-black hover:underline cursor-pointer line-clamp-2">
-              {data.name}
-            </p>
-          </Link>
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1">
+              <Link href={`/product/${data.id}`}>
+                <p className="text-sm font-light text-black uppercase tracking-wide hover:underline cursor-pointer line-clamp-2">
+                  {data.name}
+                </p>
+              </Link>
 
-          <p className="text-sm text-gray-600">Mã SP: {data.id}</p>
+              <div className="mt-1 text-xs font-light text-gray-600 space-y-1">
+                {data.size && <p>Size: {data.size.name}</p>}
+                {data.color && <p>Color: {data.color.name}</p>}
+              </div>
+            </div>
 
-          <div className="mt-1 text-sm text-gray-500 space-y-1">
-            <p>Size: {data.size.name}</p>
-            <p>Color: {data.color.name}</p>
-          </div>
-        </div>
-
-        {/* Price + quantity */}
-        <div className="flex flex-col items-end gap-3">
-          <Currency value={data.price * data.quantity} />
-
-          {/* Quantity box */}
-          <div className="flex items-center border rounded-lg px-2 py-1 bg-gray-50">
+            {/* Delete button */}
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => cart.decreaseQuantity(data.cartItemId)}
-              className="h-7 w-7"
+              onClick={() => cart.removeItem(data.cartItemId)}
+              className="rounded-none hover:bg-gray-100"
             >
-              <Minus className="h-4 w-4" />
-            </Button>
-
-            <span className="px-3 font-medium">{data.quantity}</span>
-
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => cart.increaseQuantity(data.cartItemId)}
-              className="h-7 w-7"
-            >
-              <Plus className="h-4 w-4" />
+              <X className="h-4 w-4 text-black" />
             </Button>
           </div>
-        </div>
-      </div>
 
-      {/* NOTE INPUT */}
-      <div className="mt-4">
-        <label className="text-sm text-gray-600 mb-2 block">
-          Ghi chú đơn hàng
-        </label>
+          {/* Price + quantity - Aigle Style */}
+          <div className="flex items-center justify-between mt-4">
+            <Currency value={data.price * data.quantity} />
 
-        <div className="relative">
-          <Input
-            placeholder="Ghi chú cho sản phẩm..."
-            className="pr-10 border-gray-300"
-          />
-          <Pencil className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+            {/* Quantity box */}
+            <div className="flex items-center border border-gray-300 rounded-none px-2 py-1 bg-white">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => cart.decreaseQuantity(data.cartItemId)}
+                className="w-8 h-8 flex justify-center items-center text-black hover:bg-gray-100 transition p-0 rounded-none"
+              >
+                <Minus className="h-4 w-4" />
+              </Button>
+
+              <span className="px-3 text-sm font-light">{data.quantity}</span>
+
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => cart.increaseQuantity(data.cartItemId)}
+                disabled={!canIncrease}
+                className={`w-8 h-8 flex justify-center items-center transition p-0 rounded-none ${
+                  !canIncrease
+                    ? "opacity-50 cursor-not-allowed"
+                    : "text-black hover:bg-gray-100"
+                }`}
+              >
+                <Plus size={14} />
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

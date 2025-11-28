@@ -3,6 +3,9 @@ import getProducts from "@/actions/get-products";
 import Gallery from "@/components/gallery";
 import Info from "@/components/info";
 import ProductList from "@/components/product-list";
+import ReviewsSection from "@/components/reviews-section";
+import RecentlyViewed from "@/components/recently-viewed";
+import ProductClient from "./product-client";
 import Container from "@/components/ui/container";
 import NoResult from "@/components/ui/result";
 
@@ -15,6 +18,7 @@ const ProductPage = async ({ params }: { params: Params }) => {
   if (!product) {
     return (
       <div className="bg-white">
+        <ProductClient product={product} />
         <Container>
           <div className="px-4 py-10 sm:px-6 lg:px-8">
             <NoResult />
@@ -29,18 +33,59 @@ const ProductPage = async ({ params }: { params: Params }) => {
   });
   return (
     <div className="bg-white">
+      <ProductClient product={product} />
       <Container>
         <div className="px-4 py-10 sm:px-6 lg:px-8">
           <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-8">
             {/* Gallery */}
-            <Gallery images={product.images} />
+            <Gallery
+              images={product.images}
+              discountPercent={
+                product.originalPrice &&
+                product.price &&
+                product.originalPrice > product.price
+                  ? Math.round(
+                      ((product.originalPrice - product.price) /
+                        product.originalPrice) *
+                        100
+                    )
+                  : 0
+              }
+            />
             <div className="px-4 mt-0 sm:mt-16 sm:px-0 lg:mt-0">
               {/* Info */}
               <Info data={product} />
             </div>
           </div>
-          <hr className="my-10" />
-          <ProductList title="Related Items" items={suggestProducts} />
+
+          {/* Reviews Section */}
+          <div className="mt-12 px-4 sm:px-6 lg:px-8">
+            <ReviewsSection
+              productId={product.id}
+              averageRating={product.rating || 0}
+              totalReviews={0}
+            />
+          </div>
+
+          {/* Recently Viewed */}
+          <div className="mt-12 px-4 sm:px-6 lg:px-8">
+            <RecentlyViewed currentProductId={product.id} />
+          </div>
+
+          {/* Related Products - Aigle Style */}
+          <div className="mt-16 px-4 sm:px-6 lg:px-8">
+            <div className="mb-10">
+              <h2 className="text-2xl md:text-3xl font-light text-black uppercase tracking-wider">
+                Related products
+              </h2>
+            </div>
+            <ProductList
+              title=""
+              items={suggestProducts
+                .filter((p) => p.id !== product.id)
+                .slice(0, 8)}
+            />
+          </div>
         </div>
       </Container>
     </div>

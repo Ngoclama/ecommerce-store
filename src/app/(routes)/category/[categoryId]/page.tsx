@@ -7,55 +7,49 @@ import Container from "@/components/ui/container";
 import ProductCard from "@/components/ui/product-card";
 import Filter from "../components/filter";
 import MobileFilters from "../components/mobile-filter";
+import SortFilter from "../components/sort-filter";
+import PriceFilter from "../components/price-filter";
 import NoResult from "@/components/ui/result";
+import CategoryClient from "./category-client";
 
 export const revalidate = 0;
 
-type Params = Promise<{ categoryId: string }>
-type SearchParams = Promise<{ colorId: string, sizeId: string }>
+type Params = Promise<{ categoryId: string }>;
+type SearchParams = Promise<{
+  colorId?: string;
+  sizeId?: string;
+  sort?: string;
+  minPrice?: string;
+  maxPrice?: string;
+}>;
 
-const CategoryPage = async ({ params, searchParams }: { params: Params, searchParams: SearchParams }) => {
+const CategoryPage = async ({
+  params,
+  searchParams,
+}: {
+  params: Params;
+  searchParams: SearchParams;
+}) => {
     const { categoryId } = await params;
     const { colorId, sizeId } = await searchParams;
-    const products = await getProducts({ categoryId: categoryId, colorId: colorId, sizeId: sizeId })
+  const products = await getProducts({
+    categoryId: categoryId,
+    colorId: colorId,
+    sizeId: sizeId,
+  });
     const sizes = await getSizes();
     const colors = await getColors();
-    const category = await getCategory(categoryId)
-    console.log(category);
+  const category = await getCategory(categoryId);
+
     return ( 
-        <div className="bg-white">
-            <Container>
-                <Billboard data={category?.billboard} />
-                <div className="px-4 pb-24 sm:px-6 lg:px-8">
-                    <div className="lg:grid lg:grid-cols-5 lg:gap-x-8">
-                        {/*Add Mobile Filters*/}
-                        <MobileFilters sizes={sizes} colors={colors} />
-                        {/*Add Computer Filters*/}
-                        <div className="hidden lg:block">
-                            <Filter
-                                valueKey="sizeId"
-                                name="Sizes"
-                                data={sizes}
-                            />
-                            <Filter
-                                valueKey="colorId"
-                                name="Colors"
-                                data={colors}
-                            />
-                        </div>
-                        <div className="mt-6 lg:col-span-4 lg:mt-0">
-                            {products?.length === 0 && <NoResult /> }
-                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-                                {products?.map(item => (
-                                    <ProductCard key={item.id} data={item} />
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </Container>
-        </div>
+    <CategoryClient
+      products={products}
+      sizes={sizes}
+      colors={colors}
+      category={category}
+      searchParams={await searchParams}
+    />
     );
-}
+};
 
 export default CategoryPage;

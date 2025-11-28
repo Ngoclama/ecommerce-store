@@ -1,57 +1,72 @@
+// Giả định nội dung file newsletter.tsx (cần kiểm tra)
 "use client";
 
-import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Loader2, Send } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 
-const Newsletter = () => {
+export const Newsletter = () => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!email) {
-      return toast.error("Please enter your email.");
+    if (!email.includes("@")) {
+      toast.error("Vui lòng nhập email hợp lệ.");
+      return;
     }
+
     setLoading(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setLoading(false);
-    setEmail("");
-    toast.success("Thank you for subscribing!");
+    setTimeout(() => {
+      setLoading(false);
+      toast.success("Đăng ký thành công!");
+      setEmail("");
+    }, 1500);
   };
 
   return (
-    <div className="bg-gray-100 dark:bg-gray-800 py-12">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 className="text-3xl font-bold mb-4">Subscribe to our Newsletter</h2>
-        <p className="text-gray-600 dark:text-gray-400 mb-8">
-          Get the latest updates on new products and upcoming sales.
-        </p>
-        <form
-          onSubmit={handleSubmit}
-          className="flex flex-col sm:flex-row items-center justify-center max-w-md mx-auto"
-        >
-          <Input
-            type="email"
-            placeholder="Enter your email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full sm:flex-1"
-            disabled={loading}
-          />
-          <Button
-            type="submit"
-            className="w-full sm:w-auto mt-4 sm:mt-0 sm:ml-4"
-            disabled={loading}
-          >
-            {loading ? "Subscribing..." : "Subscribe"}
-          </Button>
-        </form>
-      </div>
+    <div className="row-start-3 md:row-start-auto md:col-span-1">
+      <h4 className="text-lg mb-3 font-light text-black uppercase tracking-wider">
+        Newsletter
+      </h4>
+      <p className="text-sm text-gray-600 mb-4 font-light">
+        Đăng ký để nhận ưu đãi và tin tức mới nhất.
+      </p>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="email-newsletter" className="sr-only">
+            Email Address
+          </Label>
+          <div className="flex gap-2">
+            <Input
+              id="email-newsletter"
+              type="email"
+              placeholder="Email của bạn"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={loading}
+              className="flex-grow rounded-none border-gray-300 focus:border-black"
+            />
+            <Button
+              type="submit"
+              size="sm"
+              disabled={loading}
+              variant="default"
+              className="rounded-none"
+            >
+              {loading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Send className="w-4 h-4" />
+              )}
+            </Button>
+          </div>
+        </div>
+      </form>
     </div>
   );
 };
-
-export default Newsletter;

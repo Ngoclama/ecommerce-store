@@ -14,14 +14,13 @@ const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
       <button
         ref={ref}
         className={cn(
-          "inline-flex items-center justify-center rounded-full transition-all duration-200",
-          "hover:scale-110 active:scale-95",
+          "inline-flex items-center justify-center rounded-lg transition-all duration-200",
           size === "sm" && "w-8 h-8",
           size === "md" && "w-10 h-10",
           size === "lg" && "w-12 h-12",
           variant === "default" &&
-            "bg-card hover:bg-muted border border-border shadow-sm hover:shadow-md",
-          variant === "ghost" && "hover:bg-muted",
+            "bg-white hover:bg-gray-100 border border-gray-300",
+          variant === "ghost" && "hover:bg-gray-100",
           className
         )}
         {...props}

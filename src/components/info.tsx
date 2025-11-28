@@ -1,300 +1,612 @@
 "use client";
 
-import { Product } from "@/types";
+import { Product, ProductVariant } from "@/types";
 import {
   ShoppingCart,
-  Gift,
-  Truck,
-  ShieldCheck,
-  BadgeCheck,
-  ChevronDown,
-  ChevronUp,
+  Share2,
+  Facebook,
+  MessageCircle,
+  Twitter,
+  Link as LinkIcon,
+  Check,
+  Sparkles,
+  Zap,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { useState, useEffect, MouseEventHandler } from "react";
-import { motion } from "framer-motion";
+import { Input } from "./ui/input";
+import { useState, useEffect, MouseEventHandler, useMemo, useRef } from "react";
 import useCart from "@/hooks/use-cart";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+import SizeGuide from "./size-guide";
+import { useRouter } from "next/navigation";
+import { useCartAnimation } from "@/contexts/cart-animation-context";
 
 interface InfoProps {
   data: Product;
 }
 
 const Info: React.FC<InfoProps> = ({ data }) => {
-  const [expandDesc, setExpandDesc] = useState(false);
-  const [openShipping, setOpenShipping] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(24 * 60 * 60);
-  const [openReturn, setOpenReturn] = useState(false);
-
   const [quantity, setQuantity] = useState(1);
-
+  const [showShare, setShowShare] = useState(false);
+  const router = useRouter();
   const cart = useCart();
+  const { triggerAnimation } = useCartAnimation();
+  const addToCartButtonRef = useRef<HTMLButtonElement>(null);
+  const buyNowButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Variant selection state
+  const [selectedSizeId, setSelectedSizeId] = useState<string | null>(null);
+  const [selectedColorId, setSelectedColorId] = useState<string | null>(null);
+  const [selectedMaterialId, setSelectedMaterialId] = useState<string | null>(
+    null
+  );
+
+  // Get available variants
+  const variants = data.variants || [];
+
+  // Get unique sizes, colors, materials from variants
+  const availableSizes = useMemo(() => {
+    const sizes = new Map<
+      string,
+      { id: string; name: string; value: string }
+    >();
+    variants.forEach((v) => {
+      if (!sizes.has(v.size.id)) {
+        sizes.set(v.size.id, v.size);
+      }
+    });
+    return Array.from(sizes.values());
+  }, [variants]);
+
+  const availableColors = useMemo(() => {
+    const colors = new Map<
+      string,
+      { id: string; name: string; value: string }
+    >();
+    variants.forEach((v) => {
+      if (!colors.has(v.color.id)) {
+        colors.set(v.color.id, v.color);
+      }
+    });
+    return Array.from(colors.values());
+  }, [variants]);
+
+  const availableMaterials = useMemo(() => {
+    const materials = new Map<string, { id: string; name: string }>();
+    variants.forEach((v) => {
+      if (v.material && !materials.has(v.material.id)) {
+        materials.set(v.material.id, v.material);
+      }
+    });
+    return Array.from(materials.values());
+  }, [variants]);
+
+  // Find selected variant
+  const selectedVariant = useMemo(() => {
+    if (!selectedSizeId || !selectedColorId) return null;
+    return (
+      variants.find(
+        (v) =>
+          v.size.id === selectedSizeId &&
+          v.color.id === selectedColorId &&
+          (!selectedMaterialId || v.material?.id === selectedMaterialId)
+      ) || null
+    );
+  }, [variants, selectedSizeId, selectedColorId, selectedMaterialId]);
+
+  // Auto-select first variant if available
+  useEffect(() => {
+    if (variants.length > 0 && !selectedSizeId && !selectedColorId) {
+      const firstVariant = variants[0];
+      setSelectedSizeId(firstVariant.size.id);
+      setSelectedColorId(firstVariant.color.id);
+      if (firstVariant.material) {
+        setSelectedMaterialId(firstVariant.material.id);
+      }
+    }
+  }, [variants, selectedSizeId, selectedColorId]);
+
+  // Get current price and inventory
+  const currentPrice = selectedVariant?.price || data.price;
+  const currentInventory = selectedVariant?.inventory ?? data.inventory ?? 0;
+  const isOutOfStock = currentInventory <= 0;
+
+  // Calculate discount
+  const discountPercent =
+    data.originalPrice && data.price && data.originalPrice > data.price
+      ? Math.round(
+          ((data.originalPrice - data.price) / data.originalPrice) * 100
+        )
+      : 0;
+
+  // Update quantity when inventory changes
+  useEffect(() => {
+    if (quantity > currentInventory && currentInventory > 0) {
+      setQuantity(currentInventory);
+    }
+  }, [currentInventory, quantity]);
+
   const onAddToCart: MouseEventHandler<HTMLButtonElement> = (e) => {
     e.stopPropagation();
-    cart.addItem(data, quantity);
-    toast.success("Item added to cart.");
+
+    if (variants.length > 0) {
+      if (!selectedSizeId || !selectedColorId) {
+        toast.error("Vui lòng chọn kích thước và màu sắc");
+        return;
+      }
+    }
+
+    if (isOutOfStock) {
+      toast.error("Sản phẩm đã hết hàng");
+      return;
+    }
+
+    if (quantity > currentInventory) {
+      toast.error(`Chỉ còn ${currentInventory} sản phẩm trong kho`);
+      return;
+    }
+
+    const productData = {
+      ...data,
+      size: selectedVariant?.size || data.size,
+      color: selectedVariant?.color || data.color,
+      material: selectedVariant?.material || data.material,
+      inventory: currentInventory,
+      price: currentPrice,
+    };
+
+    // Trigger animation
+    const primaryImage = data.images?.[0]?.url || "/placeholder.svg";
+    if (addToCartButtonRef.current && primaryImage) {
+      setTimeout(() => {
+        triggerAnimation(primaryImage, addToCartButtonRef.current);
+      }, 0);
+    }
+
+    // Delay adding to cart slightly to show animation
+    setTimeout(() => {
+      cart.addItem(productData, quantity);
+      toast.success("Đã thêm vào giỏ hàng");
+    }, 100);
   };
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
+  const handleBuyNow: MouseEventHandler<HTMLButtonElement> = (e) => {
+    e.stopPropagation();
 
-  const formatTime = (t: number) => {
-    const hours = Math.floor(t / 3600);
-    const minutes = Math.floor((t % 3600) / 60);
-    const seconds = t % 60;
-    return `${hours.toString().padStart(2, "0")}:${minutes
-      .toString()
-      .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+    if (variants.length > 0) {
+      if (!selectedSizeId || !selectedColorId) {
+        toast.error("Vui lòng chọn kích thước và màu sắc");
+        return;
+      }
+    }
+
+    if (isOutOfStock) {
+      toast.error("Sản phẩm đã hết hàng");
+      return;
+    }
+
+    if (quantity > currentInventory) {
+      toast.error(`Chỉ còn ${currentInventory} sản phẩm trong kho`);
+      return;
+    }
+
+    const productData = {
+      ...data,
+      size: selectedVariant?.size || data.size,
+      color: selectedVariant?.color || data.color,
+      material: selectedVariant?.material || data.material,
+      inventory: currentInventory,
+      price: currentPrice,
+    };
+
+    // Trigger animation
+    const primaryImage = data.images?.[0]?.url || "/placeholder.svg";
+    if (buyNowButtonRef.current && primaryImage) {
+      setTimeout(() => {
+        triggerAnimation(primaryImage, buyNowButtonRef.current);
+      }, 0);
+    }
+
+    // Add to cart and redirect to checkout
+    setTimeout(() => {
+      cart.addItem(productData, quantity);
+      router.push("/checkout");
+    }, 100);
   };
 
   const formatVND = (value: number) => {
-    return value.toLocaleString("vi-VN") + " ₫";
+    return new Intl.NumberFormat("vi-VN").format(value) + "₫";
   };
-  const totalPrice = data.price * quantity;
+
+  const handleShare = (type: string) => {
+    const url = window.location.href;
+    const title = data.name;
+    const text = `Xem sản phẩm: ${data.name}`;
+
+    switch (type) {
+      case "facebook":
+        window.open(
+          `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+            url
+          )}`,
+          "_blank"
+        );
+        break;
+      case "messenger":
+        window.open(
+          `https://www.facebook.com/dialog/send?link=${encodeURIComponent(
+            url
+          )}&app_id=YOUR_APP_ID`,
+          "_blank"
+        );
+        break;
+      case "twitter":
+        window.open(
+          `https://twitter.com/intent/tweet?url=${encodeURIComponent(
+            url
+          )}&text=${encodeURIComponent(text)}`,
+          "_blank"
+        );
+        break;
+      case "copy":
+        navigator.clipboard.writeText(url);
+        toast.success("Đã sao chép liên kết!");
+        break;
+    }
+    setShowShare(false);
+  };
+
   return (
-    <div className="space-y-6 p-6 rounded-2xl bg-white shadow-[0_0_30px_rgba(0,0,0,0.06)]">
-      {/* Title */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">{data.name}</h1>
+    <div className="space-y-8 lg:space-y-10">
+      {/* Header Section - Modern 2025 Style */}
+      <div className="space-y-4">
+        {/* Category Badge */}
+        {data.category && (
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-none">
+            <span className="text-xs font-light text-gray-600 uppercase tracking-wider">
+              {data.category.name}
+            </span>
+          </div>
+        )}
+
+        {/* Title - Clean Typography */}
+        <h1 className="text-3xl md:text-4xl lg:text-5xl font-light text-black leading-tight tracking-tight">
+          {data.name}
+        </h1>
+
+        {/* Discount Badge - Subtle */}
+        {discountPercent > 0 && (
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-black text-white rounded-none">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span className="text-xs font-light uppercase tracking-wider">
+              Giảm {discountPercent}%
+            </span>
+          </div>
+        )}
       </div>
 
-      {/* Thương hiệu + Mã SP */}
-      <div className="text-sm text-gray-700 space-y-1">
-        <p>
-          Thương hiệu: <span className="font-medium text-gray-900">—</span>
-        </p>
-        <p>
-          Mã sản phẩm:{" "}
-          <span className="text-blue-600 font-medium">{data.id}</span>
-        </p>
-      </div>
-
-      {/* Ưu đãi mỗi ngày */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-        className="p-4 rounded-xl bg-gradient-to-r from-red-50 to-red-100 border border-red-300 shadow-lg"
-      >
-        <motion.p
-          initial={{ scale: 0.95 }}
-          animate={{ scale: 1 }}
-          transition={{
-            repeat: Infinity,
-            duration: 1.2,
-            repeatType: "reverse",
-          }}
-          className="font-semibold text-red-700 mb-1 text-lg"
-        >
-          🎁 Ưu đãi mỗi ngày
-        </motion.p>
-
-        <p className="text-sm text-gray-700">
-          Kết thúc trong:{" "}
-          <span className="font-bold text-red-600 text-lg">
-            {formatTime(timeLeft)}
+      {/* Price Section - Elegant Display */}
+      <div className="space-y-3 pb-6 border-b border-gray-200">
+        <div className="flex items-baseline gap-4">
+          <span className="text-4xl md:text-5xl font-light text-black tracking-tight">
+            {formatVND(currentPrice)}
           </span>
-        </p>
-      </motion.div>
-
-      {/* Price + Quantity */}
-      <div className="flex flex-col gap-3">
-        <div className="flex items-end gap-3">
-          <p className="text-3xl font-semibold text-gray-900">
-            {formatVND(totalPrice)}
-          </p>
           {data.originalPrice && data.originalPrice > data.price && (
-            <p className="text-lg text-gray-500 line-through">
-              {formatVND(data.originalPrice * quantity)}
-            </p>
+            <>
+              <span className="text-lg text-gray-400 line-through font-light">
+                {formatVND(data.originalPrice)}
+              </span>
+            </>
           )}
         </div>
 
-        {/* Buttons tăng giảm số lượng */}
-        <div className="flex items-center w-36 border border-gray-300 rounded-lg overflow-hidden">
-          <button
-            onClick={() => setQuantity((prev) => (prev > 1 ? prev - 1 : 1))}
-            className="flex-1 h-10 flex justify-center items-center border-r border-gray-300 text-gray-700 hover:bg-gray-100 transition"
+        {/* Total Price when quantity > 1 */}
+        {quantity > 1 && (
+          <div className="flex items-center gap-3 pt-3 border-t border-gray-100">
+            <span className="text-sm text-gray-600 font-light">
+              Tổng cộng ({quantity} sản phẩm):
+            </span>
+            <span className="text-2xl text-black font-light tracking-tight">
+              {formatVND(currentPrice * quantity)}
+            </span>
+          </div>
+        )}
+
+        {/* Stock Status */}
+        {isOutOfStock ? (
+          <div className="flex items-center gap-2 text-sm text-red-600 font-light">
+            <span className="w-2 h-2 bg-red-600 rounded-full"></span>
+            Hết hàng
+          </div>
+        ) : currentInventory <= 5 ? (
+          <div className="flex items-center gap-2 text-sm text-amber-600 font-light">
+            <span className="w-2 h-2 bg-amber-600 rounded-full animate-pulse"></span>
+            Chỉ còn {currentInventory} sản phẩm
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 text-sm text-green-600 font-light">
+            <Check className="w-4 h-4" />
+            Còn hàng
+          </div>
+        )}
+      </div>
+
+      {/* Size Guide */}
+      <SizeGuide category={data.category?.name} />
+
+      {/* SIZE Selection - Modern Toggle */}
+      {availableSizes.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-light text-black uppercase tracking-wider">
+              Kích thước
+            </h3>
+            {selectedSizeId && (
+              <span className="text-xs text-gray-500 font-light">Đã chọn</span>
+            )}
+          </div>
+          <ToggleGroup
+            type="single"
+            value={selectedSizeId || ""}
+            onValueChange={(value) => {
+              if (value) {
+                setSelectedSizeId(value);
+                if (selectedColorId) {
+                  const matchingVariant = variants.find(
+                    (v) =>
+                      v.size.id === value &&
+                      v.color.id === selectedColorId &&
+                      v.inventory > 0
+                  );
+                  if (!matchingVariant) {
+                    setSelectedColorId(null);
+                  }
+                }
+              } else {
+                setSelectedSizeId(null);
+              }
+            }}
+            className="flex flex-wrap gap-2.5"
           >
-            -
-          </button>
-          <span className="flex-1 text-center text-lg font-medium">
-            {quantity}
-          </span>
-          <button
-            onClick={() => setQuantity((prev) => prev + 1)}
-            className="flex-1 h-10 flex justify-center items-center border-l border-gray-300 text-gray-700 hover:bg-gray-100 transition"
+            {availableSizes.map((size) => {
+              const variantAvailable = variants.some(
+                (v) =>
+                  v.size.id === size.id &&
+                  v.inventory > 0 &&
+                  (!selectedColorId || v.color.id === selectedColorId)
+              );
+              return (
+                <ToggleGroupItem
+                  key={size.id}
+                  value={size.id}
+                  disabled={!variantAvailable}
+                  className={cn(
+                    "px-5 py-2.5 border rounded-none min-w-[70px] text-sm font-light transition-all duration-200",
+                    selectedSizeId === size.id
+                      ? "border-black bg-black text-white shadow-sm"
+                      : "border-gray-300 hover:border-black bg-white text-black",
+                    !variantAvailable && "opacity-40 cursor-not-allowed"
+                  )}
+                >
+                  {size.name}
+                </ToggleGroupItem>
+              );
+            })}
+          </ToggleGroup>
+        </div>
+      )}
+
+      {/* COLOR Selection - Modern Toggle */}
+      {availableColors.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-light text-black uppercase tracking-wider">
+              Màu sắc
+            </h3>
+            {selectedColorId && (
+              <span className="text-xs text-gray-500 font-light">Đã chọn</span>
+            )}
+          </div>
+          <ToggleGroup
+            type="single"
+            value={selectedColorId || ""}
+            onValueChange={(value) => {
+              if (value) {
+                setSelectedColorId(value);
+                if (selectedSizeId) {
+                  const matchingVariant = variants.find(
+                    (v) =>
+                      v.color.id === value &&
+                      v.size.id === selectedSizeId &&
+                      v.inventory > 0
+                  );
+                  if (!matchingVariant) {
+                    setSelectedSizeId(null);
+                  }
+                }
+              } else {
+                setSelectedColorId(null);
+              }
+            }}
+            className="flex flex-wrap gap-2.5"
           >
-            +
-          </button>
+            {availableColors.map((color) => {
+              const variantAvailable = variants.some(
+                (v) =>
+                  v.color.id === color.id &&
+                  v.inventory > 0 &&
+                  (!selectedSizeId || v.size.id === selectedSizeId)
+              );
+              return (
+                <ToggleGroupItem
+                  key={color.id}
+                  value={color.id}
+                  disabled={!variantAvailable}
+                  className={cn(
+                    "px-5 py-2.5 border rounded-none min-w-[100px] text-sm font-light transition-all duration-200",
+                    selectedColorId === color.id
+                      ? "border-black bg-black text-white shadow-sm"
+                      : "border-gray-300 hover:border-black bg-white text-black",
+                    !variantAvailable && "opacity-40 cursor-not-allowed"
+                  )}
+                >
+                  {color.name}
+                </ToggleGroupItem>
+              );
+            })}
+          </ToggleGroup>
         </div>
-      </div>
+      )}
 
-      {/* SALE BOX */}
-      <div className="border border-red-400 rounded-xl p-4 bg-red-50 relative">
-        <div className="absolute -top-3 left-3 bg-red-500 text-white px-3 py-0.5 rounded-md text-sm flex items-center gap-1">
-          <Gift className="w-4 h-4" /> KHUYẾN MÃI - ƯU ĐÃI
-        </div>
-
-        <div className="mt-2 text-gray-800 text-sm leading-relaxed space-y-1">
-          <p>
-            Áo Sơ Mi nữ UK Fashion cổ đức cọc tay mí nẹp, chất liệu lụa không
-            nhăn UKSM2401016
-          </p>
-          <p>
-            <span className="font-semibold">Nhập mã NKF50K</span> thêm 50K đơn
-            hàng từ 1tr —{" "}
-            <span className="text-blue-600 cursor-pointer">Sao chép</span>
-          </p>
-          <p>Đồng giá Ship toàn quốc 20.000đ</p>
-          <p>Miễn phí vận chuyển với đơn hàng từ 500k</p>
-          <p>Kiểm hàng trước khi thanh toán</p>
-          <p>
-            Đổi hàng trong vòng 7 ngày — Miễn phí đổi với sản phẩm lỗi sản xuất.
-          </p>
-        </div>
-      </div>
-
-      {/* Mã giảm giá */}
-      <div className="p-4 border rounded-xl bg-gray-50">
-        <h3 className="font-semibold mb-2">Mã giảm giá</h3>
-        <div className="h-10 rounded-lg bg-white border flex items-center justify-center text-gray-500">
-          — Chưa có mã —
-        </div>
-      </div>
-
-      {/* COLOR */}
-      <div className="space-y-2">
-        <h3 className="font-semibold">Color</h3>
-        <div
-          className="h-7 w-7 rounded-full border border-gray-600"
-          style={{ backgroundColor: data?.color?.value }}
-        ></div>
-      </div>
-
-      {/* SIZE */}
-      <div className="space-y-2">
-        <h3 className="font-semibold">Size</h3>
-        <ToggleGroup type="single" className="flex gap-2">
-          <ToggleGroupItem
-            value={data?.size?.name || ""}
-            className="px-4 py-2 border rounded-md"
-          >
-            {data?.size?.name}
-          </ToggleGroupItem>
-        </ToggleGroup>
-      </div>
-
-      {/* Buttons Add to Cart / Buy Now */}
-      <div className="flex gap-3">
-        <Button
-          onClick={onAddToCart}
-          className="flex-1 flex items-center gap-2"
-        >
-          <ShoppingCart className="w-4 h-4" />
-          Add to Cart
-        </Button>
-
-        <Button className="flex-1 bg-orange-600 hover:bg-orange-700">
-          Buy Now
-        </Button>
-      </div>
-
-      {/* Hotline */}
-      <p className="text-sm text-gray-700 flex-1 flex items-center gap-2">
-        Gọi đặt mua{" "}
-        <span className="font-bold text-red-600  ">1900 633 447</span> (8:00 -
-        17:00)
-      </p>
-
-      {/* Chính sách */}
-      <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-xl">
-        <div className="flex items-center gap-2 text-sm">
-          <Truck className="w-5 h-5 text-blue-600" /> Giao hàng toàn quốc
-        </div>
-        <div className="flex items-center gap-2 text-sm">
-          <BadgeCheck className="w-5 h-5 text-green-600" /> Tích điểm tất cả sản
-          phẩm
-        </div>
-        <div className="flex items-center gap-2 text-sm">
-          <Gift className="w-5 h-5 text-pink-600" /> Nhận ưu đãi khi thanh toán
-        </div>
-        <div className="flex items-center gap-2 text-sm">
-          <ShieldCheck className="w-5 h-5 text-gray-800" /> Cam kết chính hãng
-        </div>
-      </div>
-
-      {/* Mô tả sản phẩm */}
-      <div className="space-y-2">
-        <h3 className="font-semibold text-lg">Mô tả sản phẩm</h3>
-        <p
-          className={`text-gray-700 leading-relaxed ${
-            expandDesc ? "" : "line-clamp-3"
-          }`}
-        >
-          {data.description}
-        </p>
-        <Button
-          variant="outline"
-          onClick={() => setExpandDesc(!expandDesc)}
-          className="text-black hover:text-orange-600 text-sm"
-        >
-          {expandDesc ? "Thu gọn ▲" : "Xem thêm ▼"}
-        </Button>
-      </div>
-
-      <div className="border rounded-xl p-4">
-        {/* Chính sách giao hàng */}
-
-        <div className="border rounded-xl p-4">
-          <button
-            onClick={() => setOpenShipping(!openShipping)}
-            className="w-full flex justify-between items-center font-semibold text-left"
-          >
-            Chính sách giao hàng
-            {openShipping ? <ChevronUp /> : <ChevronDown />}
-          </button>
-
-          {openShipping && (
-            <div className="text-sm text-gray-700 mt-3 space-y-1">
-              <p>Freeship với hóa đơn từ 500.000 VNĐ.</p>
-              <p>Hóa đơn dưới 500.000 VNĐ, đồng giá ship 30K toàn quốc.</p>
-            </div>
-          )}
-        </div>
-        <div className="pt-4">
-          {/* Chính sách đổi trả */}
-          <div className="border rounded-xl p-4">
+      {/* Quantity - Modern Input */}
+      <div className="space-y-4">
+        <h3 className="text-sm font-light text-black uppercase tracking-wider">
+          Số lượng
+        </h3>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center border border-gray-300 rounded-none overflow-hidden w-36 bg-white">
             <button
-              onClick={() => setOpenReturn(!openReturn)}
-              className="w-full flex justify-between items-center font-semibold text-left "
+              onClick={() => setQuantity((prev) => (prev > 1 ? prev - 1 : 1))}
+              disabled={quantity <= 1}
+              className={cn(
+                "flex-1 h-12 flex justify-center items-center text-black hover:bg-gray-50 transition-colors text-base font-light",
+                quantity <= 1 && "opacity-40 cursor-not-allowed"
+              )}
             >
-              Chính sách trả hàng
-              {openReturn ? <ChevronUp /> : <ChevronDown />}
+              −
+            </button>
+            <Input
+              type="number"
+              value={quantity}
+              onChange={(e) => {
+                const val = parseInt(e.target.value) || 1;
+                setQuantity(Math.max(1, Math.min(val, currentInventory || 1)));
+              }}
+              className="flex-1 text-center border-0 focus-visible:ring-0 h-12 rounded-none text-base font-light"
+              min={1}
+              max={currentInventory || 1}
+            />
+            <button
+              onClick={() =>
+                setQuantity((prev) =>
+                  prev < currentInventory ? prev + 1 : prev
+                )
+              }
+              disabled={quantity >= currentInventory}
+              className={cn(
+                "flex-1 h-12 flex justify-center items-center text-black hover:bg-gray-50 transition-colors text-base font-light",
+                quantity >= currentInventory && "opacity-40 cursor-not-allowed"
+              )}
+            >
+              +
             </button>
           </div>
-
-          {openReturn && (
-            <div className="text-sm text-gray-700 mt-3 space-y-1">
-              <p>Hàng lỗi hỗ trợ đổi trả 1 đổi 1 trong vòng 7 ngày.</p>
-              <p>
-                Khách hàng được đổi size, đổi màu trong vòng 7 ngày kể từ ngày
-                nhận hàng, điều kiện sản phẩm còn nguyên tem mác của công ty và
-                chưa qua sử dụng, không bị dơ bẩn, hư hỏng.{" "}
-              </p>
-              <p>
-                Đối với sản phẩm hàng xả, thanh lý trên 50% công ty không hỗ trợ
-                đổi trả dưới mọi hình thức
-              </p>
-            </div>
+          {currentInventory > 0 && (
+            <span className="text-sm text-gray-500 font-light">
+              Tối đa {currentInventory} sản phẩm
+            </span>
           )}
         </div>
       </div>
+
+      {/* Action Buttons - Modern 2025 Style */}
+      <div className="flex flex-col gap-3 pt-2">
+        <Button
+          ref={buyNowButtonRef}
+          onClick={handleBuyNow}
+          disabled={
+            isOutOfStock ||
+            (variants.length > 0 && (!selectedSizeId || !selectedColorId))
+          }
+          className={cn(
+            "w-full h-14 rounded-none bg-black text-white hover:bg-gray-900 text-sm font-light uppercase tracking-wider transition-all duration-200 shadow-sm",
+            (isOutOfStock ||
+              (variants.length > 0 && (!selectedSizeId || !selectedColorId))) &&
+              "opacity-50 cursor-not-allowed"
+          )}
+        >
+          <Zap className="w-4 h-4 mr-2" />
+          Mua ngay
+        </Button>
+        <Button
+          ref={addToCartButtonRef}
+          onClick={onAddToCart}
+          disabled={
+            isOutOfStock ||
+            (variants.length > 0 && (!selectedSizeId || !selectedColorId))
+          }
+          variant="outline"
+          className={cn(
+            "w-full h-14 rounded-none border-2 border-black hover:bg-black hover:text-white text-sm font-light uppercase tracking-wider transition-all duration-200",
+            (isOutOfStock ||
+              (variants.length > 0 && (!selectedSizeId || !selectedColorId))) &&
+              "opacity-50 cursor-not-allowed"
+          )}
+        >
+          <ShoppingCart className="w-4 h-4 mr-2" />
+          Thêm vào giỏ hàng
+        </Button>
+      </div>
+
+      {/* Share Section - Minimalist */}
+      <div className="space-y-4 pt-6 border-t border-gray-200">
+        <h3 className="text-sm font-light text-black uppercase tracking-wider">
+          Chia sẻ
+        </h3>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleShare("facebook")}
+            className="flex items-center gap-2 border-gray-300 rounded-none hover:border-black text-xs font-light h-9"
+          >
+            <Facebook className="w-4 h-4" />
+            Facebook
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleShare("messenger")}
+            className="flex items-center gap-2 border-gray-300 rounded-none hover:border-black text-xs font-light h-9"
+          >
+            <MessageCircle className="w-4 h-4" />
+            Messenger
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleShare("twitter")}
+            className="flex items-center gap-2 border-gray-300 rounded-none hover:border-black text-xs font-light h-9"
+          >
+            <Twitter className="w-4 h-4" />
+            Twitter
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleShare("copy")}
+            className="flex items-center gap-2 border-gray-300 rounded-none hover:border-black text-xs font-light h-9"
+          >
+            <LinkIcon className="w-4 h-4" />
+            Sao chép
+          </Button>
+        </div>
+      </div>
+
+      {/* Product Description - Clean Typography */}
+      {data.description && (
+        <div className="space-y-4 pt-6 border-t border-gray-200">
+          <h3 className="text-sm font-light text-black uppercase tracking-wider">
+            Mô tả sản phẩm
+          </h3>
+          <div
+            className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap font-light"
+            dangerouslySetInnerHTML={{ __html: data.description }}
+          />
+        </div>
+      )}
     </div>
   );
 };

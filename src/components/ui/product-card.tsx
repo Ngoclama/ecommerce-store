@@ -2,43 +2,152 @@
 
 import { Product } from "@/types";
 import Image from "next/image";
-import { useState, MouseEvent, MouseEventHandler } from "react";
+import React, { useState, MouseEvent, MouseEventHandler, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Heart, ShoppingBag, Eye, Star, X } from "lucide-react";
-import { Popover, PopoverTrigger } from "./popover";
+import { Heart, ShoppingBag, Eye, Zap, TrendingUp } from "lucide-react";
 import IconButton from "./icon-button";
 import useCart from "@/hooks/use-cart";
-import { PopoverContent } from "@radix-ui/react-popover";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "./button";
 import PopoverProduct from "../popover-product";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+import { useCartAnimation } from "@/contexts/cart-animation-context";
+
 interface ProductCardProps {
   data: Product;
-  onAddToCart?: () => void;
-  onToggleFavorite?: () => void;
+  isWishlistActive: boolean;
+  onToggleFavorite: (productId: string) => void;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
   data,
+  isWishlistActive,
   onToggleFavorite,
 }) => {
   const router = useRouter();
-  const [isFavorite, setIsFavorite] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [quickViewOpen, setQuickViewOpen] = useState(false);
+  const [imageIndex, setImageIndex] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
   const cart = useCart();
+  const { triggerAnimation } = useCartAnimation();
+  const addToCartButtonRef = React.useRef<HTMLButtonElement>(null);
 
-  const onAddToCart: MouseEventHandler<HTMLButtonElement> = (e) => {
-    e.stopPropagation();
-    cart.addItem(data);
-    toast.success("Item added to cart.");
+  // Calculate inventory
+  const productInventory = useMemo(() => {
+    if (data.variants && data.variants.length > 0) {
+      return data.variants.reduce(
+        (sum, variant) => sum + (variant.inventory || 0),
+        0
+      );
+    }
+    return data.inventory ?? 0;
+  }, [data.variants, data.inventory]);
+
+  // Calculate discount
+  const discountPercent = useMemo(() => {
+    if (data.originalPrice && data.price && data.originalPrice > data.price) {
+      return Math.round(
+        ((data.originalPrice - data.price) / data.originalPrice) * 100
+      );
+    }
+    return 0;
+  }, [data.originalPrice, data.price]);
+
+  // Get images
+  const images = data.images || [];
+  const primaryImage = images[0]?.url || "/placeholder.svg";
+  const secondaryImage = images[1]?.url || primaryImage;
+  const hasMultipleImages = images.length > 1;
+
+  // Get available sizes and colors from variants
+  const availableSizes = useMemo(() => {
+    if (data.variants && data.variants.length > 0) {
+      const sizes = new Map<
+        string,
+        { id: string; name: string; value: string }
+      >();
+      data.variants.forEach((v) => {
+        if (v.size && !sizes.has(v.size.id)) {
+          sizes.set(v.size.id, v.size);
+        }
+      });
+      return Array.from(sizes.values());
+    }
+    // Fallback to legacy size field
+    if (data.size) {
+      return [data.size];
+    }
+    return [];
+  }, [data.variants, data.size]);
+
+  const availableColors = useMemo(() => {
+    if (data.variants && data.variants.length > 0) {
+      const colors = new Map<
+        string,
+        { id: string; name: string; value: string }
+      >();
+      data.variants.forEach((v) => {
+        if (v.color && !colors.has(v.color.id)) {
+          colors.set(v.color.id, v.color);
+        }
+      });
+      return Array.from(colors.values());
+    }
+    // Fallback to legacy color field
+    if (data.color) {
+      return [data.color];
+    }
+    return [];
+  }, [data.variants, data.color]);
+
+  // Stock status
+  const isOutOfStock = productInventory <= 0;
+  const isLowStock = productInventory > 0 && productInventory <= 5;
+
+  // Format price
+  const formatVND = (value: number) => {
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+      minimumFractionDigits: 0,
+    }).format(value);
   };
 
-  const handleFavorite = (e: MouseEvent<HTMLButtonElement>) => {
+  // Handlers
+  const onAddToCart: MouseEventHandler<HTMLButtonElement> = (e) => {
     e.stopPropagation();
-    setIsFavorite(!isFavorite);
-    onToggleFavorite?.();
+
+    if (productInventory <= 0) {
+      toast.error("Sản phẩm đã hết hàng");
+      return;
+    }
+
+    if (data.variants && data.variants.length > 0) {
+      router.push(`/product/${data.id}`);
+      toast.info("Vui lòng chọn size và màu sắc");
+      return;
+    }
+
+    // Trigger animation
+    if (addToCartButtonRef.current && primaryImage) {
+      // Sử dụng setTimeout nhỏ để đảm bảo button ref đã sẵn sàng
+      setTimeout(() => {
+        triggerAnimation(primaryImage, addToCartButtonRef.current);
+      }, 0);
+    }
+
+    // Delay adding to cart slightly to show animation
+    setTimeout(() => {
+      cart.addItem(data);
+      toast.success("Đã thêm vào giỏ hàng");
+    }, 100);
+  };
+
+  const handleFavorite: MouseEventHandler<HTMLButtonElement> = (e) => {
+    e.stopPropagation();
+    onToggleFavorite(data.id);
   };
 
   const handleClick = () => {
@@ -50,12 +159,37 @@ const ProductCard: React.FC<ProductCardProps> = ({
     setQuickViewOpen(true);
   };
 
-  const discountPercent =
-    data.originalPrice && data.price
-      ? Math.round(
-          ((data.originalPrice - data.price) / data.originalPrice) * 100
-        )
-      : 0;
+  const handleBuyNow: MouseEventHandler<HTMLButtonElement> = (e) => {
+    e.stopPropagation();
+
+    if (productInventory <= 0) {
+      toast.error("Sản phẩm đã hết hàng");
+      return;
+    }
+
+    if (data.variants && data.variants.length > 0) {
+      router.push(`/product/${data.id}`);
+      toast.info("Vui lòng chọn size và màu sắc");
+      return;
+    }
+
+    cart.addItem(data);
+    toast.success("Đã thêm vào giỏ hàng");
+    router.push("/checkout");
+  };
+
+  // Image hover effect - switch to second image on hover
+  const handleImageHover = () => {
+    setIsHovered(true);
+    if (hasMultipleImages) {
+      setImageIndex(1);
+    }
+  };
+
+  const handleImageLeave = () => {
+    setIsHovered(false);
+    setImageIndex(0);
+  };
 
   return (
     <>
@@ -64,188 +198,280 @@ const ProductCard: React.FC<ProductCardProps> = ({
         isOpen={quickViewOpen}
         onClose={() => setQuickViewOpen(false)}
       />
-      <div
-        onClick={handleClick}
-        className="group cursor-pointer bg-white rounded-md border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden"
-      >
-        {/* IMAGE */}
-        <div className="relative aspect-square bg-gray-100 overflow-hidden">
-          <Image
-            src={!imageError ? data.images?.[0]?.url : "/placeholder.svg"}
-            alt={data.name}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-110"
-            onError={() => setImageError(true)}
-          />
 
-          {/* BADGES */}
-          {(data.badge || discountPercent > 0) && (
-            <div className="absolute top-2 left-2 flex gap-2">
-              {data.badge && (
-                <span className="px-2.5 py-1 bg-primary text-primary-foreground text-xs font-semibold rounded-full shadow">
-                  {data.badge}
-                </span>
-              )}
-              {discountPercent > 0 && (
-                <span className="px-2.5 py-1 bg-red-500 text-white text-xs font-bold rounded-sm shadow">
-                  -{discountPercent}%
-                </span>
-              )}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className={cn(
+          "group relative bg-white transition-all duration-300 w-full",
+          isOutOfStock && "opacity-60"
+        )}
+        onMouseEnter={handleImageHover}
+        onMouseLeave={handleImageLeave}
+      >
+        {/* IMAGE CONTAINER */}
+        <div
+          className="relative aspect-[3/4] bg-gray-50 overflow-hidden border border-gray-200 cursor-pointer"
+          onClick={handleClick}
+        >
+          {/* PRIMARY IMAGE */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={imageIndex}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.4 }}
+              className="absolute inset-0"
+            >
+              <Image
+                src={
+                  imageError
+                    ? "/placeholder.svg"
+                    : imageIndex === 0
+                    ? primaryImage
+                    : secondaryImage
+                }
+                alt={data.name}
+                fill
+                className="object-cover transition-transform duration-700 group-hover:scale-110"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  if (target.src !== "/placeholder.svg") {
+                    target.src = "/placeholder.svg";
+                    setImageError(true);
+                  }
+                }}
+              />
+            </motion.div>
+          </AnimatePresence>
+
+          {/* BADGES - Top Left */}
+          <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
+            {discountPercent > 0 && (
+              <motion.span
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="px-3 py-1.5 bg-black text-white text-sm font-light uppercase tracking-wide rounded-none"
+              >
+                -{discountPercent}%
+              </motion.span>
+            )}
+            {isOutOfStock && (
+              <motion.span
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="px-3 py-1.5 bg-white text-black text-sm font-light uppercase border border-black rounded-none"
+              >
+                Hết hàng
+              </motion.span>
+            )}
+            {isLowStock && !isOutOfStock && (
+              <motion.span
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="px-3 py-1.5 bg-yellow-500 text-black text-sm font-light uppercase rounded-none"
+              >
+                Sắp hết
+              </motion.span>
+            )}
+          </div>
+
+          {/* FAVORITE BUTTON - Top Right */}
+          <div className="absolute top-4 right-4 z-20">
+            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+              <IconButton
+                onClick={handleFavorite}
+                icon={
+                  <Heart
+                    className={cn(
+                      "w-6 h-6 transition-all duration-300",
+                      isWishlistActive
+                        ? "text-red-500 fill-red-500"
+                        : "text-black"
+                    )}
+                  />
+                }
+                className="bg-white/90 hover:bg-white border-0 rounded-none backdrop-blur-sm transition-all duration-300 shadow-sm"
+                aria-label="Thêm vào yêu thích"
+              />
+            </motion.div>
+          </div>
+
+          {/* IMAGE INDICATOR - Bottom Left (if multiple images) */}
+          {hasMultipleImages && (
+            <div className="absolute bottom-4 left-4 z-20 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-none border border-gray-300">
+              <span className="text-sm font-light text-black">
+                {imageIndex + 1} / {images.length}
+              </span>
             </div>
           )}
 
-          {/* ACTION BUTTONS */}
-          <div className="absolute inset-0 bg-black/10 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end justify-center pb-4">
-            <div className="flex gap-3 scale-75 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-300">
-              {/* Quick View */}
-              <Popover open={quickViewOpen} onOpenChange={setQuickViewOpen}>
-                <PopoverTrigger asChild>
-                  <IconButton
-                    onClick={handleQuickView}
-                    icon={<Eye size={20} className="text-gray-700" />}
-                    className="bg-white hover:bg-gray-100 shadow"
-                  />
-                </PopoverTrigger>
-                <PopoverContent
-                  side="right"
-                  align="start"
-                  className="w-96 p-4 bg-white/30 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 dark:bg-slate-900/30 dark:border-slate-700 z-50"
-                >
-                  <AnimatePresence>
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 25,
-                      }}
-                    >
-                      <div className="flex justify-end mb-2">
-                        <IconButton
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setQuickViewOpen(false);
-                          }}
-                          icon={<X size={20} />}
-                          className="bg-gray-100 hover:bg-gray-200 shadow"
-                        />
-                      </div>
-                      <div className="flex flex-col gap-3">
-                        <Image
-                          src={data.images?.[0]?.url || "/placeholder.svg"}
-                          alt={data.name}
-                          width={300}
-                          height={300}
-                          className="object-contain"
-                        />
-                        <h3 className="font-bold text-lg">{data.name}</h3>
-                        <p className="text-gray-600 line-clamp-3">
-                          {data.description}
-                        </p>
-                        <div className="flex items-center gap-2 pt-1">
-                          <span className="text-lg font-bold text-black">
-                            {new Intl.NumberFormat("vi-VN", {
-                              style: "currency",
-                              currency: "VND",
-                            }).format(Number(data.price))}
-                          </span>
-                          {data.originalPrice &&
-                            data.originalPrice > data.price && (
-                              <span className="text-sm text-gray-400 line-through">
-                                {new Intl.NumberFormat("vi-VN").format(
-                                  Number(data.originalPrice)
-                                )}
-                                ₫
-                              </span>
-                            )}
-                        </div>
-                        <Button onClick={onAddToCart} className="w-full">
-                          Add To Cart
-                        </Button>
-                      </div>
-                    </motion.div>
-                  </AnimatePresence>
-                </PopoverContent>
-              </Popover>
-
-              {/* Add to Cart */}
-              <IconButton
-                onClick={onAddToCart}
-                icon={<ShoppingBag size={20} className="text-gray-700" />}
-                className="bg-white hover:bg-gray-100 shadow"
-                disabled={data.inStock === false}
-              />
-            </div>
+          {/* ACTION BUTTONS OVERLAY - Bottom (Show on hover) */}
+          <div
+            className="absolute inset-x-0 bottom-0 bg-white/98 backdrop-blur-sm border-t border-gray-200 p-2.5 space-y-1.5 opacity-0 group-hover:opacity-100 translate-y-5 group-hover:translate-y-0 transition-all duration-300 z-30"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Button
+              onClick={handleQuickView}
+              variant="outline"
+              size="default"
+              className="w-full h-9 rounded-none border-gray-300 hover:border-black text-black font-light uppercase tracking-wide text-[10px] leading-tight transition-all duration-300 hover:bg-gray-50 overflow-hidden flex items-center justify-center gap-1.5 px-2"
+            >
+              <Eye className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate flex-1 min-w-0 text-center">
+                Xem nhanh
+              </span>
+            </Button>
+            <Button
+              ref={addToCartButtonRef}
+              onClick={onAddToCart}
+              variant="outline"
+              size="default"
+              disabled={isOutOfStock}
+              className={cn(
+                "w-full h-9 rounded-none border-gray-300 hover:border-black text-black font-light uppercase tracking-wide text-[10px] leading-tight transition-all duration-300 hover:bg-gray-50 overflow-hidden flex items-center justify-center gap-1.5 px-2",
+                isOutOfStock && "opacity-40 cursor-not-allowed"
+              )}
+            >
+              <ShoppingBag className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate flex-1 min-w-0 text-center">
+                Thêm vào giỏ hàng
+              </span>
+            </Button>
+            <Button
+              onClick={handleBuyNow}
+              variant="default"
+              size="default"
+              disabled={isOutOfStock}
+              className={cn(
+                "w-full h-9 rounded-none bg-black text-white hover:bg-gray-800 font-light uppercase tracking-wide text-[10px] leading-tight transition-all duration-300 overflow-hidden flex items-center justify-center gap-1.5 px-2",
+                isOutOfStock && "opacity-40 cursor-not-allowed"
+              )}
+            >
+              <Zap className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate flex-1 min-w-0 text-center">
+                Mua ngay
+              </span>
+            </Button>
           </div>
 
-          {/* FAVORITE BUTTON */}
-          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <IconButton
-              onClick={handleFavorite}
-              icon={
-                <Heart
-                  size={20}
-                  className={
-                    isFavorite ? "text-red-500 fill-red-500" : "text-gray-700"
-                  }
-                />
-              }
-              className="bg-white/90 hover:bg-white shadow"
-            />
-          </div>
+          {/* HOVER OVERLAY GRADIENT */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
         </div>
 
         {/* PRODUCT INFO */}
-        <div className="p-3 space-y-2">
-          {data.category && (
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-              {data.category.name}
-            </p>
-          )}
-          <h3 className="font-semibold text-gray-800 line-clamp-2 group-hover:text-primary transition-colors duration-200">
+        <div className="pt-5 pb-4 px-3 space-y-3">
+          {/* Product Name */}
+          <h3
+            className="text-lg font-light text-black uppercase tracking-wide line-clamp-2 min-h-14 cursor-pointer hover:text-gray-600 transition-colors duration-300"
+            onClick={handleClick}
+          >
             {data.name}
           </h3>
-          <div className="flex items-center gap-2 text-xs text-gray-500">
-            <div className="flex items-center gap-0.5">
-              {[...Array(5)].map((_, i) => (
-                <Star
-                  key={i}
-                  size={14}
-                  className={
-                    i < Math.round(data.rating || 0)
-                      ? "fill-yellow-400 text-yellow-400"
-                      : "text-gray-300"
-                  }
-                />
-              ))}
-            </div>
-            {data.sold && (
+
+          {/* Price Section */}
+          <div className="flex items-baseline gap-3 flex-wrap">
+            <span className="text-xl md:text-2xl font-light text-black">
+              {formatVND(Number(data.price))}
+            </span>
+            {data.originalPrice && data.originalPrice > data.price && (
               <>
-                <span>•</span>
-                <span>Đã bán {data.sold}</span>
+                <span className="text-base text-gray-500 line-through font-light">
+                  {formatVND(Number(data.originalPrice))}
+                </span>
+                {discountPercent > 0 && (
+                  <span className="text-base text-gray-600 font-light">
+                    (-{discountPercent}%)
+                  </span>
+                )}
               </>
             )}
           </div>
-          <div className="flex items-center gap-2 pt-1">
-            <span className="text-lg font-bold text-black">
-              {new Intl.NumberFormat("vi-VN", {
-                style: "currency",
-                currency: "VND",
-              }).format(Number(data.price))}
-            </span>
-            {data.originalPrice && data.originalPrice > data.price && (
-              <span className="text-sm text-gray-400 line-through">
-                {new Intl.NumberFormat("vi-VN").format(
-                  Number(data.originalPrice)
-                )}
-                ₫
+
+          {/* Stock Info (if low stock) */}
+          {isLowStock && !isOutOfStock && (
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-yellow-600" />
+              <span className="text-base text-gray-600 font-light">
+                Chỉ còn {productInventory} sản phẩm
               </span>
-            )}
-          </div>
+            </div>
+          )}
+
+          {/* Size and Color Info */}
+          {(availableSizes.length > 0 || availableColors.length > 0) && (
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              {/* Sizes */}
+              {availableSizes.length > 0 && (
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs text-gray-500 font-light uppercase tracking-wide">
+                    Size:
+                  </span>
+                  <div className="flex flex-wrap gap-1">
+                    {availableSizes.slice(0, 3).map((size) => (
+                      <span
+                        key={size.id}
+                        className="px-2 py-0.5 text-xs font-light text-black border border-gray-300 rounded-none uppercase"
+                      >
+                        {size.name}
+                      </span>
+                    ))}
+                    {availableSizes.length > 3 && (
+                      <span className="px-2 py-0.5 text-xs font-light text-gray-500">
+                        +{availableSizes.length - 3}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Colors */}
+              {availableColors.length > 0 && (
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs text-gray-500 font-light uppercase tracking-wide">
+                    Color:
+                  </span>
+                  <div className="flex flex-wrap gap-1.5 items-center">
+                    {availableColors.slice(0, 3).map((color) => (
+                      <div
+                        key={color.id}
+                        className="flex items-center gap-1"
+                        title={color.name}
+                      >
+                        <div
+                          className="w-4 h-4 border border-gray-300 rounded-none"
+                          style={{
+                            backgroundColor: color.value || "#ccc",
+                          }}
+                        />
+                        <span className="text-xs font-light text-black uppercase hidden sm:inline">
+                          {color.name}
+                        </span>
+                      </div>
+                    ))}
+                    {availableColors.length > 3 && (
+                      <span className="text-xs font-light text-gray-500">
+                        +{availableColors.length - 3}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Category Badge (optional) */}
+          {data.category && (
+            <div className="pt-1">
+              <span className="text-sm text-gray-500 font-light uppercase tracking-wide">
+                {data.category.name}
+              </span>
+            </div>
+          )}
         </div>
-      </div>
+      </motion.div>
     </>
   );
 };
