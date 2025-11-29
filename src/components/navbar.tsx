@@ -75,24 +75,10 @@ const Navbar = async () => {
               </span>
             </Link>
 
-            {/* Search Bar - Desktop */}
-            <div className="hidden lg:flex flex-1 max-w-md mx-8">
-              <SearchBarWrapper />
-            </div>
-
-            {/* Actions */}
+            {/* Actions - Right side with Search, Account, Cart */}
             <div className="ml-auto flex items-center gap-2 md:gap-4">
               <NavbarActions />
             </div>
-          </div>
-        </Container>
-      </div>
-
-      {/* Search Bar - Mobile */}
-      <div className="lg:hidden border-t border-gray-200 bg-white">
-        <Container>
-          <div className="px-4 py-3">
-            <SearchBarWrapper />
           </div>
         </Container>
       </div>

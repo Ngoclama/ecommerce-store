@@ -51,13 +51,16 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
   const {
     toggleWishlist: toggleWishlistWithAuth,
     isItemInWishlist: checkWishlist,
+    getAllWishlistItems,
   } = useWishlist();
   const [currentImage, setCurrentImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [showShare, setShowShare] = useState(false);
+  const [isInWishlist, setIsInWishlist] = useState(false);
   const thumbnailScrollRef = React.useRef<HTMLDivElement>(null);
   const [canScrollUp, setCanScrollUp] = useState(true);
   const [canScrollDown, setCanScrollDown] = useState(true);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   // Variant selection state
   const [selectedSizeId, setSelectedSizeId] = useState<string | null>(null);
@@ -141,6 +144,23 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
     }
   }, [currentInventory, quantity]);
 
+  // Sync wishlist status from server
+  useEffect(() => {
+    const syncWishlist = async () => {
+      if (!isOpen) return;
+
+      try {
+        const allWishlistItems = await getAllWishlistItems();
+        setIsInWishlist(allWishlistItems.includes(product.id));
+      } catch (error) {
+        // Fallback to local storage
+        setIsInWishlist(cart.isItemInWishlist(product.id));
+      }
+    };
+
+    syncWishlist();
+  }, [product.id, isOpen, getAllWishlistItems, cart]);
+
   // Reset when product changes
   useEffect(() => {
     if (isOpen) {
@@ -209,6 +229,11 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
   const handleBuyNow: MouseEventHandler<HTMLButtonElement> = (e) => {
     e.stopPropagation();
 
+    // Guard để tránh double navigation
+    if (isNavigating) {
+      return;
+    }
+
     if (variants.length > 0) {
       if (!selectedSizeId || !selectedColorId) {
         toast.error("Vui lòng chọn size và màu sắc");
@@ -226,6 +251,7 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
       return;
     }
 
+    setIsNavigating(true);
     const productData = {
       ...product,
       size: selectedVariant?.size || product.size,
@@ -237,7 +263,7 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
 
     cart.addItem(productData, quantity);
     onClose();
-    router.push("/checkout");
+    router.push("/cart");
   };
 
   const handleShare = (type: string) => {
@@ -872,22 +898,42 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={async () => {
+                  onClick={async (e) => {
+                    e.stopPropagation();
                     try {
-                      await toggleWishlistWithAuth(product.id);
+                      const newStatus = await toggleWishlistWithAuth(
+                        product.id
+                      );
+                      // Update local state
+                      setIsInWishlist(newStatus ?? !isInWishlist);
+                      // Update cart wishlist
+                      if (newStatus) {
+                        if (!cart.wishlistItems.includes(product.id)) {
+                          cart.setWishlist([...cart.wishlistItems, product.id]);
+                        }
+                      } else {
+                        cart.setWishlist(
+                          cart.wishlistItems.filter((id) => id !== product.id)
+                        );
+                      }
                     } catch (error) {
                       // Error đã được xử lý trong toggleWishlistWithAuth
                     }
                   }}
-                  className="rounded-none text-black font-light uppercase tracking-wide text-xs"
+                  className={cn(
+                    "rounded-none font-light uppercase tracking-wide text-xs transition-colors",
+                    isInWishlist
+                      ? "text-black hover:text-gray-600"
+                      : "text-black hover:text-gray-600"
+                  )}
                 >
                   <Heart
                     className={cn(
-                      "w-4 h-4 mr-2",
-                      cart.isItemInWishlist(product.id) && "fill-black"
+                      "w-4 h-4 mr-2 transition-all",
+                      isInWishlist && "fill-red-500 text-red-500"
                     )}
                   />
-                  Yêu thích
+                  {isInWishlist ? "Đã yêu thích" : "Yêu thích"}
                 </Button>
               </div>
 

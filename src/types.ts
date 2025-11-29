@@ -8,8 +8,15 @@ export interface Billboard {
 export interface Category {
   id: string;
   name: string;
+  slug?: string;
   billboardId?: string;
   billboard?: Billboard;
+  parentId?: string | null;
+  parent?: {
+    id: string;
+    name: string;
+    slug: string;
+  } | null;
 }
 
 export interface Size {

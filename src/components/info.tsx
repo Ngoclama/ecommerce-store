@@ -30,6 +30,7 @@ interface InfoProps {
 const Info: React.FC<InfoProps> = ({ data }) => {
   const [quantity, setQuantity] = useState(1);
   const [showShare, setShowShare] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
   const router = useRouter();
   const cart = useCart();
   const { triggerAnimation } = useCartAnimation();
@@ -175,6 +176,11 @@ const Info: React.FC<InfoProps> = ({ data }) => {
   const handleBuyNow: MouseEventHandler<HTMLButtonElement> = (e) => {
     e.stopPropagation();
 
+    // Guard để tránh double navigation
+    if (isNavigating) {
+      return;
+    }
+
     if (variants.length > 0) {
       if (!selectedSizeId || !selectedColorId) {
         toast.error("Vui lòng chọn kích thước và màu sắc");
@@ -192,6 +198,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
       return;
     }
 
+    setIsNavigating(true);
     const productData = {
       ...data,
       size: selectedVariant?.size || data.size,
@@ -209,10 +216,10 @@ const Info: React.FC<InfoProps> = ({ data }) => {
       }, 0);
     }
 
-    // Add to cart and redirect to checkout
+    // Add to cart and redirect to cart page
     setTimeout(() => {
       cart.addItem(productData, quantity);
-      router.push("/checkout");
+      router.push("/cart");
     }, 100);
   };
 

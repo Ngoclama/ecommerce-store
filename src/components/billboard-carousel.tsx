@@ -135,21 +135,21 @@ const BillboardCarousel: React.FC<BillboardCarouselProps> = ({
 
               {/* CTA Button - Elegant Style */}
               {currentBillboard?.label && (
-                <motion.div
+              <motion.div
                   initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
+                animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 1.2, delay: 0.6, ease: "easeOut" }}
                   className="pt-6"
                   onClick={(e) => e.stopPropagation()}
-                >
-                  <Button
-                    size="lg"
+              >
+                <Button
+                  size="lg"
                     onClick={handleBillboardClick}
                     className="bg-white text-black border-0 hover:bg-gray-50 rounded-none px-10 py-4 text-sm font-light uppercase tracking-wider transition-all duration-300 shadow-lg hover:shadow-xl"
-                  >
+                >
                     Khám phá ngay
-                  </Button>
-                </motion.div>
+                </Button>
+              </motion.div>
               )}
             </div>
           </motion.div>

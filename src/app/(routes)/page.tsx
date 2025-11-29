@@ -57,15 +57,15 @@ const HomePage = async () => {
     <div className="bg-white min-h-screen">
       {/* Hero Banner Carousel - Full Width */}
       <section className="bg-white border-b border-gray-200 w-full">
-        {billboards && billboards.length > 0 ? (
-          <BillboardCarousel billboards={billboards} />
-        ) : (
-          <div className="w-full min-h-[500px] md:min-h-[600px] bg-gray-50 border border-gray-200 flex items-center justify-center">
-            <p className="text-black text-xl font-light tracking-widest uppercase">
-              Chưa có banner
-            </p>
-          </div>
-        )}
+            {billboards && billboards.length > 0 ? (
+              <BillboardCarousel billboards={billboards} />
+            ) : (
+              <div className="w-full min-h-[500px] md:min-h-[600px] bg-gray-50 border border-gray-200 flex items-center justify-center">
+                <p className="text-black text-xl font-light tracking-widest uppercase">
+                  Chưa có banner
+                </p>
+              </div>
+            )}
       </section>
 
       {/* Trust Badges / Features Section */}

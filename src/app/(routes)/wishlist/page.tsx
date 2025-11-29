@@ -18,9 +18,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { useWishlist } from "@/hooks/use-wishlist";
 
 const WishlistPage = () => {
   const { wishlistItems, setWishlist } = useCart();
+  const { getAllWishlistItems, isSignedIn } = useWishlist();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -28,18 +30,41 @@ const WishlistPage = () => {
 
   useEffect(() => {
     const fetchWishlistProducts = async () => {
-      if (wishlistItems.length === 0) {
-        setLoading(false);
-        setProducts([]);
-        return;
-      }
-
+      setLoading(true);
       try {
+        // Sync với server nếu user đã đăng nhập
+        let serverWishlistItems: string[] = [];
+        if (isSignedIn) {
+          try {
+            serverWishlistItems = await getAllWishlistItems();
+            // Cập nhật localStorage với dữ liệu từ server
+            if (serverWishlistItems.length > 0) {
+              setWishlist(serverWishlistItems);
+            } else {
+              // Nếu server không có, xóa localStorage
+              setWishlist([]);
+            }
+          } catch (error) {
+            console.error("Error syncing wishlist from server:", error);
+            // Nếu lỗi, vẫn dùng localStorage
+          }
+        }
+
+        // Sử dụng server wishlist nếu có, nếu không thì dùng localStorage
+        const finalWishlistItems =
+          serverWishlistItems.length > 0 ? serverWishlistItems : wishlistItems;
+
+        if (finalWishlistItems.length === 0) {
+          setProducts([]);
+          setLoading(false);
+          return;
+        }
+
         const allProducts = await getProducts({});
 
         // Filter products that are in wishlist
         const wishlistProducts = allProducts.filter((product: Product) =>
-          wishlistItems.includes(product.id)
+          finalWishlistItems.includes(product.id)
         );
 
         // Sort products
@@ -70,7 +95,7 @@ const WishlistPage = () => {
     };
 
     fetchWishlistProducts();
-  }, [wishlistItems, sortBy]);
+  }, [wishlistItems, sortBy, getAllWishlistItems, isSignedIn, setWishlist]);
 
   if (loading) {
     return (

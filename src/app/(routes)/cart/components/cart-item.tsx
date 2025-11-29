@@ -1,14 +1,15 @@
 "use client";
 
 import Currency from "@/components/ui/currency";
-// [FIX 1] Import CartItemType từ @/types
 import useCart from "@/hooks/use-cart";
 import { CartItem as CartItemType } from "@/types";
-import { X, Plus, Minus, Pencil } from "lucide-react";
+import { Plus, Minus, Trash2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import { motion } from "framer-motion";
 
 interface CartItemProps {
   data: CartItemType;
@@ -17,37 +18,86 @@ interface CartItemProps {
 const CartItem: React.FC<CartItemProps> = ({ data }) => {
   const cart = useCart();
 
-  // [FIX TỒN KHO] Kiểm tra xem có thể tăng tiếp không
+  // Kiểm tra xem có thể tăng tiếp không
   const canIncrease =
     data.inventory !== undefined && data.quantity < data.inventory;
 
+  const handleQuantityChange = (newQty: number) => {
+    const safeQty = Math.max(0, newQty);
+    const inventory = data.inventory ?? 999;
+
+    if (safeQty > inventory) {
+      toast.error(`Chỉ còn ${inventory} sản phẩm trong kho.`);
+      return;
+    }
+
+    if (safeQty === 0) {
+      cart.removeItem(data.cartItemId);
+      toast.success("Đã xóa sản phẩm khỏi giỏ hàng");
+    } else {
+      cart.setQuantity(data.cartItemId, safeQty);
+    }
+  };
+
+  const handleRemove = () => {
+    cart.removeItem(data.cartItemId);
+    toast.success("Đã xóa sản phẩm khỏi giỏ hàng");
+  };
+
   return (
-    <div className="border-b border-gray-200 pb-6 mb-6 bg-white">
-      {/* TOP ROW - Aigle Style */}
-      <div className="flex items-start gap-4">
+    <motion.div
+      layout
+      className="border-b border-gray-200 pb-6 mb-6 bg-white last:border-0 last:pb-0 last:mb-0"
+    >
+      <div className="flex items-start gap-4 md:gap-6">
         {/* Image */}
-        <div className="relative w-24 h-24 overflow-hidden shrink-0 bg-gray-50">
+        <Link
+          href={`/product/${data.id}`}
+          className="relative w-20 h-20 md:w-24 md:h-24 overflow-hidden shrink-0 bg-gray-50 border border-gray-200 group"
+        >
           <Image
             fill
             src={data.images?.[0]?.url || "/placeholder.png"}
             alt={data.name}
-            className="object-cover"
+            className="object-cover group-hover:scale-105 transition-transform duration-200"
           />
-        </div>
+        </Link>
 
         {/* Product info */}
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-4">
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <Link href={`/product/${data.id}`}>
-                <p className="text-sm font-light text-black uppercase tracking-wide hover:underline cursor-pointer line-clamp-2">
+                <h3 className="text-sm md:text-base font-light text-black uppercase tracking-wide hover:text-gray-600 transition-colors duration-200 line-clamp-2 mb-2">
                   {data.name}
-                </p>
+                </h3>
               </Link>
 
-              <div className="mt-1 text-xs font-light text-gray-600 space-y-1">
-                {data.size && <p>Size: {data.size.name}</p>}
-                {data.color && <p>Color: {data.color.name}</p>}
+              <div className="mt-1 text-xs font-light text-gray-500 space-y-0.5">
+                {data.size && (
+                  <p>
+                    <span className="uppercase tracking-wide">Size:</span>{" "}
+                    {data.size.name}
+                  </p>
+                )}
+                {data.color && (
+                  <p>
+                    <span className="uppercase tracking-wide">Màu:</span>{" "}
+                    {data.color.name}
+                  </p>
+                )}
+              </div>
+
+              {/* Price */}
+              <div className="mt-3 mb-4">
+                <span className="text-base md:text-lg font-medium text-black">
+                  <Currency value={data.price * data.quantity} />
+                </span>
+                {data.quantity > 1 && (
+                  <span className="text-xs text-gray-500 ml-2">
+                    ({data.quantity} × <Currency value={data.price} />)
+                  </span>
+                )}
               </div>
             </div>
 
@@ -55,48 +105,54 @@ const CartItem: React.FC<CartItemProps> = ({ data }) => {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => cart.removeItem(data.cartItemId)}
-              className="rounded-none hover:bg-gray-100"
+              onClick={handleRemove}
+              className="rounded-none hover:bg-gray-100 transition-colors duration-200 p-1.5"
+              aria-label="Xóa sản phẩm"
             >
-              <X className="h-4 w-4 text-black" />
+              <Trash2 className="h-4 w-4 text-gray-400 hover:text-red-500 transition-colors duration-200" />
             </Button>
           </div>
 
-          {/* Price + quantity - Aigle Style */}
-          <div className="flex items-center justify-between mt-4">
-            <Currency value={data.price * data.quantity} />
-
-            {/* Quantity box */}
-            <div className="flex items-center border border-gray-300 rounded-none px-2 py-1 bg-white">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => cart.decreaseQuantity(data.cartItemId)}
-                className="w-8 h-8 flex justify-center items-center text-black hover:bg-gray-100 transition p-0 rounded-none"
+          {/* Quantity Controls */}
+          <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+            <span className="text-xs font-light text-gray-600 uppercase tracking-wide">
+              Số lượng:
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handleQuantityChange(data.quantity - 1)}
+                disabled={data.quantity <= 1}
+                className={cn(
+                  "w-8 h-8 border border-gray-300 flex items-center justify-center transition-all duration-200 rounded-none bg-white",
+                  data.quantity <= 1
+                    ? "border-gray-200 text-gray-300 cursor-not-allowed"
+                    : "text-black hover:border-black hover:bg-gray-50"
+                )}
+                aria-label="Giảm số lượng"
               >
-                <Minus className="h-4 w-4" />
-              </Button>
-
-              <span className="px-3 text-sm font-light">{data.quantity}</span>
-
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => cart.increaseQuantity(data.cartItemId)}
+                <Minus className="w-3.5 h-3.5" />
+              </button>
+              <span className="w-10 text-center text-black text-sm font-medium">
+                {data.quantity}
+              </span>
+              <button
+                onClick={() => handleQuantityChange(data.quantity + 1)}
                 disabled={!canIncrease}
-                className={`w-8 h-8 flex justify-center items-center transition p-0 rounded-none ${
+                className={cn(
+                  "w-8 h-8 border border-gray-300 flex items-center justify-center transition-all duration-200 rounded-none bg-white",
                   !canIncrease
-                    ? "opacity-50 cursor-not-allowed"
-                    : "text-black hover:bg-gray-100"
-                }`}
+                    ? "border-gray-200 text-gray-300 cursor-not-allowed"
+                    : "text-black hover:border-black hover:bg-gray-50"
+                )}
+                aria-label="Tăng số lượng"
               >
-                <Plus size={14} />
-              </Button>
+                <Plus className="w-3.5 h-3.5" />
+              </button>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

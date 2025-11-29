@@ -30,11 +30,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const [quickViewOpen, setQuickViewOpen] = useState(false);
   const [imageIndex, setImageIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
   const cart = useCart();
   const { triggerAnimation } = useCartAnimation();
   const addToCartButtonRef = React.useRef<HTMLButtonElement>(null);
 
-  // Calculate inventory
   const productInventory = useMemo(() => {
     if (data.variants && data.variants.length > 0) {
       return data.variants.reduce(
@@ -45,7 +45,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
     return data.inventory ?? 0;
   }, [data.variants, data.inventory]);
 
-  // Calculate discount
   const discountPercent = useMemo(() => {
     if (data.originalPrice && data.price && data.originalPrice > data.price) {
       return Math.round(
@@ -55,13 +54,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
     return 0;
   }, [data.originalPrice, data.price]);
 
-  // Get images
   const images = data.images || [];
   const primaryImage = images[0]?.url || "/placeholder.svg";
   const secondaryImage = images[1]?.url || primaryImage;
   const hasMultipleImages = images.length > 1;
 
-  // Get available sizes and colors from variants
   const availableSizes = useMemo(() => {
     if (data.variants && data.variants.length > 0) {
       const sizes = new Map<
@@ -75,7 +72,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
       });
       return Array.from(sizes.values());
     }
-    // Fallback to legacy size field
     if (data.size) {
       return [data.size];
     }
@@ -95,14 +91,12 @@ const ProductCard: React.FC<ProductCardProps> = ({
       });
       return Array.from(colors.values());
     }
-    // Fallback to legacy color field
     if (data.color) {
       return [data.color];
     }
     return [];
   }, [data.variants, data.color]);
 
-  // Stock status
   const isOutOfStock = productInventory <= 0;
   const isLowStock = productInventory > 0 && productInventory <= 5;
 
@@ -115,7 +109,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
     }).format(value);
   };
 
-  // Handlers
   const onAddToCart: MouseEventHandler<HTMLButtonElement> = (e) => {
     e.stopPropagation();
 
@@ -138,7 +131,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
       }, 0);
     }
 
-    // Delay adding to cart slightly to show animation
     setTimeout(() => {
       cart.addItem(data);
       toast.success("Đã thêm vào giỏ hàng");
@@ -151,6 +143,10 @@ const ProductCard: React.FC<ProductCardProps> = ({
   };
 
   const handleClick = () => {
+    if (isNavigating) {
+      return;
+    }
+    setIsNavigating(true);
     router.push(`/product/${data.id}`);
   };
 
@@ -162,23 +158,28 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const handleBuyNow: MouseEventHandler<HTMLButtonElement> = (e) => {
     e.stopPropagation();
 
+    if (isNavigating) {
+      return;
+    }
+
     if (productInventory <= 0) {
       toast.error("Sản phẩm đã hết hàng");
       return;
     }
 
     if (data.variants && data.variants.length > 0) {
+      setIsNavigating(true);
       router.push(`/product/${data.id}`);
       toast.info("Vui lòng chọn size và màu sắc");
       return;
     }
 
+    setIsNavigating(true);
     cart.addItem(data);
     toast.success("Đã thêm vào giỏ hàng");
-    router.push("/checkout");
+    router.push("/cart");
   };
 
-  // Image hover effect - switch to second image on hover
   const handleImageHover = () => {
     setIsHovered(true);
     if (hasMultipleImages) {
@@ -358,7 +359,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           </div>
 
           {/* HOVER OVERLAY GRADIENT */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+          <div className="absolute inset-0 bg-linear-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
         </div>
 
         {/* PRODUCT INFO */}
