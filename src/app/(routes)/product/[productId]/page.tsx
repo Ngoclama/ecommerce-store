@@ -62,6 +62,7 @@ const ProductPage = async ({ params }: { params: Params }) => {
           <div className="mt-12 px-4 sm:px-6 lg:px-8">
             <ReviewsSection
               productId={product.id}
+              storeId={(product as any).storeId}
               averageRating={product.rating || 0}
               totalReviews={0}
             />
@@ -75,8 +76,8 @@ const ProductPage = async ({ params }: { params: Params }) => {
           {/* Related Products - Aigle Style */}
           <div className="mt-16 px-4 sm:px-6 lg:px-8">
             <div className="mb-10">
-              <h2 className="text-2xl md:text-3xl font-light text-black uppercase tracking-wider">
-                Related products
+              <h2 className="text-2xl md:text-3xl font-light text-black dark:text-white uppercase tracking-wider">
+                Sản phẩm liên quan
               </h2>
             </div>
             <ProductList

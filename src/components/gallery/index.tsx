@@ -182,6 +182,7 @@ const Gallery: React.FC<GalleryProps> = ({
                   src={img.url}
                   alt={`Thumbnail ${idx + 1}`}
                   fill
+                  sizes="(max-width: 640px) 60px, 100px"
                   className="object-cover"
                 />
               </button>
@@ -210,6 +211,7 @@ const Gallery: React.FC<GalleryProps> = ({
           src={images[currentIndex]?.url || "/placeholder.svg"}
           alt="Product image"
           fill
+          sizes="(max-width: 1024px) 100vw, 50vw"
           className="object-cover transition-opacity duration-500"
           priority={currentIndex === 0}
         />
@@ -279,6 +281,7 @@ const Gallery: React.FC<GalleryProps> = ({
                   src={img.url}
                   alt={`Thumbnail ${idx + 1}`}
                   fill
+                  sizes="(max-width: 640px) 60px, 100px"
                   className="object-cover"
                 />
               </button>

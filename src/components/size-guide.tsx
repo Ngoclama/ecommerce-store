@@ -10,6 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
+import { cn } from "@/lib/utils";
 
 interface SizeGuideProps {
   category?: string;
@@ -85,15 +86,17 @@ const SizeGuide: React.FC<SizeGuideProps> = ({ category = "Áo" }) => {
       <DialogTrigger asChild>
         <Button
           variant="outline"
-          className="gap-2 border-gray-300 rounded-none"
+          className="gap-2 bg-black dark:bg-white text-white dark:text-black border-black dark:border-white hover:bg-gray-900 dark:hover:bg-gray-100 rounded-none w-full"
         >
-          <Ruler className="w-5 h-5" />
-          Hướng dẫn chọn size
+          <Ruler className="w-4 h-4" />
+          <span className="text-xs font-light uppercase tracking-wider">
+            HƯỚNG DẪN CHỌN SIZE
+          </span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto rounded-none border-gray-300">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto rounded-none border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900">
         <DialogHeader>
-          <DialogTitle className="text-2xl text-black font-light uppercase tracking-wide">
+          <DialogTitle className="text-xl text-black dark:text-white font-light uppercase tracking-wide">
             Hướng dẫn chọn size
           </DialogTitle>
         </DialogHeader>
@@ -104,28 +107,38 @@ const SizeGuide: React.FC<SizeGuideProps> = ({ category = "Áo" }) => {
             <Button
               variant={selectedGender === "women" ? "default" : "outline"}
               onClick={() => setSelectedGender("women")}
-              className="flex-1 rounded-none"
+              className={cn(
+                "flex-1 rounded-none text-xs font-light uppercase tracking-wider",
+                selectedGender === "women"
+                  ? "bg-black dark:bg-white text-white dark:text-black"
+                  : "border-gray-300 dark:border-gray-700 text-black dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800"
+              )}
             >
               Nữ
             </Button>
             <Button
               variant={selectedGender === "men" ? "default" : "outline"}
               onClick={() => setSelectedGender("men")}
-              className="flex-1 rounded-none"
+              className={cn(
+                "flex-1 rounded-none text-xs font-light uppercase tracking-wider",
+                selectedGender === "men"
+                  ? "bg-black dark:bg-white text-white dark:text-black"
+                  : "border-gray-300 dark:border-gray-700 text-black dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800"
+              )}
             >
               Nam
             </Button>
           </div>
 
           {/* Size Chart Table */}
-          <div className="border border-gray-300 overflow-hidden rounded-none">
+          <div className="border border-gray-300 dark:border-gray-700 overflow-hidden rounded-none">
             <table className="w-full">
-              <thead className="bg-gray-100 text-black">
+              <thead className="bg-gray-100 dark:bg-gray-800 text-black dark:text-white">
                 <tr>
                   {headers.map((header) => (
                     <th
                       key={header}
-                      className="px-4 py-3 text-left font-light uppercase tracking-wide text-sm"
+                      className="px-4 py-3 text-left font-light uppercase tracking-wide text-xs"
                     >
                       {header}
                     </th>
@@ -140,32 +153,32 @@ const SizeGuide: React.FC<SizeGuideProps> = ({ category = "Áo" }) => {
                   return (
                     <tr
                       key={index}
-                      className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                      className={index % 2 === 0 ? "bg-white dark:bg-gray-900" : "bg-gray-50 dark:bg-gray-800"}
                     >
-                      <td className="px-4 py-3 text-black font-light">
+                      <td className="px-4 py-3 text-black dark:text-white font-light text-xs">
                         {row.size}
                       </td>
                       {isPants ? (
                         <>
-                          <td className="px-4 py-3 text-gray-700 font-light">
+                          <td className="px-4 py-3 text-gray-700 dark:text-gray-300 font-light text-xs">
                             {pantsRow.waist}
                           </td>
-                          <td className="px-4 py-3 text-gray-700 font-light">
+                          <td className="px-4 py-3 text-gray-700 dark:text-gray-300 font-light text-xs">
                             {pantsRow.hip}
                           </td>
-                          <td className="px-4 py-3 text-gray-700 font-light">
+                          <td className="px-4 py-3 text-gray-700 dark:text-gray-300 font-light text-xs">
                             {pantsRow.length}
                           </td>
                         </>
                       ) : (
                         <>
-                          <td className="px-4 py-3 text-gray-700 font-light">
+                          <td className="px-4 py-3 text-gray-700 dark:text-gray-300 font-light text-xs">
                             {shirtRow.chest}
                           </td>
-                          <td className="px-4 py-3 text-gray-700 font-light">
+                          <td className="px-4 py-3 text-gray-700 dark:text-gray-300 font-light text-xs">
                             {shirtRow.length}
                           </td>
-                          <td className="px-4 py-3 text-gray-700 font-light">
+                          <td className="px-4 py-3 text-gray-700 dark:text-gray-300 font-light text-xs">
                             {shirtRow.shoulder}
                           </td>
                         </>
@@ -178,11 +191,11 @@ const SizeGuide: React.FC<SizeGuideProps> = ({ category = "Áo" }) => {
           </div>
 
           {/* Instructions */}
-          <div className="bg-gray-50 border border-gray-300 rounded-none p-4 space-y-2">
-            <h4 className="text-black font-light uppercase tracking-wide">
+          <div className="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-none p-4 space-y-2">
+            <h4 className="text-black dark:text-white font-light uppercase tracking-wide text-xs">
               Lưu ý:
             </h4>
-            <ul className="text-sm text-gray-700 space-y-1 list-disc list-inside font-light">
+            <ul className="text-xs text-gray-700 dark:text-gray-300 space-y-1 list-disc list-inside font-light">
               <li>Đo vòng ngực/vòng eo ở vị trí rộng nhất</li>
               <li>Đo chiều dài từ vai đến gấu áo (đối với áo)</li>
               <li>Nếu số đo của bạn ở giữa 2 size, chọn size lớn hơn</li>

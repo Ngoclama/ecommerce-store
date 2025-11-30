@@ -86,6 +86,9 @@
 }
 
 @layer utilities {
+  html {
+    scroll-behavior: smooth;
+  }
   html,
   body,
   :root {
@@ -130,10 +133,10 @@
 
 @layer base {
   * {
-    @apply border-gray-200;
+    @apply border-gray-200 dark:border-gray-800;
   }
   body {
-    @apply bg-white text-black;
+    @apply bg-white dark:bg-gray-900 text-black dark:text-white;
     font-family: var(--font-be-vietnam-pro), sans-serif;
     font-weight: 300;
     letter-spacing: 0.01em;
@@ -147,6 +150,7 @@
     font-family: var(--font-montserrat-alternates), sans-serif;
     font-weight: 300;
     letter-spacing: 0.05em;
+    @apply text-black dark:text-white;
   }
 }
 

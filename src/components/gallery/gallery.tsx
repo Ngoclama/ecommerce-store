@@ -41,9 +41,9 @@ export default function Gallery({ images }: GalleryProps) {
           variant="ghost"
           size="icon"
           onClick={prev}
-          className="mb-2 backdrop-blur-md"
+          className="mb-2 backdrop-blur-md bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-700 text-black dark:text-white border border-gray-200 dark:border-gray-700"
         >
-          <ChevronUp />
+          <ChevronUp className="w-4 h-4" />
         </Button>
 
         <div className="overflow-y-scroll h-[400px] space-y-2 pr-1 custom-scrollbar">
@@ -52,7 +52,10 @@ export default function Gallery({ images }: GalleryProps) {
               key={i}
               onClick={() => setIndex(i)}
               className={cn(
-                "relative flex aspect-square w-20 h-20 cursor-pointer items-center justify-center rounded-md border border-white/10 bg-white/10 text-white backdrop-blur-sm transition hover:opacity-70"
+                "relative flex aspect-square w-20 h-20 cursor-pointer items-center justify-center rounded-md border transition hover:opacity-70",
+                index === i
+                  ? "border-black dark:border-white bg-white dark:bg-gray-800"
+                  : "border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800"
               )}
             >
               <span className="absolute inset-0 rounded-md overflow-hidden">
@@ -60,13 +63,14 @@ export default function Gallery({ images }: GalleryProps) {
                   fill
                   src={img.url}
                   alt="thumb"
+                  sizes="(max-width: 640px) 80px, 100px"
                   className="object-cover"
                 />
               </span>
               <span
                 className={cn(
                   "absolute inset-0 rounded-md ring-2 ring-offset-2 transition",
-                  index === i ? "ring-white" : "ring-transparent"
+                  index === i ? "ring-black dark:ring-white" : "ring-transparent"
                 )}
               />
             </Tab>
@@ -77,9 +81,9 @@ export default function Gallery({ images }: GalleryProps) {
           variant="ghost"
           size="icon"
           onClick={next}
-          className="mt-2 backdrop-blur-md"
+          className="mt-2 backdrop-blur-md bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-700 text-black dark:text-white border border-gray-200 dark:border-gray-700"
         >
-          <ChevronDown />
+          <ChevronDown className="w-4 h-4" />
         </Button>
       </div>
 
@@ -98,23 +102,23 @@ export default function Gallery({ images }: GalleryProps) {
           variant="ghost"
           size="icon"
           onClick={prev}
-          className="absolute left-2 top-1/2 -translate-y-1/2 backdrop-blur-xl"
+          className="absolute left-2 top-1/2 -translate-y-1/2 backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-700 text-black dark:text-white border border-gray-200 dark:border-gray-700"
         >
-          <ChevronLeft />
+          <ChevronLeft className="w-4 h-4" />
         </Button>
         <Button
           variant="ghost"
           size="icon"
           onClick={next}
-          className="absolute right-2 top-1/2 -translate-y-1/2 backdrop-blur-xl"
+          className="absolute right-2 top-1/2 -translate-y-1/2 backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-700 text-black dark:text-white border border-gray-200 dark:border-gray-700"
         >
-          <ChevronRight />
+          <ChevronRight className="w-4 h-4" />
         </Button>
 
         {/* Share box */}
-        <div className="absolute bottom-4 right-4 bg-white/10 backdrop-blur-xl px-4 py-2 rounded-xl flex items-center gap-2">
-          <Share2 className="w-4 h-4" />
-          <span className="text-white text-sm">Share</span>
+        <div className="absolute bottom-4 right-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl px-3 py-1.5 rounded-xl flex items-center gap-2 border border-gray-200 dark:border-gray-700">
+          <Share2 className="w-3.5 h-3.5 text-black dark:text-white" />
+          <span className="text-black dark:text-white text-xs">Share</span>
         </div>
       </div>
     </div>

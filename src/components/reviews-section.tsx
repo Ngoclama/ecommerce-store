@@ -1,39 +1,110 @@
 "use client";
 
-import { useState } from "react";
-import { Star, ThumbsUp, ThumbsDown, User } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Star, User, MessageCircle } from "lucide-react";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { cn } from "@/lib/utils";
 import useAuth from "@/hooks/use-auth";
+import { useAuth as useClerkAuth } from "@clerk/nextjs";
+import axios from "axios";
+import { toast } from "sonner";
+import { format } from "date-fns";
+import Image from "next/image";
 
 interface Review {
   id: string;
-  userName: string;
   rating: number;
-  comment: string;
-  date: string;
-  helpful: number;
-  verified: boolean;
+  content: string | null;
+  imageUrls: string[];
+  createdAt: string;
+  user: {
+    id: string;
+    name: string | null;
+    email: string;
+    imageUrl: string | null;
+  };
+  adminResponse: string | null;
 }
 
 interface ReviewsSectionProps {
   productId: string;
+  storeId?: string;
   averageRating?: number;
   totalReviews?: number;
 }
 
 const ReviewsSection: React.FC<ReviewsSectionProps> = ({
   productId,
-  averageRating = 0,
-  totalReviews = 0,
+  storeId,
+  averageRating: initialAverageRating = 0,
+  totalReviews: initialTotalReviews = 0,
 }) => {
   const [showForm, setShowForm] = useState(false);
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
-  const { requireAuth } = useAuth();
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [averageRating, setAverageRating] = useState(initialAverageRating);
+  const [totalReviews, setTotalReviews] = useState(initialTotalReviews);
+  const [mounted, setMounted] = useState(false);
+  const { requireAuth, isAuthenticated } = useAuth();
+  const { getToken } = useClerkAuth();
 
-  const reviews: Review[] = [];
+  // Set mounted state để tránh hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Fetch reviews
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        setLoading(true);
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+        if (!apiUrl || !storeId) {
+          console.warn("API URL or Store ID not configured");
+          setLoading(false);
+          return;
+        }
+
+        const baseUrl = apiUrl.replace(/\/$/, "");
+        const url = `${baseUrl}/api/${storeId}/reviews?productId=${productId}`;
+
+        const response = await fetch(url, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          cache: "no-store",
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setReviews(data);
+          
+          // Calculate average rating and total reviews
+          if (data.length > 0) {
+            const sum = data.reduce((acc: number, r: Review) => acc + r.rating, 0);
+            setAverageRating(sum / data.length);
+            setTotalReviews(data.length);
+          } else {
+            setAverageRating(0);
+            setTotalReviews(0);
+          }
+        }
+      } catch (error) {
+        console.error("[REVIEWS_FETCH_ERROR]", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (productId && storeId) {
+      fetchReviews();
+    }
+  }, [productId, storeId]);
 
   const handleShowForm = () => {
     if (!requireAuth("viết đánh giá")) {
@@ -42,22 +113,102 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
     setShowForm(true);
   };
 
-  const handleSubmitReview = () => {
+  const handleSubmitReview = async () => {
     if (!requireAuth("gửi đánh giá")) {
       return;
     }
 
-    setShowForm(false);
-    setRating(0);
-    setComment("");
+    if (rating === 0 || !comment.trim()) {
+      toast.error("Vui lòng chọn đánh giá và nhập bình luận");
+      return;
+    }
+
+    if (!storeId) {
+      toast.error("Không tìm thấy thông tin cửa hàng");
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      if (!apiUrl) {
+        toast.error("API URL not configured");
+        return;
+      }
+
+      const baseUrl = apiUrl.replace(/\/$/, "");
+      const url = `${baseUrl}/api/${storeId}/reviews`;
+
+      // Lấy token từ Clerk
+      const token = await getToken();
+      if (!token) {
+        toast.error("Bạn cần đăng nhập để đánh giá sản phẩm");
+        return;
+      }
+
+      const response = await axios.post(
+        url,
+        {
+          productId,
+          rating,
+          content: comment.trim(),
+          imageUrls: [],
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          withCredentials: true,
+        }
+      );
+
+      if (response.data) {
+        toast.success("Đánh giá của bạn đã được gửi thành công!");
+        setShowForm(false);
+        setRating(0);
+        setComment("");
+        
+        // Refresh reviews
+        const reviewsResponse = await fetch(
+          `${baseUrl}/api/${storeId}/reviews?productId=${productId}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            cache: "no-store",
+          }
+        );
+
+        if (reviewsResponse.ok) {
+          const data = await reviewsResponse.json();
+          setReviews(data);
+          if (data.length > 0) {
+            const sum = data.reduce((acc: number, r: Review) => acc + r.rating, 0);
+            setAverageRating(sum / data.length);
+            setTotalReviews(data.length);
+          }
+        }
+      }
+    } catch (error: any) {
+      console.error("[REVIEW_SUBMIT_ERROR]", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Không thể gửi đánh giá. Vui lòng thử lại.";
+      toast.error(errorMessage);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
-    <div className="border-t border-gray-200 pt-6 mt-6">
+    <div className="border-t border-gray-200 dark:border-gray-800 pt-6 mt-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-xl font-light text-black mb-2 uppercase tracking-wider">
-            Reviews
+          <h3 className="text-xl font-light text-black dark:text-white mb-2 uppercase tracking-wider">
+            Đánh giá
           </h3>
           <div className="flex items-center gap-2">
             <div className="flex items-center">
@@ -73,41 +224,44 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
                 />
               ))}
             </div>
-            <span className="text-gray-600 text-xs font-light">
-              {averageRating.toFixed(1)} ({totalReviews} reviews)
+            <span className="text-gray-600 dark:text-gray-400 text-xs font-light">
+              {averageRating.toFixed(1)} ({totalReviews} đánh giá)
             </span>
           </div>
         </div>
-        <Button
-          onClick={handleShowForm}
-          variant="outline"
-          className="rounded-none text-xs font-light uppercase tracking-wider"
-        >
-          Write review
-        </Button>
+        {mounted && isAuthenticated && (
+          <Button
+            onClick={handleShowForm}
+            variant="outline"
+            className="rounded-none text-xs font-light uppercase tracking-wider border-gray-300 dark:border-gray-700 hover:border-black dark:hover:border-white"
+          >
+            Viết đánh giá
+          </Button>
+        )}
       </div>
 
-      {/* Review Form - Aigle Style */}
+      {/* Review Form */}
       {showForm && (
-        <div className="bg-white p-6 mb-6 border border-gray-300">
-          <h4 className="text-sm font-light text-black mb-4 uppercase tracking-wider">
-            Write your review
+        <div className="bg-white dark:bg-gray-900 p-6 mb-6 border border-gray-300 dark:border-gray-700">
+          <h4 className="text-sm font-light text-black dark:text-white mb-4 uppercase tracking-wider">
+            Viết đánh giá của bạn
           </h4>
           <div className="space-y-4">
             <div>
-              <label className="block text-xs font-light text-gray-700 mb-2 uppercase tracking-wider">
-                Rating *
+              <label className="block text-xs font-light text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                Đánh giá *
               </label>
               <div className="flex gap-2">
                 {[...Array(5)].map((_, i) => (
                   <button
                     key={i}
+                    type="button"
                     onClick={() => setRating(i + 1)}
                     className={cn(
-                      "w-10 h-10 rounded-none transition-all border border-gray-300",
+                      "w-10 h-10 rounded-none transition-all border",
                       i < rating
-                        ? "bg-black text-white border-black"
-                        : "bg-white text-gray-400 hover:border-black"
+                        ? "bg-black dark:bg-white text-white dark:text-black border-black dark:border-white"
+                        : "bg-white dark:bg-gray-800 text-gray-400 border-gray-300 dark:border-gray-700 hover:border-black dark:hover:border-white"
                     )}
                   >
                     <Star className="w-4 h-4 mx-auto" />
@@ -116,14 +270,14 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
               </div>
             </div>
             <div>
-              <label className="block text-xs font-light text-gray-700 mb-2 uppercase tracking-wider">
-                Comment *
+              <label className="block text-xs font-light text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                Bình luận *
               </label>
               <Textarea
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                placeholder="Share your experience about this product..."
-                className="min-h-[120px] rounded-none border-gray-300 text-sm font-light"
+                placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm này..."
+                className="min-h-[120px] rounded-none border-gray-300 dark:border-gray-700 text-sm font-light bg-white dark:bg-gray-800 text-black dark:text-white"
               />
             </div>
             <div className="flex gap-3">
@@ -134,29 +288,36 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
                   setRating(0);
                   setComment("");
                 }}
-                className="rounded-none text-xs font-light uppercase tracking-wider"
+                disabled={submitting}
+                className="rounded-none text-xs font-light uppercase tracking-wider border-gray-300 dark:border-gray-700"
               >
-                Cancel
+                Hủy
               </Button>
               <Button
                 onClick={handleSubmitReview}
-                disabled={rating === 0 || !comment.trim()}
-                variant="outline"
-                className="rounded-none text-xs font-light uppercase tracking-wider"
+                disabled={rating === 0 || !comment.trim() || submitting}
+                variant="default"
+                className="rounded-none text-xs font-light uppercase tracking-wider bg-black dark:bg-white text-white dark:text-black hover:bg-gray-900 dark:hover:bg-gray-100"
               >
-                Submit
+                {submitting ? "Đang gửi..." : "Gửi đánh giá"}
               </Button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Reviews List - Aigle Style */}
-      {reviews.length === 0 ? (
-        <div className="text-center py-12 bg-white border border-gray-300">
+      {/* Reviews List */}
+      {loading ? (
+        <div className="text-center py-12 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700">
+          <p className="text-gray-600 dark:text-gray-400 text-sm font-light">
+            Đang tải đánh giá...
+          </p>
+        </div>
+      ) : reviews.length === 0 ? (
+        <div className="text-center py-12 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700">
           <Star className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-600 text-sm font-light">
-            No reviews yet. Be the first to review this product!
+          <p className="text-gray-600 dark:text-gray-400 text-sm font-light">
+            Chưa có đánh giá nào. Hãy là người đầu tiên đánh giá sản phẩm này!
           </p>
         </div>
       ) : (
@@ -164,24 +325,29 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
           {reviews.map((review) => (
             <div
               key={review.id}
-              className="border-b border-gray-200 pb-6 last:border-0"
+              className="border-b border-gray-200 dark:border-gray-800 pb-6 last:border-0"
             >
               <div className="flex items-start gap-4">
-                <div className="w-10 h-10 bg-gray-100 flex items-center justify-center shrink-0">
-                  <User className="w-5 h-5 text-black" />
+                <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 flex items-center justify-center shrink-0 rounded-full">
+                  {review.user.imageUrl ? (
+                    <Image
+                      src={review.user.imageUrl}
+                      alt={review.user.name || review.user.email}
+                      width={40}
+                      height={40}
+                      className="rounded-full"
+                    />
+                  ) : (
+                    <User className="w-5 h-5 text-black dark:text-white" />
+                  )}
                 </div>
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-black text-sm font-light uppercase tracking-wide">
-                      {review.userName}
+                  <div className="flex items-center gap-2 mb-2 flex-wrap">
+                    <span className="text-black dark:text-white text-sm font-light uppercase tracking-wide">
+                      {review.user.name || review.user.email.split("@")[0]}
                     </span>
-                    {review.verified && (
-                      <span className="text-xs bg-gray-100 text-black px-2 py-0.5 border border-gray-300 font-light uppercase">
-                        Verified
-                      </span>
-                    )}
-                    <span className="text-xs text-gray-600 font-light">
-                      {review.date}
+                    <span className="text-xs text-gray-600 dark:text-gray-400 font-light">
+                      {format(new Date(review.createdAt), "dd/MM/yyyy")}
                     </span>
                   </div>
                   <div className="flex items-center gap-1 mb-2">
@@ -197,18 +363,43 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
                       />
                     ))}
                   </div>
-                  <p className="text-gray-700 mb-3 text-sm font-light">
-                    {review.comment}
-                  </p>
-                  <div className="flex items-center gap-4">
-                    <button className="flex items-center gap-1 text-xs font-light text-gray-600 hover:text-black transition">
-                      <ThumbsUp className="w-4 h-4" />
-                      Helpful ({review.helpful})
-                    </button>
-                    <button className="flex items-center gap-1 text-xs font-light text-gray-600 hover:text-black transition">
-                      <ThumbsDown className="w-4 h-4" />
-                    </button>
-                  </div>
+                  {review.content && (
+                    <p className="text-gray-700 dark:text-gray-300 mb-3 text-sm font-light">
+                      {review.content}
+                    </p>
+                  )}
+                  {review.imageUrls && review.imageUrls.length > 0 && (
+                    <div className="flex gap-2 mb-3 flex-wrap">
+                      {review.imageUrls.map((url, idx) => (
+                        <div
+                          key={idx}
+                          className="relative w-20 h-20 rounded-md overflow-hidden border border-gray-200 dark:border-gray-700"
+                        >
+                          <Image
+                            src={url}
+                            alt={`Review image ${idx + 1}`}
+                            fill
+                            sizes="80px"
+                            className="object-cover"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {/* Admin Response */}
+                  {review.adminResponse && (
+                    <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 border-l-4 border-black dark:border-white">
+                      <div className="flex items-start gap-2 mb-2">
+                        <MessageCircle className="w-4 h-4 text-black dark:text-white shrink-0 mt-0.5" />
+                        <span className="text-xs font-light text-black dark:text-white uppercase tracking-wider">
+                          Phản hồi từ cửa hàng
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-700 dark:text-gray-300 font-light">
+                        {review.adminResponse}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

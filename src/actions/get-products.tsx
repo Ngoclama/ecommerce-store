@@ -6,9 +6,14 @@ interface Query {
   colorId?: string;
   sizeId?: string;
   isFeatured?: boolean;
+  sort?: string;
+  page?: number;
+  limit?: number;
 }
 
-const getProducts = async (query: Query): Promise<Product[]> => {
+const getProducts = async (
+  query: Query
+): Promise<Product[] | { products: Product[]; pagination: any }> => {
   try {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     if (!apiUrl) {
@@ -27,6 +32,9 @@ const getProducts = async (query: Query): Promise<Product[]> => {
         sizeId: query.sizeId,
         categoryId: query.categoryId,
         isFeatured: query.isFeatured,
+        sort: query.sort,
+        page: query.page,
+        limit: query.limit,
       },
     });
 
@@ -59,6 +67,10 @@ const getProducts = async (query: Query): Promise<Product[]> => {
       return data;
     }
     if (data.products && Array.isArray(data.products)) {
+      // If pagination is requested, return with pagination
+      if (query.page && data.pagination) {
+        return { products: data.products, pagination: data.pagination };
+      }
       return data.products;
     }
     if (data.data && Array.isArray(data.data)) {

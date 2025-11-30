@@ -33,6 +33,14 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "uploadthing.com", // Trang web chính
       },
+      {
+        protocol: "https",
+        hostname: "img.clerk.com", // Clerk images
+      },
+      {
+        protocol: "https",
+        hostname: "images.clerk.dev", // Clerk images (alternative)
+      },
     ],
   },
 };

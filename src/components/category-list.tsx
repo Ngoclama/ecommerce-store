@@ -33,6 +33,7 @@ const CategoryList: React.FC<CategoryListProps> = ({ items }) => {
                   src={item.billboard.imageUrl || "/placeholder.png"}
                   alt={item.name}
                   fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   className="object-cover transition-opacity duration-500 group-hover:opacity-90"
                 />
               </div>

@@ -38,38 +38,103 @@ export const NavbarActions: React.FC = () => {
   const [isSyncing, setIsSyncing] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const syncIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const lastSyncRef = useRef<string>("");
+  const wishlistItemsRef = useRef<string[]>([]);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  // Cập nhật ref khi wishlistItems thay đổi
   useEffect(() => {
+    wishlistItemsRef.current = wishlistItems;
+  }, [wishlistItems]);
+
+  useEffect(() => {
+    let isMounted = true;
+    
     const syncWishlist = async () => {
       if (!isSignedIn) {
-        setSyncedWishlistCount(0);
+        if (isMounted) {
+          setSyncedWishlistCount(0);
+          // Clear wishlist khi logout
+          if (wishlistItemsRef.current.length > 0) {
+            setWishlist([]);
+          }
+        }
         return;
       }
 
+      if (!isMounted) return;
+
+      // Tránh sync liên tục - chỉ sync khi cần thiết
       setIsSyncing(true);
       try {
         const serverWishlistItems = await getAllWishlistItems();
-        setSyncedWishlistCount(serverWishlistItems.length);
-        if (serverWishlistItems.length > 0) {
-          setWishlist(serverWishlistItems);
-        } else {
-          setWishlist([]);
+        
+        if (!isMounted) return;
+        
+        const newCount = serverWishlistItems.length;
+        const wishlistKey = serverWishlistItems.sort().join(",");
+        
+        // Chỉ update nếu có thay đổi so với lần sync trước
+        if (lastSyncRef.current !== wishlistKey) {
+          setSyncedWishlistCount(newCount);
+          lastSyncRef.current = wishlistKey;
+          
+          // So sánh với wishlist hiện tại từ ref
+          const currentWishlistKey = wishlistItemsRef.current.sort().join(",");
+          
+          // Chỉ update wishlist nếu khác với hiện tại
+          if (wishlistKey !== currentWishlistKey) {
+            if (serverWishlistItems.length > 0) {
+              setWishlist(serverWishlistItems);
+            } else {
+              setWishlist([]);
+            }
+          }
         }
       } catch (error) {
-        setSyncedWishlistCount(wishlistItems.length);
+        // Nếu lỗi, giữ nguyên count hiện tại
+        if (isMounted) {
+          console.error("[WISHLIST_SYNC_ERROR]", error);
+        }
       } finally {
-        setIsSyncing(false);
+        if (isMounted) {
+          setIsSyncing(false);
+        }
       }
     };
 
+    // Sync ngay khi mount hoặc khi isSignedIn thay đổi
     syncWishlist();
-    const interval = setInterval(syncWishlist, 30000);
-    return () => clearInterval(interval);
-  }, [isSignedIn, getAllWishlistItems, setWishlist, wishlistItems.length]);
+
+    // Chỉ set interval nếu đã đăng nhập
+    if (isSignedIn) {
+      // Clear interval cũ nếu có
+      if (syncIntervalRef.current) {
+        clearInterval(syncIntervalRef.current);
+      }
+      
+      // Set interval mới - sync mỗi 30 giây
+      syncIntervalRef.current = setInterval(syncWishlist, 30000);
+    } else {
+      // Clear interval khi logout
+      if (syncIntervalRef.current) {
+        clearInterval(syncIntervalRef.current);
+        syncIntervalRef.current = null;
+      }
+    }
+
+    return () => {
+      isMounted = false;
+      if (syncIntervalRef.current) {
+        clearInterval(syncIntervalRef.current);
+        syncIntervalRef.current = null;
+      }
+    };
+  }, [isSignedIn, getAllWishlistItems, setWishlist]); // Loại bỏ cart khỏi dependencies
 
   const handleCheckout = () => {
     if (isNavigating) {
@@ -107,7 +172,11 @@ export const NavbarActions: React.FC = () => {
     toast.success("Đã xóa sản phẩm khỏi giỏ hàng");
   };
 
-  const wishlistCount = isSignedIn ? syncedWishlistCount : wishlistItems.length;
+  // Sử dụng syncedWishlistCount nếu đã đăng nhập, nếu không dùng wishlistItems.length
+  // Nhưng nếu đang sync thì giữ nguyên count để tránh flicker
+  const wishlistCount = isSignedIn 
+    ? (isSyncing ? syncedWishlistCount : syncedWishlistCount)
+    : wishlistItems.length;
 
   return (
     <div className="flex items-center gap-3 md:gap-4">
@@ -171,12 +240,32 @@ export const NavbarActions: React.FC = () => {
         </motion.div>
       )}
 
+      {/* Wishlist Icon (Aigle Style) */}
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={() => router.push("/wishlist")}
+        className="relative p-2 text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-400 transition-colors duration-200 group flex items-center justify-center"
+        aria-label="Danh sách yêu thích"
+      >
+        <Heart className="w-5 h-5" />
+        {wishlistCount > 0 && (
+          <motion.span
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-black dark:bg-white text-white dark:text-black text-[10px] rounded-full flex items-center justify-center font-medium px-1"
+          >
+            {wishlistCount > 99 ? "99+" : wishlistCount}
+          </motion.span>
+        )}
+      </motion.button>
+
       {/* Cart Icon (Aigle Style) */}
       <motion.button
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(true)}
-        className="relative p-2 text-black hover:text-gray-600 transition-colors duration-200 group flex items-center justify-center"
+        className="relative p-2 text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-400 transition-colors duration-200 group flex items-center justify-center"
         aria-label="Giỏ hàng"
       >
         <ShoppingBag className="w-5 h-5" />
@@ -184,7 +273,7 @@ export const NavbarActions: React.FC = () => {
           <motion.span
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-black text-white text-[10px] rounded-full flex items-center justify-center font-medium px-1"
+            className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-black dark:bg-white text-white dark:text-black text-[10px] rounded-full flex items-center justify-center font-medium px-1"
           >
             {cart.items.length > 99 ? "99+" : cart.items.length}
           </motion.span>
@@ -301,6 +390,7 @@ export const NavbarActions: React.FC = () => {
                                   }
                                   alt={item.name}
                                   fill
+                                  sizes="80px"
                                   className="object-cover group-hover:scale-105 transition-transform duration-200"
                                 />
                               </Link>

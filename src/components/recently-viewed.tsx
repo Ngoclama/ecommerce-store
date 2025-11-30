@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Product } from "@/types";
 import ProductCard from "./ui/product-card";
 import { X, Clock, Trash2 } from "lucide-react";
@@ -25,30 +25,52 @@ const RecentlyViewed: React.FC<RecentlyViewedProps> = ({
     {}
   );
 
+  // Sử dụng ref để tránh stale closure và đảm bảo dependencies array không đổi
+  const getAllWishlistItemsRef = useRef(getAllWishlistItems);
+  const wishlistItemsRef = useRef(wishlistItems);
+
+  // Cập nhật ref khi giá trị thay đổi
+  useEffect(() => {
+    getAllWishlistItemsRef.current = getAllWishlistItems;
+  }, [getAllWishlistItems]);
+
+  useEffect(() => {
+    wishlistItemsRef.current = wishlistItems;
+  }, [wishlistItems]);
+
   // Sync wishlist status từ server
   useEffect(() => {
-    const syncWishlist = async () => {
-      if (viewedProducts.length === 0) return;
+    if (viewedProducts.length === 0) return;
 
+    let isMounted = true;
+    const syncWishlist = async () => {
       try {
-        const allWishlistItems = await getAllWishlistItems();
-        const status: Record<string, boolean> = {};
-        viewedProducts.forEach((product) => {
-          status[product.id] = allWishlistItems.includes(product.id);
-        });
-        setWishlistStatus(status);
+        const allWishlistItems = await getAllWishlistItemsRef.current();
+        if (isMounted) {
+          const status: Record<string, boolean> = {};
+          viewedProducts.forEach((product) => {
+            status[product.id] = allWishlistItems.includes(product.id);
+          });
+          setWishlistStatus(status);
+        }
       } catch (error) {
         // Fallback to local storage
-        const status: Record<string, boolean> = {};
-        viewedProducts.forEach((product) => {
-          status[product.id] = wishlistItems.includes(product.id);
-        });
-        setWishlistStatus(status);
+        if (isMounted) {
+          const status: Record<string, boolean> = {};
+          viewedProducts.forEach((product) => {
+            status[product.id] = wishlistItemsRef.current.includes(product.id);
+          });
+          setWishlistStatus(status);
+        }
       }
     };
 
     syncWishlist();
-  }, [viewedProducts, getAllWishlistItems, wishlistItems]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [viewedProducts]); // Chỉ phụ thuộc vào viewedProducts - sử dụng ref để tránh stale closure
 
   const handleToggleFavorite = async (productId: string) => {
     try {

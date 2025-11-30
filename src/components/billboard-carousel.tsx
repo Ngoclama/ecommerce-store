@@ -38,14 +38,12 @@ const BillboardCarousel: React.FC<BillboardCarouselProps> = ({
   const getCategoryForBillboard = (
     billboard: BillboardType
   ): Category | null => {
-    // First check if billboard has categoryId or category directly
     if (billboard.categoryId) {
       return categories.find((cat) => cat.id === billboard.categoryId) || null;
     }
     if (billboard.category) {
       return billboard.category;
     }
-    // Fallback: find category by billboardId
     return categories.find((cat) => cat.billboardId === billboard.id) || null;
   };
 
@@ -58,13 +56,13 @@ const BillboardCarousel: React.FC<BillboardCarouselProps> = ({
     }
   };
 
-  // Auto-play carousel - Slower transition
+  // Auto-play carousel
   useEffect(() => {
     if (!isAutoPlaying || billboards.length <= 1) return;
 
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % billboards.length);
-    }, 8000); // Increased from 5000ms to 8000ms for slower transition
+    }, 6000);
 
     return () => clearInterval(interval);
   }, [isAutoPlaying, billboards.length]);
@@ -72,7 +70,7 @@ const BillboardCarousel: React.FC<BillboardCarouselProps> = ({
   const goToSlide = (index: number) => {
     setCurrentIndex(index);
     setIsAutoPlaying(false);
-    setTimeout(() => setIsAutoPlaying(true), 12000); // Increased pause time
+    setTimeout(() => setIsAutoPlaying(true), 10000);
   };
 
   const goToPrevious = () => {
@@ -80,13 +78,13 @@ const BillboardCarousel: React.FC<BillboardCarouselProps> = ({
       (prev) => (prev - 1 + billboards.length) % billboards.length
     );
     setIsAutoPlaying(false);
-    setTimeout(() => setIsAutoPlaying(true), 12000); // Increased pause time
+    setTimeout(() => setIsAutoPlaying(true), 10000);
   };
 
   const goToNext = () => {
     setCurrentIndex((prev) => (prev + 1) % billboards.length);
     setIsAutoPlaying(false);
-    setTimeout(() => setIsAutoPlaying(true), 12000); // Increased pause time
+    setTimeout(() => setIsAutoPlaying(true), 10000);
   };
 
   if (!billboards || billboards.length === 0) {
@@ -96,101 +94,106 @@ const BillboardCarousel: React.FC<BillboardCarouselProps> = ({
   const currentBillboard = billboards[currentIndex];
 
   return (
-    <div className="w-full relative overflow-hidden">
-      {/* Carousel Container - Modern 2025 Style, Full Width */}
+    <div className="w-full relative overflow-hidden bg-white dark:bg-gray-900">
+      {/* Carousel Container - Aigle Style */}
       <div className="relative w-full min-h-[500px] md:min-h-[600px] lg:min-h-[700px] group">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentIndex}
-            initial={{ opacity: 0, x: 100 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -100 }}
-            transition={{ duration: 1.2, ease: [0.25, 0.46, 0.45, 0.94] }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1, ease: "easeInOut" }}
             className="absolute inset-0"
             style={{
               background: currentBillboard?.imageUrl
                 ? `url(${currentBillboard.imageUrl}) center/cover`
-                : "rgb(255 255 255)",
+                : "rgb(249 250 251)",
             }}
           >
-            {/* Elegant Overlay - Subtle gradient */}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/50" />
+            {/* Subtle Overlay - Aigle Style */}
+            <div className="absolute inset-0 bg-black/20 dark:bg-black/40" />
 
-            {/* Content - Modern, Elegant, Centered */}
+            {/* Content - Aigle Style: Left-aligned, Clean */}
             <div
-              className="relative h-full flex flex-col justify-center items-center gap-8 px-4 sm:px-8 md:px-16 lg:px-24 py-16 text-center cursor-pointer"
+              className="relative h-full flex flex-col justify-center items-start gap-6 px-6 sm:px-12 md:px-16 lg:px-24 py-16 cursor-pointer"
               onClick={handleBillboardClick}
             >
-              {/* Main Text - Modern Typography */}
+              {/* Main Text - Aigle Typography */}
               <motion.div
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1.2, delay: 0.3, ease: "easeOut" }}
-                className="space-y-6 max-w-4xl"
+                initial={{ opacity: 0, x: -30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+                className="space-y-4 max-w-2xl"
               >
-                <h1 className="text-white text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-light leading-[1.1] tracking-tight">
+                <h1 className="text-white dark:text-white text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-light leading-tight tracking-tight">
                   {currentBillboard?.label || "Thời trang thanh lịch"}
                 </h1>
+                {currentBillboard?.description && (
+                  <p className="text-white/90 dark:text-white/80 text-base md:text-lg font-light max-w-xl">
+                    {currentBillboard.description}
+                  </p>
+                )}
               </motion.div>
 
-              {/* CTA Button - Elegant Style */}
+              {/* CTA Button - Aigle Style */}
               {currentBillboard?.label && (
-              <motion.div
-                  initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 1.2, delay: 0.6, ease: "easeOut" }}
-                  className="pt-6"
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
+                  className="pt-2"
                   onClick={(e) => e.stopPropagation()}
-              >
-                <Button
-                  size="lg"
-                    onClick={handleBillboardClick}
-                    className="bg-white text-black border-0 hover:bg-gray-50 rounded-none px-10 py-4 text-sm font-light uppercase tracking-wider transition-all duration-300 shadow-lg hover:shadow-xl"
                 >
+                  <Button
+                    size="lg"
+                    onClick={handleBillboardClick}
+                    className="bg-white dark:bg-white text-black dark:text-black border-0 hover:bg-gray-100 dark:hover:bg-gray-100 rounded-none px-8 py-3 text-xs font-light uppercase tracking-wider transition-all duration-300"
+                  >
                     Khám phá ngay
-                </Button>
-              </motion.div>
+                  </Button>
+                </motion.div>
               )}
             </div>
           </motion.div>
         </AnimatePresence>
 
-        {/* Navigation Arrows - Modern, Elegant */}
+        {/* Navigation Arrows - Aigle Style: Minimal, Elegant */}
         {billboards.length > 1 && (
           <>
             <Button
               onClick={goToPrevious}
-              className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white text-black border-0 rounded-none w-12 h-12 transition-all duration-300 shadow-lg hover:shadow-xl opacity-0 group-hover:opacity-100"
+              className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-10 bg-white/80 dark:bg-white/80 hover:bg-white dark:hover:bg-white text-black dark:text-black border-0 rounded-none w-10 h-10 md:w-12 md:h-12 transition-all duration-300 opacity-0 group-hover:opacity-100"
               size="icon"
               variant="ghost"
               aria-label="Slide trước"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
             </Button>
             <Button
               onClick={goToNext}
-              className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white text-black border-0 rounded-none w-12 h-12 transition-all duration-300 shadow-lg hover:shadow-xl opacity-0 group-hover:opacity-100"
+              className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-10 bg-white/80 dark:bg-white/80 hover:bg-white dark:hover:bg-white text-black dark:text-black border-0 rounded-none w-10 h-10 md:w-12 md:h-12 transition-all duration-300 opacity-0 group-hover:opacity-100"
               size="icon"
               variant="ghost"
               aria-label="Slide sau"
             >
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
             </Button>
           </>
         )}
 
-        {/* Dots Indicator - Modern, Elegant */}
+        {/* Dots Indicator - Aigle Style: Minimal */}
         {billboards.length > 1 && (
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-3 z-10">
+          <div className="absolute bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-10">
             {billboards.map((_, index) => (
               <button
                 key={index}
                 onClick={() => goToSlide(index)}
                 className={cn(
-                  "h-1 transition-all duration-500 rounded-full",
+                  "h-0.5 transition-all duration-500 rounded-full",
                   index === currentIndex
-                    ? "w-12 bg-white shadow-lg"
-                    : "w-8 bg-white/50 hover:bg-white/70"
+                    ? "w-8 bg-white dark:bg-white"
+                    : "w-6 bg-white/50 dark:bg-white/50 hover:bg-white/70 dark:hover:bg-white/70"
                 )}
                 aria-label={`Chuyển đến slide ${index + 1}`}
               />

@@ -75,12 +75,12 @@ const CategoryTreeList: React.FC<CategoryTreeListProps> = ({
                     e.stopPropagation();
                     onToggleExpand(category);
                   }}
-                  className="p-1 hover:bg-gray-100 transition-colors shrink-0"
+                  className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors shrink-0"
                 >
                   {isExpanded ? (
-                    <ChevronDown size={16} className="text-gray-400" />
+                    <ChevronDown size={16} className="text-gray-400 dark:text-gray-500" />
                   ) : (
-                    <ChevronRight size={16} className="text-gray-400" />
+                    <ChevronRight size={16} className="text-gray-400 dark:text-gray-500" />
                   )}
                 </button>
               )}
@@ -90,8 +90,8 @@ const CategoryTreeList: React.FC<CategoryTreeListProps> = ({
                 className={cn(
                   "flex-1 flex items-center justify-between px-4 py-3 text-sm font-light tracking-wide transition-colors",
                   isActive
-                    ? "bg-black text-white"
-                    : "text-black hover:bg-gray-50"
+                    ? "bg-black dark:bg-white text-white dark:text-black"
+                    : "text-black dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800"
                 )}
               >
                 <span className="uppercase">{category.name}</span>
@@ -123,7 +123,7 @@ const CategoryTreeList: React.FC<CategoryTreeListProps> = ({
                 >
                   {isLoading ? (
                     <div className="px-4 py-3">
-                      <p className="text-xs text-gray-500 font-light">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 font-light">
                         Đang tải...
                       </p>
                     </div>
@@ -134,23 +134,24 @@ const CategoryTreeList: React.FC<CategoryTreeListProps> = ({
                           <Link
                             href={`/product/${product.id}`}
                             onClick={() => setIsOpen(false)}
-                            className="flex items-center gap-2 px-4 py-2 hover:bg-gray-50 transition-colors group"
+                            className="flex items-center gap-2 px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
                           >
-                            <div className="relative w-12 h-12 bg-gray-100 shrink-0">
+                            <div className="relative w-12 h-12 bg-gray-100 dark:bg-gray-800 shrink-0">
                               <Image
                                 src={
                                   product.images?.[0]?.url || "/placeholder.svg"
                                 }
                                 alt={product.name}
                                 fill
+                                sizes="60px"
                                 className="object-cover"
                               />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <h4 className="text-xs font-light text-black line-clamp-1 group-hover:text-gray-600">
+                              <h4 className="text-xs font-light text-black dark:text-white line-clamp-1 group-hover:text-gray-600 dark:group-hover:text-gray-400">
                                 {product.name}
                               </h4>
-                              <p className="text-xs text-gray-500 font-light mt-0.5">
+                              <p className="text-xs text-gray-500 dark:text-gray-400 font-light mt-0.5">
                                 {new Intl.NumberFormat("vi-VN", {
                                   style: "currency",
                                   currency: "VND",
@@ -163,7 +164,7 @@ const CategoryTreeList: React.FC<CategoryTreeListProps> = ({
                     </ul>
                   ) : !isLoading ? (
                     <div className="px-4 py-3">
-                      <p className="text-xs text-gray-400 font-light">
+                      <p className="text-xs text-gray-400 dark:text-gray-500 font-light">
                         Chưa có sản phẩm
                       </p>
                     </div>
@@ -365,7 +366,7 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({ categories }) => {
     return (
       <Button
         variant="outline"
-        className="bg-white hover:bg-gray-100 text-black border-gray-300 rounded-lg px-3 py-2 flex items-center gap-2 h-10"
+        className="bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-black dark:text-white border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 flex items-center gap-2 h-10"
         aria-label="Danh mục sản phẩm"
         disabled
       >
@@ -380,7 +381,7 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({ categories }) => {
       <SheetTrigger asChild>
         <Button
           variant="outline"
-          className="bg-transparent hover:bg-transparent text-black border-0 rounded-none px-2 py-2 flex items-center gap-2 h-10"
+          className="bg-transparent dark:bg-transparent hover:bg-transparent dark:hover:bg-transparent text-black dark:text-white border-0 rounded-none px-2 py-2 flex items-center gap-2 h-10"
           aria-label="Menu"
         >
           <Menu className="w-5 h-5" />
@@ -391,11 +392,11 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({ categories }) => {
       </SheetTrigger>
       <SheetContent
         side="left"
-        className="w-80 bg-white border-r border-gray-300 p-0 [&>button]:hidden"
+        className="w-80 bg-white dark:bg-gray-900 border-r border-gray-300 dark:border-gray-800 p-0 [&>button]:hidden"
       >
-        <SheetHeader className="border-b border-gray-300 px-4 py-3">
+        <SheetHeader className="border-b border-gray-300 dark:border-gray-800 px-4 py-3">
           <div className="flex items-center justify-between">
-            <SheetTitle className="text-lg text-black uppercase">
+            <SheetTitle className="text-lg text-black dark:text-white uppercase">
               Danh mục sản phẩm
             </SheetTitle>
             <Button
@@ -406,9 +407,9 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({ categories }) => {
                 setExpandedIds(new Set());
                 setCategoryProducts(new Map());
               }}
-              className="bg-white hover:bg-gray-100 rounded-lg"
+              className="bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
             >
-              <X className="w-5 h-5 text-black" />
+              <X className="w-5 h-5 text-black dark:text-white" />
             </Button>
           </div>
         </SheetHeader>
@@ -431,7 +432,7 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({ categories }) => {
               />
             ) : (
               <div className="px-6 py-8 text-center">
-                <p className="text-gray-500 text-sm font-light">
+                <p className="text-gray-500 dark:text-gray-400 text-sm font-light">
                   Chưa có danh mục nào
                 </p>
               </div>

@@ -205,7 +205,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
         className={cn(
-          "group relative bg-white transition-all duration-300 w-full",
+          "group relative bg-white dark:bg-gray-800 transition-all duration-300 w-full",
           isOutOfStock && "opacity-60"
         )}
         onMouseEnter={handleImageHover}
@@ -213,7 +213,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
       >
         {/* IMAGE CONTAINER */}
         <div
-          className="relative aspect-[3/4] bg-gray-50 overflow-hidden border border-gray-200 cursor-pointer"
+          className="relative aspect-[3/4] bg-gray-50 dark:bg-gray-900 overflow-hidden border border-gray-200 dark:border-gray-700 cursor-pointer"
           onClick={handleClick}
         >
           {/* PRIMARY IMAGE */}
@@ -236,6 +236,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 }
                 alt={data.name}
                 fill
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 className="object-cover transition-transform duration-700 group-hover:scale-110"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
@@ -263,7 +264,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
               <motion.span
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                className="px-3 py-1.5 bg-white text-black text-sm font-light uppercase border border-black rounded-none"
+                className="px-3 py-1.5 bg-white dark:bg-gray-800 text-black dark:text-white text-sm font-light uppercase border border-black dark:border-white rounded-none"
               >
                 Hết hàng
               </motion.span>
@@ -294,7 +295,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                     )}
                   />
                 }
-                className="bg-white/90 hover:bg-white border-0 rounded-none backdrop-blur-sm transition-all duration-300 shadow-sm"
+                className="bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 border-0 rounded-none backdrop-blur-sm transition-all duration-300 shadow-sm"
                 aria-label="Thêm vào yêu thích"
               />
             </motion.div>
@@ -302,8 +303,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
           {/* IMAGE INDICATOR - Bottom Left (if multiple images) */}
           {hasMultipleImages && (
-            <div className="absolute bottom-4 left-4 z-20 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-none border border-gray-300">
-              <span className="text-sm font-light text-black">
+            <div className="absolute bottom-4 left-4 z-20 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm px-3 py-1.5 rounded-none border border-gray-300 dark:border-gray-700">
+              <span className="text-sm font-light text-black dark:text-white">
                 {imageIndex + 1} / {images.length}
               </span>
             </div>
@@ -311,43 +312,48 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
           {/* ACTION BUTTONS OVERLAY - Bottom (Show on hover) */}
           <div
-            className="absolute inset-x-0 bottom-0 bg-white/98 backdrop-blur-sm border-t border-gray-200 p-2.5 space-y-1.5 opacity-0 group-hover:opacity-100 translate-y-5 group-hover:translate-y-0 transition-all duration-300 z-30"
+            className="absolute inset-x-0 bottom-0 bg-white/98 dark:bg-gray-800/98 backdrop-blur-sm border-t border-gray-200 dark:border-gray-700 p-2.5 space-y-1.5 opacity-0 group-hover:opacity-100 translate-y-5 group-hover:translate-y-0 transition-all duration-300 z-30"
             onClick={(e) => e.stopPropagation()}
           >
             <Button
               onClick={handleQuickView}
               variant="outline"
               size="default"
-              className="w-full h-9 rounded-none border-gray-300 hover:border-black text-black font-light uppercase tracking-wide text-[10px] leading-tight transition-all duration-300 hover:bg-gray-50 overflow-hidden flex items-center justify-center gap-1.5 px-2"
+              className="w-full h-9 rounded-none border-gray-300 dark:border-gray-600 hover:border-black dark:hover:border-white text-black dark:text-white font-light uppercase tracking-wide text-[10px] leading-tight transition-all duration-300 hover:bg-gray-50 dark:hover:bg-gray-700 bg-white dark:bg-gray-800 overflow-hidden flex items-center justify-center gap-1.5 px-2"
             >
               <Eye className="w-3.5 h-3.5 shrink-0" />
               <span className="truncate flex-1 min-w-0 text-center">
                 Xem nhanh
               </span>
             </Button>
-            <Button
-              ref={addToCartButtonRef}
-              onClick={onAddToCart}
-              variant="outline"
-              size="default"
-              disabled={isOutOfStock}
-              className={cn(
-                "w-full h-9 rounded-none border-gray-300 hover:border-black text-black font-light uppercase tracking-wide text-[10px] leading-tight transition-all duration-300 hover:bg-gray-50 overflow-hidden flex items-center justify-center gap-1.5 px-2",
-                isOutOfStock && "opacity-40 cursor-not-allowed"
-              )}
+            <motion.div
+              whileTap={{ scale: 0.95 }}
+              transition={{ duration: 0.1 }}
             >
-              <ShoppingBag className="w-3.5 h-3.5 shrink-0" />
-              <span className="truncate flex-1 min-w-0 text-center">
-                Thêm vào giỏ hàng
-              </span>
-            </Button>
+              <Button
+                ref={addToCartButtonRef}
+                onClick={onAddToCart}
+                variant="outline"
+                size="default"
+                disabled={isOutOfStock}
+                className={cn(
+                  "w-full h-9 rounded-none border-gray-300 dark:border-gray-600 hover:border-black dark:hover:border-white text-black dark:text-white font-light uppercase tracking-wide text-[10px] leading-tight transition-all duration-300 hover:bg-gray-50 dark:hover:bg-gray-700 bg-white dark:bg-gray-800 overflow-hidden flex items-center justify-center gap-1.5 px-2",
+                  isOutOfStock && "opacity-40 cursor-not-allowed"
+                )}
+              >
+                <ShoppingBag className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate flex-1 min-w-0 text-center">
+                  Thêm vào giỏ hàng
+                </span>
+              </Button>
+            </motion.div>
             <Button
               onClick={handleBuyNow}
               variant="default"
               size="default"
               disabled={isOutOfStock}
               className={cn(
-                "w-full h-9 rounded-none bg-black text-white hover:bg-gray-800 font-light uppercase tracking-wide text-[10px] leading-tight transition-all duration-300 overflow-hidden flex items-center justify-center gap-1.5 px-2",
+                "w-full h-9 rounded-none bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 font-light uppercase tracking-wide text-[10px] leading-tight transition-all duration-300 overflow-hidden flex items-center justify-center gap-1.5 px-2",
                 isOutOfStock && "opacity-40 cursor-not-allowed"
               )}
             >
@@ -366,7 +372,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
         <div className="pt-5 pb-4 px-3 space-y-3">
           {/* Product Name */}
           <h3
-            className="text-lg font-light text-black uppercase tracking-wide line-clamp-2 min-h-14 cursor-pointer hover:text-gray-600 transition-colors duration-300"
+            className="text-lg font-light text-black dark:text-white uppercase tracking-wide line-clamp-2 min-h-14 cursor-pointer hover:text-gray-600 dark:hover:text-gray-400 transition-colors duration-300"
             onClick={handleClick}
           >
             {data.name}
@@ -374,16 +380,16 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
           {/* Price Section */}
           <div className="flex items-baseline gap-3 flex-wrap">
-            <span className="text-xl md:text-2xl font-light text-black">
+            <span className="text-xl md:text-2xl font-light text-black dark:text-white">
               {formatVND(Number(data.price))}
             </span>
             {data.originalPrice && data.originalPrice > data.price && (
               <>
-                <span className="text-base text-gray-500 line-through font-light">
+                <span className="text-base text-gray-500 dark:text-gray-400 line-through font-light">
                   {formatVND(Number(data.originalPrice))}
                 </span>
                 {discountPercent > 0 && (
-                  <span className="text-base text-gray-600 font-light">
+                  <span className="text-base text-gray-600 dark:text-gray-400 font-light">
                     (-{discountPercent}%)
                   </span>
                 )}
@@ -395,7 +401,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           {isLowStock && !isOutOfStock && (
             <div className="flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-yellow-600" />
-              <span className="text-base text-gray-600 font-light">
+              <span className="text-base text-gray-600 dark:text-gray-400 font-light">
                 Chỉ còn {productInventory} sản phẩm
               </span>
             </div>
@@ -407,20 +413,20 @@ const ProductCard: React.FC<ProductCardProps> = ({
               {/* Sizes */}
               {availableSizes.length > 0 && (
                 <div className="flex items-center gap-1.5">
-                  <span className="text-xs text-gray-500 font-light uppercase tracking-wide">
+                  <span className="text-xs text-gray-500 dark:text-gray-400 font-light uppercase tracking-wide">
                     Size:
                   </span>
                   <div className="flex flex-wrap gap-1">
                     {availableSizes.slice(0, 3).map((size) => (
                       <span
                         key={size.id}
-                        className="px-2 py-0.5 text-xs font-light text-black border border-gray-300 rounded-none uppercase"
+                        className="px-2 py-0.5 text-xs font-light text-black dark:text-white border border-gray-300 dark:border-gray-600 rounded-none uppercase bg-white dark:bg-gray-800"
                       >
                         {size.name}
                       </span>
                     ))}
                     {availableSizes.length > 3 && (
-                      <span className="px-2 py-0.5 text-xs font-light text-gray-500">
+                      <span className="px-2 py-0.5 text-xs font-light text-gray-500 dark:text-gray-400">
                         +{availableSizes.length - 3}
                       </span>
                     )}
@@ -431,7 +437,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
               {/* Colors */}
               {availableColors.length > 0 && (
                 <div className="flex items-center gap-1.5">
-                  <span className="text-xs text-gray-500 font-light uppercase tracking-wide">
+                  <span className="text-xs text-gray-500 dark:text-gray-400 font-light uppercase tracking-wide">
                     Color:
                   </span>
                   <div className="flex flex-wrap gap-1.5 items-center">
@@ -442,18 +448,18 @@ const ProductCard: React.FC<ProductCardProps> = ({
                         title={color.name}
                       >
                         <div
-                          className="w-4 h-4 border border-gray-300 rounded-none"
+                          className="w-4 h-4 border border-gray-300 dark:border-gray-600 rounded-none"
                           style={{
                             backgroundColor: color.value || "#ccc",
                           }}
                         />
-                        <span className="text-xs font-light text-black uppercase hidden sm:inline">
+                        <span className="text-xs font-light text-black dark:text-white uppercase hidden sm:inline">
                           {color.name}
                         </span>
                       </div>
                     ))}
                     {availableColors.length > 3 && (
-                      <span className="text-xs font-light text-gray-500">
+                      <span className="text-xs font-light text-gray-500 dark:text-gray-400">
                         +{availableColors.length - 3}
                       </span>
                     )}
@@ -466,7 +472,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           {/* Category Badge (optional) */}
           {data.category && (
             <div className="pt-1">
-              <span className="text-sm text-gray-500 font-light uppercase tracking-wide">
+              <span className="text-sm text-gray-500 dark:text-gray-400 font-light uppercase tracking-wide">
                 {data.category.name}
               </span>
             </div>

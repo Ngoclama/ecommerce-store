@@ -5,7 +5,7 @@ import NoResult from "./ui/result";
 import ProductCard from "./ui/product-card";
 import useCart from "@/hooks/use-cart";
 import { useWishlist } from "@/hooks/use-wishlist";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 interface ProductListProps {
   title: string;
@@ -24,15 +24,31 @@ const ProductList: React.FC<ProductListProps> = ({ title, items }) => {
     {}
   );
 
+  // Sử dụng ref để tránh stale closure và đảm bảo dependencies array không đổi
+  const getAllWishlistItemsRef = useRef(getAllWishlistItems);
+  const wishlistItemsRef = useRef(wishlistItems);
+
+  // Cập nhật ref khi giá trị thay đổi
+  useEffect(() => {
+    getAllWishlistItemsRef.current = getAllWishlistItems;
+  }, [getAllWishlistItems]);
+
+  useEffect(() => {
+    wishlistItemsRef.current = wishlistItems;
+  }, [wishlistItems]);
+
   // Sync wishlist status từ server - gọi một lần để lấy tất cả
   useEffect(() => {
-    const syncWishlist = async () => {
-      // Nếu không có items, không cần sync
-      if (items.length === 0) return;
+    // Nếu không có items, không cần sync
+    if (items.length === 0) return;
 
+    let isMounted = true;
+    const syncWishlist = async () => {
       try {
         // Gọi API một lần để lấy tất cả wishlist items
-        const allWishlistItems = await getAllWishlistItems();
+        const allWishlistItems = await getAllWishlistItemsRef.current();
+
+        if (!isMounted) return;
 
         // Tạo status map từ wishlist items
         const status: Record<string, boolean> = {};
@@ -43,16 +59,22 @@ const ProductList: React.FC<ProductListProps> = ({ title, items }) => {
         setWishlistStatus(status);
       } catch (error) {
         // Nếu API fail, fallback to local storage
-        const status: Record<string, boolean> = {};
-        items.forEach((item) => {
-          status[item.id] = wishlistItems.includes(item.id);
-        });
-        setWishlistStatus(status);
+        if (isMounted) {
+          const status: Record<string, boolean> = {};
+          items.forEach((item) => {
+            status[item.id] = wishlistItemsRef.current.includes(item.id);
+          });
+          setWishlistStatus(status);
+        }
       }
     };
 
     syncWishlist();
-  }, [items, getAllWishlistItems, wishlistItems]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [items]); // Chỉ phụ thuộc vào items - sử dụng ref để tránh stale closure
 
   const handleToggleFavorite = async (productId: string) => {
     try {

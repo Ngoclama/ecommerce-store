@@ -28,17 +28,17 @@ const MainNav: React.FC<MainNavProps> = ({ data }) => {
           key={route.href}
           href={route.href}
           className={cn(
-            "relative text-xs md:text-sm font-light text-black uppercase tracking-wide",
-            "hover:text-gray-600 transition-colors duration-300",
+            "relative text-xs md:text-sm font-light text-black dark:text-white uppercase tracking-wide",
+            "hover:text-gray-600 dark:hover:text-gray-400 transition-colors duration-300",
             "whitespace-nowrap shrink-0",
-            route.active && "text-black"
+            route.active && "text-black dark:text-white"
           )}
         >
           {route.label}
           {route.active && (
             <motion.span
               layoutId="activeNav"
-              className="absolute -bottom-1 left-0 right-0 h-px bg-black"
+              className="absolute -bottom-1 left-0 right-0 h-px bg-black dark:bg-white"
               initial={false}
               transition={{
                 type: "spring",

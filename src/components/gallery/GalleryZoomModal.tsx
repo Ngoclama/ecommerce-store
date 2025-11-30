@@ -185,6 +185,7 @@ export default function GalleryZoomModal({
                 src={currentImage.url}
                 alt="zoom"
                 fill
+                sizes="100vw"
                 className="object-contain select-none"
               />
             </motion.div>

@@ -96,16 +96,17 @@ export const CartAnimation: React.FC<CartAnimationProps> = ({
         animate={{
           x: positions.end.x,
           y: positions.end.y,
-          scale: 0.3,
-          opacity: 0.8,
+          scale: [1, 0.5, 0.3],
+          opacity: [1, 0.9, 0.6],
         }}
         exit={{
           scale: 0,
           opacity: 0,
         }}
         transition={{
-          duration: 0.6,
+          duration: 0.8,
           ease: [0.25, 0.46, 0.45, 0.94],
+          times: [0, 0.3, 1],
         }}
         onAnimationStart={() => {
           if (process.env.NODE_ENV === "development") {
@@ -120,15 +121,25 @@ export const CartAnimation: React.FC<CartAnimationProps> = ({
           transform: "translate(-50%, -50%)",
         }}
       >
-        <div className="relative w-16 h-16 rounded-lg overflow-hidden border-2 border-gray-300 shadow-lg bg-white">
+        <motion.div
+          className="relative w-20 h-20 rounded-lg overflow-hidden border-2 border-gray-300 shadow-xl bg-white"
+          animate={{
+            rotate: [0, 15, -15, 0],
+          }}
+          transition={{
+            duration: 0.8,
+            ease: "easeInOut",
+          }}
+        >
           <Image
             src={imageUrl}
             alt="Product"
             fill
+            sizes="64px"
             className="object-cover"
             unoptimized
           />
-        </div>
+        </motion.div>
       </motion.div>
     </AnimatePresence>,
     document.body

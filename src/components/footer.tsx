@@ -48,55 +48,68 @@ export default function Footer() {
   }, []);
 
   return (
-    <footer className="bg-white text-black border-t border-gray-200">
+    <footer className="bg-white dark:bg-gray-900 text-black dark:text-white border-t border-gray-200 dark:border-gray-800">
       {/* Main Footer - Aigle Style */}
-      <div className="border-b border-gray-200">
+      <div className="border-b border-gray-200 dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8 md:gap-12">
             {/* Help & Information */}
             <div>
-              <h3 className="text-xs font-light text-black uppercase tracking-wider mb-4">
-                Help & Information
+              <h3 className="text-xs font-light text-black dark:text-white uppercase tracking-wider mb-4">
+                Trợ giúp & Thông tin
               </h3>
               <ul className="space-y-2">
                 <li>
                   <Link
                     href="/contact"
-                    className="text-xs font-light text-gray-600 hover:text-black transition-colors"
+                    prefetch={true}
+                    className="text-xs font-light text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors duration-200"
                   >
-                    Contact us
+                    Liên hệ
                   </Link>
                 </li>
                 <li>
                   <Link
                     href="/account"
-                    className="text-xs font-light text-gray-600 hover:text-black transition-colors"
+                    prefetch={true}
+                    className="text-xs font-light text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors duration-200"
                   >
-                    My account
+                    Tài khoản của tôi
                   </Link>
                 </li>
                 <li>
                   <Link
-                    href="/orders"
-                    className="text-xs font-light text-gray-600 hover:text-black transition-colors"
+                    href="/account/orders"
+                    prefetch={true}
+                    className="text-xs font-light text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors duration-200"
                   >
-                    Follow my order
+                    Theo dõi đơn hàng
                   </Link>
                 </li>
                 <li>
                   <Link
                     href="/returns"
-                    className="text-xs font-light text-gray-600 hover:text-black transition-colors"
+                    prefetch={true}
+                    className="text-xs font-light text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors duration-200"
                   >
-                    Make a return
+                    Đổi trả hàng
                   </Link>
                 </li>
                 <li>
                   <Link
                     href="/help"
-                    className="text-xs font-light text-gray-600 hover:text-black transition-colors"
+                    prefetch={true}
+                    className="text-xs font-light text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors duration-200"
                   >
-                    Help & FAQ
+                    Trợ giúp & FAQ
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/view-history"
+                    className="text-xs font-light text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors"
+                  >
+                    Lịch sử xem sản phẩm
                   </Link>
                 </li>
               </ul>
@@ -104,59 +117,74 @@ export default function Footer() {
 
             {/* Terms & conditions */}
             <div>
-              <h3 className="text-xs font-light text-black uppercase tracking-wider mb-4">
-                Terms & conditions
+              <h3 className="text-xs font-light text-black dark:text-white uppercase tracking-wider mb-4">
+                Điều khoản & Điều kiện
               </h3>
               <ul className="space-y-2">
-                {footerLinks.legal.map((link) => (
-                  <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      className="text-xs font-light text-gray-600 hover:text-black transition-colors"
-                    >
-                      {link.title}
-                    </Link>
-                  </li>
-                ))}
+                <li>
+                  <Link
+                    href="/terms-of-service"
+                    className="text-xs font-light text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors"
+                  >
+                    Điều khoản dịch vụ
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/privacy-policy"
+                    className="text-xs font-light text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors"
+                  >
+                    Chính sách bảo mật
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/cookie-policy"
+                    className="text-xs font-light text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors"
+                  >
+                    Chính sách cookie
+                  </Link>
+                </li>
               </ul>
             </div>
 
             {/* The brand */}
             <div>
-              <h3 className="text-xs font-light text-black uppercase tracking-wider mb-4">
-                The brand
+              <h3 className="text-xs font-light text-black dark:text-white uppercase tracking-wider mb-4">
+                Thương hiệu
               </h3>
               <ul className="space-y-2">
                 <li>
                   <Link
                     href="/about"
-                    className="text-xs font-light text-gray-600 hover:text-black transition-colors"
+                    prefetch={true}
+                    className="text-xs font-light text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors duration-200"
                   >
-                    Legacy
+                    Về chúng tôi
                   </Link>
                 </li>
                 <li>
                   <Link
                     href="/know-how"
-                    className="text-xs font-light text-gray-600 hover:text-black transition-colors"
+                    className="text-xs font-light text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors"
                   >
-                    Know-how
+                    Bí quyết
                   </Link>
                 </li>
                 <li>
                   <Link
                     href="/commitments"
-                    className="text-xs font-light text-gray-600 hover:text-black transition-colors"
+                    className="text-xs font-light text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors"
                   >
-                    Commitments
+                    Cam kết
                   </Link>
                 </li>
                 <li>
                   <Link
                     href="/sustainability"
-                    className="text-xs font-light text-gray-600 hover:text-black transition-colors"
+                    className="text-xs font-light text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors"
                   >
-                    Sustainable development
+                    Phát triển bền vững
                   </Link>
                 </li>
               </ul>
@@ -164,24 +192,24 @@ export default function Footer() {
 
             {/* Products */}
             <div>
-              <h3 className="text-xs font-light text-black uppercase tracking-wider mb-4">
-                Products
+              <h3 className="text-xs font-light text-black dark:text-white uppercase tracking-wider mb-4">
+                Sản phẩm
               </h3>
               <ul className="space-y-2">
                 <li>
                   <Link
                     href="/size-guide"
-                    className="text-xs font-light text-gray-600 hover:text-black transition-colors"
+                    className="text-xs font-light text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors"
                   >
-                    Size guide
+                    Hướng dẫn chọn size
                   </Link>
                 </li>
                 <li>
                   <Link
-                    href="/collections"
-                    className="text-xs font-light text-gray-600 hover:text-black transition-colors"
+                    href="/categories"
+                    className="text-xs font-light text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors"
                   >
-                    Collection
+                    Bộ sưu tập
                   </Link>
                 </li>
               </ul>
@@ -189,17 +217,17 @@ export default function Footer() {
 
             {/* Newsletter & Social */}
             <div className="col-span-2 md:col-span-1 lg:col-span-2">
-              <h3 className="text-xs font-light text-black uppercase tracking-wider mb-4">
-                Stay connected
+              <h3 className="text-xs font-light text-black dark:text-white uppercase tracking-wider mb-4">
+                Kết nối với chúng tôi
               </h3>
-              <p className="text-xs font-light text-gray-600 mb-4">
+              <p className="text-xs font-light text-gray-600 dark:text-gray-400 mb-4">
                 Đăng ký nhận thông tin về sản phẩm mới và ưu đãi đặc biệt
               </p>
               {mounted ? (
                 <form className="flex gap-2 mb-6">
                   <Input
                     type="email"
-                    placeholder="Email"
+                    placeholder="Email của bạn"
                     className="flex-1 h-9 text-xs border-b border-gray-300 rounded-none bg-transparent focus-visible:ring-0 focus-visible:border-black"
                   />
                   <Button
@@ -207,7 +235,7 @@ export default function Footer() {
                     variant="outline"
                     className="h-9 px-4 text-xs rounded-none border-b border-gray-300"
                   >
-                    Sign up
+                    Đăng ký
                   </Button>
                 </form>
               ) : (
@@ -221,28 +249,28 @@ export default function Footer() {
               <div className="flex gap-3">
                 <a
                   href="#"
-                  className="text-gray-600 hover:text-black transition-colors"
+                  className="text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors"
                   aria-label="Facebook"
                 >
                   <Facebook className="w-4 h-4" />
                 </a>
                 <a
                   href="#"
-                  className="text-gray-600 hover:text-black transition-colors"
+                  className="text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors"
                   aria-label="Instagram"
                 >
                   <Instagram className="w-4 h-4" />
                 </a>
                 <a
                   href="#"
-                  className="text-gray-600 hover:text-black transition-colors"
+                  className="text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors"
                   aria-label="Twitter"
                 >
                   <Twitter className="w-4 h-4" />
                 </a>
                 <a
                   href="#"
-                  className="text-gray-600 hover:text-black transition-colors"
+                  className="text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors"
                   aria-label="Youtube"
                 >
                   <Youtube className="w-4 h-4" />
@@ -254,24 +282,34 @@ export default function Footer() {
       </div>
 
       {/* Payment Methods & Bottom Bar - Aigle Style */}
-      <div className="border-t border-gray-200">
+      <div className="border-t border-gray-200 dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             {/* Payment Methods */}
             <div className="flex items-center gap-4">
-              <span className="text-xs font-light text-gray-600">
-                We accept
+              <span className="text-xs font-light text-gray-600 dark:text-gray-400">
+                Chúng tôi chấp nhận
               </span>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-light text-gray-400">Visa</span>
-                <span className="text-xs font-light text-gray-400">•</span>
-                <span className="text-xs font-light text-gray-400">
+                <span className="text-xs font-light text-gray-400 dark:text-gray-600">
+                  Visa
+                </span>
+                <span className="text-xs font-light text-gray-400 dark:text-gray-600">
+                  •
+                </span>
+                <span className="text-xs font-light text-gray-400 dark:text-gray-600">
                   Mastercard
                 </span>
-                <span className="text-xs font-light text-gray-400">•</span>
-                <span className="text-xs font-light text-gray-400">PayPal</span>
-                <span className="text-xs font-light text-gray-400">•</span>
-                <span className="text-xs font-light text-gray-400">
+                <span className="text-xs font-light text-gray-400 dark:text-gray-600">
+                  •
+                </span>
+                <span className="text-xs font-light text-gray-400 dark:text-gray-600">
+                  PayPal
+                </span>
+                <span className="text-xs font-light text-gray-400 dark:text-gray-600">
+                  •
+                </span>
+                <span className="text-xs font-light text-gray-400 dark:text-gray-600">
                   Apple Pay
                 </span>
               </div>
@@ -279,7 +317,7 @@ export default function Footer() {
 
             {/* Copyright */}
             <p
-              className="text-xs font-light text-gray-600"
+              className="text-xs font-light text-gray-600 dark:text-gray-400"
               suppressHydrationWarning
             >
               © {new Date().getFullYear()} THỜI TRANG

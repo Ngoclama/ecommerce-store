@@ -2,7 +2,13 @@
 
 import { Product, ProductVariant } from "@/types";
 import Image from "next/image";
-import React, { MouseEventHandler, useEffect, useState, useMemo } from "react";
+import React, {
+  MouseEventHandler,
+  useEffect,
+  useState,
+  useMemo,
+  useRef,
+} from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
 import {
@@ -61,6 +67,19 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
   const [canScrollUp, setCanScrollUp] = useState(true);
   const [canScrollDown, setCanScrollDown] = useState(true);
   const [isNavigating, setIsNavigating] = useState(false);
+
+  // Sử dụng ref để tránh stale closure và đảm bảo dependencies array không đổi
+  const getAllWishlistItemsRef = useRef(getAllWishlistItems);
+  const cartRef = useRef(cart);
+
+  // Cập nhật ref khi giá trị thay đổi
+  useEffect(() => {
+    getAllWishlistItemsRef.current = getAllWishlistItems;
+  }, [getAllWishlistItems]);
+
+  useEffect(() => {
+    cartRef.current = cart;
+  }, [cart]);
 
   // Variant selection state
   const [selectedSizeId, setSelectedSizeId] = useState<string | null>(null);
@@ -144,22 +163,31 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
     }
   }, [currentInventory, quantity]);
 
-  // Sync wishlist status from server
+  // Sync wishlist status from server - chỉ khi popover mở và product thay đổi
   useEffect(() => {
-    const syncWishlist = async () => {
-      if (!isOpen) return;
+    if (!isOpen) return;
 
+    let isMounted = true;
+    const syncWishlist = async () => {
       try {
-        const allWishlistItems = await getAllWishlistItems();
-        setIsInWishlist(allWishlistItems.includes(product.id));
+        const allWishlistItems = await getAllWishlistItemsRef.current();
+        if (isMounted) {
+          setIsInWishlist(allWishlistItems.includes(product.id));
+        }
       } catch (error) {
         // Fallback to local storage
-        setIsInWishlist(cart.isItemInWishlist(product.id));
+        if (isMounted) {
+          setIsInWishlist(cartRef.current.isItemInWishlist(product.id));
+        }
       }
     };
 
     syncWishlist();
-  }, [product.id, isOpen, getAllWishlistItems, cart]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [product.id, isOpen]); // Sử dụng ref để tránh stale closure và đảm bảo dependencies array không đổi
 
   // Reset when product changes
   useEffect(() => {
@@ -461,6 +489,7 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
                           src={img.url}
                           alt={`Thumbnail ${idx + 1}`}
                           fill
+                          sizes="(max-width: 640px) 60px, 80px"
                           className="object-cover"
                         />
                       </button>
@@ -495,6 +524,7 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
                       src={images[currentImage]?.url || "/placeholder.svg"}
                       alt={product.name}
                       fill
+                      sizes="(max-width: 640px) 100vw, 400px"
                       className="object-cover transition-opacity duration-500"
                       priority
                     />
@@ -822,20 +852,25 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
 
               {/* Action Buttons */}
               <div className="flex flex-col gap-3 pt-4">
-                <Button
-                  ref={addToCartButtonRef}
-                  onClick={onAddToCart}
-                  disabled={
-                    isOutOfStock ||
-                    (variants.length > 0 &&
-                      (!selectedSizeId || !selectedColorId))
-                  }
-                  variant="default"
-                  className="w-full rounded-none py-3 text-sm font-light uppercase tracking-wider"
+                <motion.div
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ duration: 0.1 }}
                 >
-                  <ShoppingCart className="w-4 h-4 mr-2" />
-                  Thêm vào giỏ hàng
-                </Button>
+                  <Button
+                    ref={addToCartButtonRef}
+                    onClick={onAddToCart}
+                    disabled={
+                      isOutOfStock ||
+                      (variants.length > 0 &&
+                        (!selectedSizeId || !selectedColorId))
+                    }
+                    variant="default"
+                    className="w-full rounded-none py-3 text-sm font-light uppercase tracking-wider"
+                  >
+                    <ShoppingCart className="w-4 h-4 mr-2" />
+                    Thêm vào giỏ hàng
+                  </Button>
+                </motion.div>
                 <Button
                   onClick={handleBuyNow}
                   disabled={

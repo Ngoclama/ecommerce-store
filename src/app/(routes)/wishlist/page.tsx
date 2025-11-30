@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Container from "@/components/ui/container";
 import ProductList from "@/components/product-list";
 import useCart from "@/hooks/use-cart";
@@ -27,22 +27,38 @@ const WishlistPage = () => {
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [sortBy, setSortBy] = useState<"name" | "price" | "newest">("newest");
+  const wishlistItemsRef = useRef<string[]>([]);
+
+  // Cập nhật ref khi wishlistItems thay đổi
+  useEffect(() => {
+    wishlistItemsRef.current = wishlistItems;
+  }, [wishlistItems]);
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchWishlistProducts = async () => {
       setLoading(true);
       try {
-        // Sync với server nếu user đã đăng nhập
+        // Sync với server nếu user đã đăng nhập (chỉ sync một lần khi mount)
         let serverWishlistItems: string[] = [];
         if (isSignedIn) {
           try {
             serverWishlistItems = await getAllWishlistItems();
-            // Cập nhật localStorage với dữ liệu từ server
-            if (serverWishlistItems.length > 0) {
-              setWishlist(serverWishlistItems);
-            } else {
-              // Nếu server không có, xóa localStorage
-              setWishlist([]);
+            // Cập nhật localStorage với dữ liệu từ server (chỉ nếu có thay đổi)
+            if (isMounted) {
+              const currentWishlistKey = wishlistItemsRef.current
+                .sort()
+                .join(",");
+              const serverWishlistKey = serverWishlistItems.sort().join(",");
+
+              if (currentWishlistKey !== serverWishlistKey) {
+                if (serverWishlistItems.length > 0) {
+                  setWishlist(serverWishlistItems);
+                } else {
+                  setWishlist([]);
+                }
+              }
             }
           } catch (error) {
             console.error("Error syncing wishlist from server:", error);
@@ -50,9 +66,13 @@ const WishlistPage = () => {
           }
         }
 
-        // Sử dụng server wishlist nếu có, nếu không thì dùng localStorage
+        if (!isMounted) return;
+
+        // Sử dụng wishlistItems hiện tại từ ref (đã được sync hoặc từ localStorage)
         const finalWishlistItems =
-          serverWishlistItems.length > 0 ? serverWishlistItems : wishlistItems;
+          isSignedIn && serverWishlistItems.length > 0
+            ? serverWishlistItems
+            : wishlistItemsRef.current;
 
         if (finalWishlistItems.length === 0) {
           setProducts([]);
@@ -61,6 +81,8 @@ const WishlistPage = () => {
         }
 
         const allProducts = await getProducts({});
+
+        if (!isMounted) return;
 
         // Filter products that are in wishlist
         const wishlistProducts = allProducts.filter((product: Product) =>
@@ -88,14 +110,22 @@ const WishlistPage = () => {
         setProducts(sortedProducts);
       } catch (error) {
         console.error("Error fetching wishlist products:", error);
-        setProducts([]);
+        if (isMounted) {
+          setProducts([]);
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchWishlistProducts();
-  }, [wishlistItems, sortBy, getAllWishlistItems, isSignedIn, setWishlist]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [sortBy, isSignedIn]); // Chỉ phụ thuộc vào sortBy và isSignedIn
 
   if (loading) {
     return (
@@ -113,7 +143,7 @@ const WishlistPage = () => {
   }
 
   return (
-    <div className="bg-white min-h-screen">
+    <div className="bg-white dark:bg-gray-900 min-h-screen">
       <Container>
         <div className="px-4 py-12 sm:px-6 lg:px-8">
           {/* Header Section - Modern 2025 Style */}
@@ -129,10 +159,10 @@ const WishlistPage = () => {
                   <Heart className="w-6 h-6 text-red-500 fill-red-500" />
                 </div>
                 <div>
-                  <h1 className="text-3xl md:text-4xl lg:text-5xl font-light text-black uppercase tracking-tight leading-tight">
+                  <h1 className="text-3xl md:text-4xl lg:text-5xl font-light text-black dark:text-white uppercase tracking-tight leading-tight">
                     Sản phẩm yêu thích
                   </h1>
-                  <p className="text-sm text-gray-500 font-light mt-2">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 font-light mt-2">
                     {products.length > 0
                       ? `${products.length} sản phẩm trong danh sách yêu thích`
                       : "Chưa có sản phẩm yêu thích"}

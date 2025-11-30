@@ -1,7 +1,7 @@
 "use client";
 
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +29,7 @@ const Summary = () => {
   const [couponLoading, setCouponLoading] = useState(false);
   const [shippingCost, setShippingCost] = useState(0);
   const [customerNote, setCustomerNote] = useState("");
+  const prevItemsRef = useRef<string>("");
 
   // Calculate subtotal
   const subtotal = items.reduce((total, item) => {
@@ -74,12 +75,45 @@ const Summary = () => {
 
     setCouponLoading(true);
     try {
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/coupons?code=${couponCode}`
-      );
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      if (!apiUrl) {
+        toast.error("Cấu hình API không hợp lệ");
+        setCouponLoading(false);
+        return;
+      }
 
-      if (response.data && response.data.length > 0) {
+      // Sử dụng API route proxy trong store thay vì gọi trực tiếp admin
+      const url = `/api/coupons?code=${encodeURIComponent(
+        couponCode.trim().toUpperCase()
+      )}`;
+
+      if (process.env.NODE_ENV === "development") {
+        console.log("[COUPON_APPLY] Requesting URL:", url);
+      }
+
+      const response = await axios.get(url, {
+        timeout: 10000,
+      });
+
+      if (process.env.NODE_ENV === "development") {
+        console.log("[COUPON_APPLY] Response:", response.data);
+      }
+
+      // Kiểm tra response format
+      if (
+        response.data &&
+        Array.isArray(response.data) &&
+        response.data.length > 0
+      ) {
         const coupon = response.data[0];
+
+        // Validate coupon data
+        if (!coupon.code || !coupon.value || !coupon.type) {
+          toast.error("Dữ liệu mã giảm giá không hợp lệ");
+          setCouponLoading(false);
+          return;
+        }
+
         const couponData = {
           code: coupon.code,
           value: coupon.value,
@@ -90,11 +124,98 @@ const Summary = () => {
         localStorage.setItem("appliedCoupon", JSON.stringify(couponData));
         toast.success("Áp dụng mã giảm giá thành công!");
         setCouponCode("");
+      } else if (response.data && response.data.success === false) {
+        // API trả về error message
+        const message = response.data.message || "";
+        // Kiểm tra nếu mã đã hết hạn
+        if (
+          message.toLowerCase().includes("expired") ||
+          message.toLowerCase().includes("hết hạn")
+        ) {
+          toast.error("Mã này đã hết hạn sử dụng");
+        } else {
+          toast.error(message || "Mã giảm giá không hợp lệ hoặc đã hết hạn");
+        }
       } else {
         toast.error("Mã giảm giá không hợp lệ hoặc đã hết hạn");
       }
-    } catch (error) {
-      toast.error("Không thể áp dụng mã giảm giá");
+    } catch (error: any) {
+      // Xử lý lỗi chi tiết hơn
+      if (error.response) {
+        // Server trả về error response
+        const status = error.response.status;
+        const message =
+          error.response.data?.message || error.response.data?.error || "";
+
+        if (status === 404) {
+          // 404 có thể là endpoint không tồn tại hoặc coupon không tìm thấy/hết hạn
+          // Kiểm tra nếu message chứa "expired" hoặc "hết hạn" - đây là mã hết hạn, chỉ toast không log error
+          const isExpired =
+            message.toLowerCase().includes("expired") ||
+            message.toLowerCase().includes("hết hạn") ||
+            message.toLowerCase().includes("not found or expired");
+
+          if (isExpired) {
+            // Mã hết hạn - chỉ toast, không log error
+            toast.error("Mã này đã hết hạn sử dụng");
+          } else {
+            // Lỗi thực sự (endpoint không tồn tại, server error) - log error
+            if (process.env.NODE_ENV === "development") {
+              console.error(
+                "[COUPON_APPLY_ERROR] 404 - URL:",
+                error.config?.url
+              );
+              console.error(
+                "[COUPON_APPLY_ERROR] Response:",
+                error.response.data
+              );
+              console.error(
+                "[COUPON_APPLY_ERROR] Admin server should be running on port 3000"
+              );
+            }
+
+            if (message) {
+              toast.error(message);
+            } else {
+              toast.error(
+                "Mã giảm giá không tồn tại. Vui lòng kiểm tra lại mã hoặc đảm bảo admin server đang chạy."
+              );
+            }
+          }
+        } else if (status === 400) {
+          toast.error(message || "Mã giảm giá không hợp lệ");
+        } else {
+          // Lỗi server (500, etc.) - log error
+          if (process.env.NODE_ENV === "development") {
+            console.error(
+              "[COUPON_APPLY_ERROR] Server error:",
+              status,
+              error.response.data
+            );
+          }
+          toast.error(message || "Không thể áp dụng mã giảm giá");
+        }
+      } else if (error.request) {
+        // Request được gửi nhưng không nhận được response - đây là lỗi network, log error
+        if (process.env.NODE_ENV === "development") {
+          console.error(
+            "[COUPON_APPLY_ERROR] No response - URL:",
+            error.config?.url
+          );
+          console.error(
+            "[COUPON_APPLY_ERROR] Check if admin server is running on port 3000"
+          );
+        }
+        toast.error(
+          "Không thể kết nối đến server. Vui lòng đảm bảo admin server đang chạy."
+        );
+      } else {
+        // Lỗi khác - log error
+        if (process.env.NODE_ENV === "development") {
+          console.error("[COUPON_APPLY_ERROR]", error);
+        }
+        toast.error("Không thể áp dụng mã giảm giá. Vui lòng thử lại.");
+      }
     } finally {
       setCouponLoading(false);
     }
@@ -107,23 +228,27 @@ const Summary = () => {
     toast.info("Đã xóa mã giảm giá");
   };
 
-  // Load coupon và customerNote từ localStorage khi component mount
+  // Reset mã giảm giá và ghi chú khi giỏ hàng thay đổi (thêm/xóa sản phẩm)
   useEffect(() => {
-    const savedCoupon = localStorage.getItem("appliedCoupon");
-    if (savedCoupon) {
-      try {
-        const coupon = JSON.parse(savedCoupon);
-        setAppliedCoupon(coupon);
-      } catch (error) {
-        localStorage.removeItem("appliedCoupon");
-      }
+    // Tạo một key duy nhất từ danh sách items để detect thay đổi
+    const itemsKey = items
+      .map((item) => item.cartItemId)
+      .sort()
+      .join(",");
+
+    // Chỉ reset khi items thực sự thay đổi (không phải lần đầu mount)
+    if (prevItemsRef.current && prevItemsRef.current !== itemsKey) {
+      setAppliedCoupon(null);
+      setCustomerNote("");
+      setCouponCode("");
+      // Xóa khỏi localStorage
+      localStorage.removeItem("appliedCoupon");
+      localStorage.removeItem("customerNote");
     }
 
-    const savedNote = localStorage.getItem("customerNote");
-    if (savedNote) {
-      setCustomerNote(savedNote);
-    }
-  }, []);
+    // Lưu key hiện tại
+    prevItemsRef.current = itemsKey;
+  }, [items]);
 
   const onCheckout = () => {
     // Yêu cầu đăng nhập trước khi thanh toán

@@ -73,15 +73,15 @@ const SearchPage = async ({ searchParams }: { searchParams: SearchParams }) => {
   }
 
   return (
-    <div className="bg-white min-h-screen">
+    <div className="bg-white dark:bg-gray-900 min-h-screen">
       <Container>
         <div className="px-4 py-16 sm:px-6 lg:px-8">
           <div className="mb-8">
-            <h1 className="text-3xl md:text-4xl font-light text-black mb-2 uppercase tracking-wider">
+            <h1 className="text-3xl md:text-4xl font-light text-black dark:text-white mb-2 uppercase tracking-wider">
               Kết quả tìm kiếm
             </h1>
             {query && (
-              <p className="text-gray-600 text-sm font-light">
+              <p className="text-gray-600 dark:text-gray-400 text-sm font-light">
                 Tìm thấy {pagination?.totalCount || products.length} sản phẩm
                 cho &quot;{query}&quot;
               </p>
@@ -90,7 +90,7 @@ const SearchPage = async ({ searchParams }: { searchParams: SearchParams }) => {
 
           {!query ? (
             <div className="py-20 text-center">
-              <p className="text-gray-500 text-sm font-light">
+              <p className="text-gray-500 dark:text-gray-400 text-sm font-light">
                 Vui lòng nhập từ khóa tìm kiếm
               </p>
             </div>

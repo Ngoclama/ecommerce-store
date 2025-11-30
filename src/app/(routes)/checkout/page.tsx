@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import Container from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -63,6 +63,8 @@ export default function CheckoutPage() {
   } | null>(null);
 
   const [customerNote, setCustomerNote] = useState("");
+  const hasProcessedPayment = useRef(false);
+
   useEffect(() => {
     const savedCoupon = localStorage.getItem("appliedCoupon");
     if (savedCoupon) {
@@ -106,18 +108,41 @@ export default function CheckoutPage() {
   // Total = subtotal - discount + shipping
   const finalTotal = subtotal - discount + shippingFee;
 
+  // Lấy giá trị từ searchParams bằng useMemo với string comparison để tránh vòng lặp
+  const paymentSuccess = useMemo(
+    () => searchParams.get("success"),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [searchParams.toString()]
+  );
+  const paymentCanceled = useMemo(
+    () => searchParams.get("canceled"),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [searchParams.toString()]
+  );
+
   // Handle success/cancel from payment
   useEffect(() => {
-    if (searchParams.get("success")) {
-      toast.success("Thanh toán thành công! Đơn hàng của bạn đang được xử lý.");
-      cart.removeAll();
-      router.push("/account/orders");
+    // Chỉ xử lý một lần để tránh vòng lặp vô hạn
+    if (hasProcessedPayment.current) {
+      return;
     }
 
-    if (searchParams.get("canceled")) {
+    if (paymentSuccess) {
+      hasProcessedPayment.current = true;
+      toast.success("Thanh toán thành công! Đơn hàng của bạn đang được xử lý.");
+      // Sử dụng setTimeout để tránh cập nhật state trong quá trình render
+      setTimeout(() => {
+        cart.removeAll();
+        router.push("/account/orders");
+      }, 0);
+      return;
+    }
+
+    if (paymentCanceled) {
+      hasProcessedPayment.current = true;
       toast.error("Thanh toán đã bị hủy. Vui lòng thử lại.");
     }
-  }, [searchParams, cart, router]);
+  }, [paymentSuccess, paymentCanceled, cart, router]);
 
   // Validate shipping address
   const validateShippingAddress = (): boolean => {
@@ -158,6 +183,8 @@ export default function CheckoutPage() {
   const handleContinueToStep2 = () => {
     if (validateShippingAddress()) {
       setStep(2);
+      // Scroll về đầu trang
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } else {
       toast.error("Vui lòng điền đầy đủ thông tin địa chỉ giao hàng");
     }
@@ -169,6 +196,8 @@ export default function CheckoutPage() {
       return;
     }
     setStep(3);
+    // Scroll về đầu trang
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleCheckout = async () => {
@@ -192,6 +221,9 @@ export default function CheckoutPage() {
       setStep(2);
       return;
     }
+
+    // Scroll về đầu trang trước khi thanh toán
+    window.scrollTo({ top: 0, behavior: "smooth" });
 
     setLoading(true);
 
@@ -660,16 +692,16 @@ export default function CheckoutPage() {
                     className="space-y-6"
                   >
                     {/* Shipping Method */}
-                    <div className="bg-white p-8 border border-gray-300 rounded-none">
-                      <div className="flex items-center gap-3 mb-6">
-                        <div className="w-12 h-12 bg-gray-50 border border-gray-200 flex items-center justify-center rounded-none">
-                          <Truck className="w-6 h-6 text-black" />
+                    <div className="bg-white dark:bg-gray-900 p-8 border border-gray-300 dark:border-gray-700 rounded-none">
+                      <div className="flex items-center gap-3 mb-8">
+                        <div className="w-12 h-12 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center rounded-none">
+                          <Truck className="w-6 h-6 text-black dark:text-white" />
                         </div>
                         <div>
-                          <h2 className="text-2xl font-light text-black uppercase tracking-wider">
+                          <h2 className="text-2xl font-light text-black dark:text-white uppercase tracking-wider">
                             Phương thức vận chuyển
                           </h2>
-                          <p className="text-xs text-gray-500 font-light mt-1">
+                          <p className="text-xs text-gray-500 dark:text-gray-400 font-light mt-1">
                             Chọn cách giao hàng phù hợp với bạn
                           </p>
                         </div>
@@ -680,48 +712,132 @@ export default function CheckoutPage() {
                         onValueChange={setShippingMethod}
                         className="space-y-4"
                       >
-                        <div className="flex items-center space-x-3 p-5 border border-gray-300 hover:border-black transition rounded-none cursor-pointer">
-                          <RadioGroupItem value="standard" id="standard" />
+                        {/* Standard Shipping */}
+                        <motion.div
+                          whileHover={{ scale: 1.01 }}
+                          whileTap={{ scale: 0.99 }}
+                          className={cn(
+                            "relative flex items-start gap-4 p-6 border-2 rounded-none cursor-pointer transition-all duration-200",
+                            shippingMethod === "standard"
+                              ? "border-black dark:border-white bg-gray-50 dark:bg-gray-800"
+                              : "border-gray-300 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-600 bg-white dark:bg-gray-900"
+                          )}
+                          onClick={() => setShippingMethod("standard")}
+                        >
+                          <div className="shrink-0 mt-1">
+                            <RadioGroupItem
+                              value="standard"
+                              id="standard"
+                              className="border-gray-400 dark:border-gray-600"
+                            />
+                          </div>
                           <Label
                             htmlFor="standard"
                             className="flex-1 cursor-pointer"
                           >
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <p className="font-light text-sm uppercase tracking-wider text-black">
-                                  Giao hàng tiêu chuẩn
-                                </p>
-                                <p className="text-xs text-gray-600 font-light mt-1">
-                                  3-5 ngày làm việc
-                                </p>
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex items-start gap-4 flex-1">
+                                <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center rounded-none shrink-0">
+                                  <Truck className="w-6 h-6 text-black dark:text-white" />
+                                </div>
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <p className="font-light text-sm uppercase tracking-wider text-black dark:text-white">
+                                      Giao hàng tiêu chuẩn
+                                    </p>
+                                    {shippingFee === 0 && (
+                                      <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs font-medium uppercase tracking-wide">
+                                        Miễn phí
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="text-xs text-gray-600 dark:text-gray-400 font-light">
+                                    3-5 ngày làm việc
+                                  </p>
+                                  <p className="text-xs text-gray-500 dark:text-gray-500 font-light mt-1">
+                                    Giao hàng trong giờ hành chính
+                                  </p>
+                                </div>
                               </div>
-                              <span className="font-light text-black text-sm">
-                                {shippingFee === 0 ? "Miễn phí" : "30.000₫"}
-                              </span>
+                              <div className="text-right shrink-0">
+                                {shippingFee === 0 ? (
+                                  <span className="text-lg font-light text-green-600 dark:text-green-400">
+                                    Miễn phí
+                                  </span>
+                                ) : (
+                                  <span className="text-lg font-light text-black dark:text-white">
+                                    30.000₫
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </Label>
-                        </div>
-                        <div className="flex items-center space-x-3 p-5 border border-gray-300 hover:border-black transition rounded-none cursor-pointer">
-                          <RadioGroupItem value="express" id="express" />
+                        </motion.div>
+
+                        {/* Express Shipping */}
+                        <motion.div
+                          whileHover={{ scale: 1.01 }}
+                          whileTap={{ scale: 0.99 }}
+                          className={cn(
+                            "relative flex items-start gap-4 p-6 border-2 rounded-none cursor-pointer transition-all duration-200",
+                            shippingMethod === "express"
+                              ? "border-black dark:border-white bg-gray-50 dark:bg-gray-800"
+                              : "border-gray-300 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-600 bg-white dark:bg-gray-900"
+                          )}
+                          onClick={() => setShippingMethod("express")}
+                        >
+                          <div className="shrink-0 mt-1">
+                            <RadioGroupItem
+                              value="express"
+                              id="express"
+                              className="border-gray-400 dark:border-gray-600"
+                            />
+                          </div>
                           <Label
                             htmlFor="express"
                             className="flex-1 cursor-pointer"
                           >
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <p className="font-light text-sm uppercase tracking-wider text-black">
-                                  Giao hàng nhanh
-                                </p>
-                                <p className="text-xs text-gray-600 font-light mt-1">
-                                  1-2 ngày làm việc
-                                </p>
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex items-start gap-4 flex-1">
+                                <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-800 flex items-center justify-center rounded-none shrink-0">
+                                  <Truck className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+                                </div>
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <p className="font-light text-sm uppercase tracking-wider text-black dark:text-white">
+                                      Giao hàng nhanh
+                                    </p>
+                                    {subtotal >= 500000 && (
+                                      <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs font-medium uppercase tracking-wide">
+                                        Miễn phí
+                                      </span>
+                                    )}
+                                    <span className="px-2 py-0.5 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 text-xs font-medium uppercase tracking-wide">
+                                      Nhanh
+                                    </span>
+                                  </div>
+                                  <p className="text-xs text-gray-600 dark:text-gray-400 font-light">
+                                    1-2 ngày làm việc
+                                  </p>
+                                  <p className="text-xs text-gray-500 dark:text-gray-500 font-light mt-1">
+                                    Giao hàng ưu tiên, hỗ trợ giao ngoài giờ
+                                  </p>
+                                </div>
                               </div>
-                              <span className="font-light text-black text-sm">
-                                {subtotal >= 500000 ? "Miễn phí" : "50.000₫"}
-                              </span>
+                              <div className="text-right shrink-0">
+                                {subtotal >= 500000 ? (
+                                  <span className="text-lg font-light text-green-600 dark:text-green-400">
+                                    Miễn phí
+                                  </span>
+                                ) : (
+                                  <span className="text-lg font-light text-black dark:text-white">
+                                    50.000₫
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </Label>
-                        </div>
+                        </motion.div>
                       </RadioGroup>
                     </div>
 
