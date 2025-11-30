@@ -6,7 +6,12 @@ export const revalidate = 0;
 
 const CartPage = async () => {
   // Fetch all products for cart items
-  const products = await getProducts({}).catch(() => []);
+  const productsResult = await getProducts({}).catch(() => []);
+  
+  // Handle different return types from getProducts
+  const products = Array.isArray(productsResult) 
+    ? productsResult 
+    : productsResult?.products || [];
 
   return (
     <div className="bg-white min-h-screen py-12 md:py-16">
