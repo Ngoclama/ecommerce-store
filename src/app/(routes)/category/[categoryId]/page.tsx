@@ -32,11 +32,17 @@ const CategoryPage = async ({
 }) => {
     const { categoryId } = await params;
     const { colorId, sizeId } = await searchParams;
-  const products = await getProducts({
+  const productsResult = await getProducts({
     categoryId: categoryId,
     colorId: colorId,
     sizeId: sizeId,
   });
+  
+  // Handle different return types from getProducts
+  const products = Array.isArray(productsResult) 
+    ? productsResult 
+    : productsResult?.products || [];
+    
     const sizes = await getSizes();
     const colors = await getColors();
   const category = await getCategory(categoryId);

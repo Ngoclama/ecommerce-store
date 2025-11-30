@@ -80,7 +80,12 @@ const WishlistPage = () => {
           return;
         }
 
-        const allProducts = await getProducts({});
+        const allProductsResult = await getProducts({});
+        
+        // Handle different return types from getProducts
+        const allProducts = Array.isArray(allProductsResult) 
+          ? allProductsResult 
+          : allProductsResult?.products || [];
 
         if (!isMounted) return;
 

@@ -28,9 +28,15 @@ const ProductPage = async ({ params }: { params: Params }) => {
     );
   }
 
-  const suggestProducts = await getProducts({
+  const suggestProductsResult = await getProducts({
     categoryId: product?.category?.id,
   });
+  
+  // Handle different return types from getProducts
+  const suggestProducts = Array.isArray(suggestProductsResult) 
+    ? suggestProductsResult 
+    : suggestProductsResult?.products || [];
+    
   return (
     <div className="bg-white">
       <ProductClient product={product} />
