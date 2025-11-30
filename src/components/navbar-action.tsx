@@ -53,7 +53,7 @@ export const NavbarActions: React.FC = () => {
 
   useEffect(() => {
     let isMounted = true;
-    
+
     const syncWishlist = async () => {
       if (!isSignedIn) {
         if (isMounted) {
@@ -72,20 +72,20 @@ export const NavbarActions: React.FC = () => {
       setIsSyncing(true);
       try {
         const serverWishlistItems = await getAllWishlistItems();
-        
+
         if (!isMounted) return;
-        
+
         const newCount = serverWishlistItems.length;
         const wishlistKey = serverWishlistItems.sort().join(",");
-        
+
         // Chỉ update nếu có thay đổi so với lần sync trước
         if (lastSyncRef.current !== wishlistKey) {
           setSyncedWishlistCount(newCount);
           lastSyncRef.current = wishlistKey;
-          
+
           // So sánh với wishlist hiện tại từ ref
           const currentWishlistKey = wishlistItemsRef.current.sort().join(",");
-          
+
           // Chỉ update wishlist nếu khác với hiện tại
           if (wishlistKey !== currentWishlistKey) {
             if (serverWishlistItems.length > 0) {
@@ -116,7 +116,7 @@ export const NavbarActions: React.FC = () => {
       if (syncIntervalRef.current) {
         clearInterval(syncIntervalRef.current);
       }
-      
+
       // Set interval mới - sync mỗi 30 giây
       syncIntervalRef.current = setInterval(syncWishlist, 30000);
     } else {
@@ -174,8 +174,10 @@ export const NavbarActions: React.FC = () => {
 
   // Sử dụng syncedWishlistCount nếu đã đăng nhập, nếu không dùng wishlistItems.length
   // Nhưng nếu đang sync thì giữ nguyên count để tránh flicker
-  const wishlistCount = isSignedIn 
-    ? (isSyncing ? syncedWishlistCount : syncedWishlistCount)
+  const wishlistCount = isSignedIn
+    ? isSyncing
+      ? syncedWishlistCount
+      : syncedWishlistCount
     : wishlistItems.length;
 
   return (
@@ -267,6 +269,8 @@ export const NavbarActions: React.FC = () => {
         onClick={() => setIsOpen(true)}
         className="relative p-2 text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-400 transition-colors duration-200 group flex items-center justify-center"
         aria-label="Giỏ hàng"
+        data-cart-icon="true"
+        id="cart-icon-button"
       >
         <ShoppingBag className="w-5 h-5" />
         {cart.items.length > 0 && (

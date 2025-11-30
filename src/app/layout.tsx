@@ -47,7 +47,14 @@ export default async function RootLayout({
       <body
         className={`${montserratAlternates.variable} ${beVietnamPro.variable}`}
       >
-        <ClerkProvider signInUrl="/sign-in" signUpUrl="/sign-up">
+        <ClerkProvider 
+          signInUrl="/sign-in" 
+          signUpUrl="/sign-up"
+          appearance={{
+            // Suppress development warning in console
+            variables: { colorPrimary: "#000" }
+          }}
+        >
           <ThemeProvider>
             <CartAnimationProvider>
               <MainHeader
