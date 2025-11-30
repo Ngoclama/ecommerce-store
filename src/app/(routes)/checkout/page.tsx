@@ -229,8 +229,15 @@ export default function CheckoutPage() {
 
     try {
       if (paymentMethod === "cod") {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+        if (!apiUrl) {
+          toast.error("Cấu hình API không hợp lệ. Vui lòng liên hệ hỗ trợ.");
+          setLoading(false);
+          return;
+        }
+
         const response = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/checkout`,
+          `${apiUrl}/api/checkout`,
           {
             items: cart.items.map((item) => ({
               productId: item.id,
@@ -258,6 +265,13 @@ export default function CheckoutPage() {
                 }
               : null,
             customerNote: customerNote.trim() || null,
+          },
+          {
+            withCredentials: true,
+            timeout: 30000, // 30 seconds timeout
+            headers: {
+              "Content-Type": "application/json",
+            },
           }
         );
 
@@ -274,8 +288,15 @@ export default function CheckoutPage() {
       }
 
       if (paymentMethod === "stripe") {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+        if (!apiUrl) {
+          toast.error("Cấu hình API không hợp lệ. Vui lòng liên hệ hỗ trợ.");
+          setLoading(false);
+          return;
+        }
+
         const response = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/checkout`,
+          `${apiUrl}/api/checkout`,
           {
             items: cart.items.map((item) => ({
               productId: item.id,
@@ -303,13 +324,21 @@ export default function CheckoutPage() {
                 }
               : null,
             customerNote: customerNote.trim() || null,
+          },
+          {
+            withCredentials: true,
+            timeout: 30000, // 30 seconds timeout
+            headers: {
+              "Content-Type": "application/json",
+            },
           }
         );
 
-        if (response.data.url) {
+        if (response.data?.url) {
           window.location.href = response.data.url;
         } else {
           toast.error("Không thể tạo phiên thanh toán. Vui lòng thử lại.");
+          setLoading(false);
         }
         return;
       }
@@ -330,17 +359,42 @@ export default function CheckoutPage() {
       let errorMessage =
         "Có lỗi xảy ra khi thanh toán. Vui lòng kiểm tra lại tồn kho và trạng thái sản phẩm.";
 
-      if (error.response?.data) {
-        if (typeof error.response.data === "string") {
-          errorMessage = error.response.data;
-        } else if (error.response.data.message) {
-          errorMessage = error.response.data.message;
+      // Network errors
+      if (error.code === "ECONNABORTED" || error.message?.includes("timeout")) {
+        errorMessage =
+          "Kết nối quá lâu. Vui lòng kiểm tra kết nối mạng và thử lại.";
+      } else if (
+        error.code === "ERR_NETWORK" ||
+        error.message?.includes("Network Error")
+      ) {
+        errorMessage =
+          "Lỗi kết nối mạng. Vui lòng kiểm tra:\n- Kết nối internet của bạn\n- Cấu hình API URL trong môi trường\n- CORS settings trên server";
+      } else if (error.response) {
+        // Server responded with error status
+        if (error.response.status === 0) {
+          errorMessage =
+            "Không thể kết nối đến server. Vui lòng kiểm tra NEXT_PUBLIC_API_URL.";
+        } else if (error.response.status >= 500) {
+          errorMessage =
+            "Lỗi server. Vui lòng thử lại sau hoặc liên hệ hỗ trợ.";
+        } else if (error.response.data) {
+          if (typeof error.response.data === "string") {
+            errorMessage = error.response.data;
+          } else if (error.response.data.message) {
+            errorMessage = error.response.data.message;
+          }
+        } else {
+          errorMessage = `Lỗi ${error.response.status}: ${
+            error.response.statusText || "Unknown error"
+          }`;
         }
       } else if (error.message) {
         errorMessage = error.message;
       }
 
-      toast.error(errorMessage);
+      toast.error(errorMessage, {
+        duration: 5000,
+      });
     } finally {
       setLoading(false);
     }
