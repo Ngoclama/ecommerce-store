@@ -231,13 +231,20 @@ export default function CheckoutPage() {
       if (paymentMethod === "cod") {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL;
         if (!apiUrl) {
+          console.error("[CHECKOUT] NEXT_PUBLIC_API_URL is not configured");
           toast.error("Cấu hình API không hợp lệ. Vui lòng liên hệ hỗ trợ.");
           setLoading(false);
           return;
         }
 
+        // Normalize API URL (remove trailing slash, ensure proper format)
+        const normalizedApiUrl = apiUrl.replace(/\/$/, "");
+        const checkoutUrl = `${normalizedApiUrl}/api/checkout`;
+
+        console.log("[CHECKOUT] Calling API:", checkoutUrl);
+
         const response = await axios.post(
-          `${apiUrl}/api/checkout`,
+          checkoutUrl,
           {
             items: cart.items.map((item) => ({
               productId: item.id,
@@ -290,13 +297,20 @@ export default function CheckoutPage() {
       if (paymentMethod === "stripe") {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL;
         if (!apiUrl) {
+          console.error("[CHECKOUT] NEXT_PUBLIC_API_URL is not configured");
           toast.error("Cấu hình API không hợp lệ. Vui lòng liên hệ hỗ trợ.");
           setLoading(false);
           return;
         }
 
+        // Normalize API URL (remove trailing slash, ensure proper format)
+        const normalizedApiUrl = apiUrl.replace(/\/$/, "");
+        const checkoutUrl = `${normalizedApiUrl}/api/checkout`;
+
+        console.log("[CHECKOUT] Calling API:", checkoutUrl);
+
         const response = await axios.post(
-          `${apiUrl}/api/checkout`,
+          checkoutUrl,
           {
             items: cart.items.map((item) => ({
               productId: item.id,
@@ -365,10 +379,21 @@ export default function CheckoutPage() {
           "Kết nối quá lâu. Vui lòng kiểm tra kết nối mạng và thử lại.";
       } else if (
         error.code === "ERR_NETWORK" ||
-        error.message?.includes("Network Error")
+        error.message?.includes("Network Error") ||
+        error.message?.includes("Failed to fetch")
       ) {
-        errorMessage =
-          "Lỗi kết nối mạng. Vui lòng kiểm tra:\n- Kết nối internet của bạn\n- Cấu hình API URL trong môi trường\n- CORS settings trên server";
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+        errorMessage = `Lỗi kết nối mạng. Vui lòng kiểm tra:\n- Kết nối internet của bạn\n- API URL: ${
+          apiUrl || "Chưa được cấu hình"
+        }\n- CORS settings trên server`;
+
+        // Log detailed error for debugging
+        console.error("[CHECKOUT_NETWORK_ERROR]", {
+          apiUrl,
+          errorCode: error.code,
+          errorMessage: error.message,
+          stack: error.stack,
+        });
       } else if (error.response) {
         // Server responded with error status
         if (error.response.status === 0) {
