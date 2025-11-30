@@ -173,8 +173,11 @@ const Info: React.FC<InfoProps> = ({ data }) => {
     setTimeout(() => {
       toast.success("Đã thêm vào giỏ hàng");
       
-      // If we're on the cart page, refresh to show the new item
+      // If we're on the cart page, trigger a refresh
       if (typeof window !== "undefined" && window.location.pathname === "/cart") {
+        // Dispatch a custom event that CartClient can listen to
+        window.dispatchEvent(new CustomEvent("cart-updated"));
+        // Also try router refresh
         router.refresh();
       }
     }, 100);
