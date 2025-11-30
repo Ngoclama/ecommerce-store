@@ -17,11 +17,22 @@ const HomePage = async () => {
   ]);
 
   const billboards = results[0].status === "fulfilled" ? results[0].value : [];
-  const featuredProducts =
+  const featuredProductsResult =
     results[1].status === "fulfilled" ? results[1].value : [];
   const categories = results[2].status === "fulfilled" ? results[2].value : [];
-  const newProducts = results[3].status === "fulfilled" ? results[3].value : [];
-  const bestSellers = results[4].status === "fulfilled" ? results[4].value : [];
+  const newProductsResult = results[3].status === "fulfilled" ? results[3].value : [];
+  const bestSellersResult = results[4].status === "fulfilled" ? results[4].value : [];
+
+  // Handle different return types from getProducts
+  const featuredProducts = Array.isArray(featuredProductsResult) 
+    ? featuredProductsResult 
+    : featuredProductsResult?.products || [];
+  const newProducts = Array.isArray(newProductsResult) 
+    ? newProductsResult 
+    : newProductsResult?.products || [];
+  const bestSellers = Array.isArray(bestSellersResult) 
+    ? bestSellersResult 
+    : bestSellersResult?.products || [];
 
   // Get latest products
   const latestProducts = newProducts
