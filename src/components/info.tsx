@@ -211,16 +211,16 @@ const Info: React.FC<InfoProps> = ({ data }) => {
     // Trigger animation
     const primaryImage = data.images?.[0]?.url || "/placeholder.svg";
     if (buyNowButtonRef.current && primaryImage) {
-      setTimeout(() => {
-        triggerAnimation(primaryImage, buyNowButtonRef.current);
-      }, 0);
+      triggerAnimation(primaryImage, buyNowButtonRef.current);
     }
 
-    // Add to cart and redirect to cart page
+    // Add to cart first, then navigate after a short delay to ensure state is persisted
+    cart.addItem(productData, quantity);
+    
+    // Use a longer delay to ensure Zustand persist middleware has time to save to localStorage
     setTimeout(() => {
-      cart.addItem(productData, quantity);
       router.push("/cart");
-    }, 100);
+    }, 200);
   };
 
   const formatVND = (value: number) => {
