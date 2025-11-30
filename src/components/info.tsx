@@ -166,11 +166,18 @@ const Info: React.FC<InfoProps> = ({ data }) => {
       triggerAnimation(primaryImage, addToCartButtonRef.current);
     }
 
-    // Delay adding to cart để animation có thời gian chạy
+    // Add to cart immediately - Zustand will update state synchronously
+    cart.addItem(productData, quantity);
+    
+    // Small delay for toast to show after animation starts
     setTimeout(() => {
-      cart.addItem(productData, quantity);
       toast.success("Đã thêm vào giỏ hàng");
-    }, 200);
+      
+      // If we're on the cart page, refresh to show the new item
+      if (typeof window !== "undefined" && window.location.pathname === "/cart") {
+        router.refresh();
+      }
+    }, 100);
   };
 
   const handleBuyNow: MouseEventHandler<HTMLButtonElement> = (e) => {

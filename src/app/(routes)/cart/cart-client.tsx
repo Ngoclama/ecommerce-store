@@ -8,6 +8,8 @@ import { ShoppingBag, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface CartClientProps {
   products: Product[];
@@ -15,8 +17,28 @@ interface CartClientProps {
 
 const CartClient: React.FC<CartClientProps> = ({ products }) => {
   const cart = useCart();
+  const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+  const [cartItems, setCartItems] = useState(cart.items);
+  
+  // Ensure component is mounted and cart state is hydrated
+  useEffect(() => {
+    setMounted(true);
+    // Sync with cart state on mount
+    setCartItems(cart.items);
+  }, []);
 
-  if (cart.items.length === 0) {
+  // Force re-render when cart items change
+  useEffect(() => {
+    // Update local state when cart.items changes
+    // This ensures the component re-renders even if Zustand persist has a delay
+    setCartItems(cart.items);
+  }, [cart.items]);
+
+  // Use local state for rendering to ensure immediate updates
+  const displayItems = mounted ? cartItems : [];
+
+  if (displayItems.length === 0) {
     return (
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -59,7 +81,7 @@ const CartClient: React.FC<CartClientProps> = ({ products }) => {
     <div className="grid lg:grid-cols-12 gap-6 md:gap-8">
       {/* Cart Items */}
       <div className="lg:col-span-7 space-y-4 md:space-y-6">
-        {cart.items.map((item, index) => (
+        {displayItems.map((item, index) => (
           <motion.div
             key={item.cartItemId}
             initial={{ opacity: 0, y: 20 }}
