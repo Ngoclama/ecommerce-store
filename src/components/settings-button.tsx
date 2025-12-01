@@ -22,13 +22,9 @@ function useThemeSafe() {
 
   useEffect(() => {
     setMounted(true);
-    // Lấy theme từ localStorage hoặc system preference
+    // Lấy theme từ localStorage, mặc định là light mode
     const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
-    const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-      .matches
-      ? "dark"
-      : "light";
-    const initialTheme = savedTheme || systemTheme;
+    const initialTheme = savedTheme || "light";
     setTheme(initialTheme);
 
     // Apply theme to document ngay lập tức

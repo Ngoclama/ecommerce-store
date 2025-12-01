@@ -19,16 +19,17 @@ export default function CategorySidebarLeft({
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     new Set()
   );
-  const [isOpen, setIsOpen] = useState(true);
-
-  // Store state in localStorage for persistence
-  useEffect(() => {
-    const saved = localStorage.getItem("sidebarOpen");
-    if (saved !== null) {
-      setIsOpen(saved === "true");
+  
+  // Initialize state from localStorage if available, otherwise default to false (closed)
+  const [isOpen, setIsOpen] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("sidebarOpen");
+      return saved !== null ? saved === "true" : false;
     }
-  }, []);
+    return false;
+  });
 
+  // Store state in localStorage for persistence and dispatch event
   useEffect(() => {
     localStorage.setItem("sidebarOpen", String(isOpen));
     // Dispatch event for layout to update margin

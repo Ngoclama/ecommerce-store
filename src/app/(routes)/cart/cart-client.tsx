@@ -1,6 +1,5 @@
 "use client";
 
-import { Product } from "@/types";
 import useCart from "@/hooks/use-cart";
 import CartItem from "./components/cart-item";
 import Summary from "./components/summary";
@@ -8,63 +7,94 @@ import { ShoppingBag, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { useEffect, useState, useRef } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import { CartItem as CartItemType } from "@/types";
 
-interface CartClientProps {
-  products: Product[];
-}
-
-const CartClient: React.FC<CartClientProps> = ({ products }) => {
+const CartClient: React.FC = () => {
   const cart = useCart();
-  const router = useRouter();
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
-  const prevItemsLengthRef = useRef(cart.items.length);
-  
-  // Ensure component is mounted and cart state is hydrated
+  const [hydratedItems, setHydratedItems] = useState<CartItemType[]>([]);
+
+  // Read from localStorage immediately on mount for instant display
   useEffect(() => {
     setMounted(true);
-    // Sync with current cart state on mount
-    prevItemsLengthRef.current = cart.items.length;
+
+    // Load from localStorage immediately
+    try {
+      const storageKey = "ecommerce-cart-wishlist-storage";
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed?.state?.items && Array.isArray(parsed.state.items)) {
+          setHydratedItems(parsed.state.items);
+        }
+      }
+    } catch (error) {
+      console.error("[CartClient] Error loading from localStorage:", error);
+    }
   }, []);
 
-  // Force re-render when cart items change
-  useEffect(() => {
-    const currentLength = cart.items.length;
-    // If items changed, force update
-    if (currentLength !== prevItemsLengthRef.current) {
-      prevItemsLengthRef.current = currentLength;
-      setRefreshKey((prev) => prev + 1);
-    }
-  }, [cart.items]);
-
-  // Force refresh when navigating to cart page
+  // Reload when navigating to cart page
   useEffect(() => {
     if (pathname === "/cart" && mounted) {
-      // Small delay to ensure Zustand state is synced
-      const timer = setTimeout(() => {
-        setRefreshKey((prev) => prev + 1);
-      }, 50);
-      return () => clearTimeout(timer);
+      try {
+        const storageKey = "ecommerce-cart-wishlist-storage";
+        const saved = localStorage.getItem(storageKey);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed?.state?.items && Array.isArray(parsed.state.items)) {
+            setHydratedItems(parsed.state.items);
+          }
+        }
+      } catch (error) {
+        console.error("[CartClient] Error reloading on navigate:", error);
+      }
     }
   }, [pathname, mounted]);
 
-  // Listen for cart-updated custom event
+  // Sync with Zustand when it hydrates (cart.items changes)
+  useEffect(() => {
+    if (cart.items.length > 0) {
+      setHydratedItems(cart.items);
+    }
+  }, [cart.items]);
+
+  // Listen for cart-updated event to refresh immediately
   useEffect(() => {
     const handleCartUpdate = () => {
-      setRefreshKey((prev) => prev + 1);
+      // Small delay to ensure localStorage is updated
+      setTimeout(() => {
+        try {
+          const storageKey = "ecommerce-cart-wishlist-storage";
+          const saved = localStorage.getItem(storageKey);
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            if (parsed?.state?.items && Array.isArray(parsed.state.items)) {
+              setHydratedItems(parsed.state.items);
+            }
+          }
+        } catch (error) {
+          console.error("[CartClient] Error on cart update:", error);
+        }
+      }, 50);
     };
 
     window.addEventListener("cart-updated", handleCartUpdate);
     return () => window.removeEventListener("cart-updated", handleCartUpdate);
   }, []);
 
-  // Use cart.items directly - Zustand will handle reactivity
-  const displayItems = mounted ? cart.items : [];
+  // Use hydrated items if available, otherwise use Zustand state
+  // This ensures items display immediately even before Zustand hydrates
+  const items = mounted
+    ? hydratedItems.length > 0
+      ? hydratedItems
+      : cart.items
+    : [];
 
-  if (displayItems.length === 0) {
+  // Empty cart state
+  if (items.length === 0) {
     return (
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -103,16 +133,17 @@ const CartClient: React.FC<CartClientProps> = ({ products }) => {
     );
   }
 
+  // Cart with items
   return (
-    <div className="grid lg:grid-cols-12 gap-6 md:gap-8" key={refreshKey}>
+    <div className="grid lg:grid-cols-12 gap-6 md:gap-8">
       {/* Cart Items */}
       <div className="lg:col-span-7 space-y-4 md:space-y-6">
-        {displayItems.map((item, index) => (
+        {items.map((item, index) => (
           <motion.div
-            key={`${item.cartItemId}-${refreshKey}`}
+            key={item.cartItemId}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
+            transition={{ delay: index * 0.05 }}
           >
             <CartItem data={item} />
           </motion.div>

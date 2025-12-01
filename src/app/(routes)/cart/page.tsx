@@ -1,18 +1,9 @@
 import Container from "@/components/ui/container";
-import getProducts from "@/actions/get-products";
 import CartClient from "./cart-client";
 
 export const revalidate = 0;
 
 const CartPage = async () => {
-  // Fetch all products for cart items
-  const productsResult = await getProducts({}).catch(() => []);
-  
-  // Handle different return types from getProducts
-  const products = Array.isArray(productsResult) 
-    ? productsResult 
-    : productsResult?.products || [];
-
   return (
     <div className="bg-white min-h-screen py-12 md:py-16">
       <Container>
@@ -20,7 +11,7 @@ const CartPage = async () => {
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-light text-black mb-8 md:mb-12 uppercase tracking-tight">
             Giỏ hàng
           </h1>
-          <CartClient products={products} />
+          <CartClient />
         </div>
       </Container>
     </div>

@@ -15,11 +15,7 @@ function useThemeSafe() {
     setMounted(true);
     // Lấy theme từ localStorage hoặc system preference
     const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
-    const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-      .matches
-      ? "dark"
-      : "light";
-    const initialTheme = savedTheme || systemTheme;
+    const initialTheme = savedTheme || "light";
     setTheme(initialTheme);
 
     // Apply theme to document ngay lập tức

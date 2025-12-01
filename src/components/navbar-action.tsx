@@ -41,6 +41,7 @@ export const NavbarActions: React.FC = () => {
   const syncIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const lastSyncRef = useRef<string>("");
   const wishlistItemsRef = useRef<string[]>([]);
+  const cartButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -58,7 +59,6 @@ export const NavbarActions: React.FC = () => {
       if (!isSignedIn) {
         if (isMounted) {
           setSyncedWishlistCount(0);
-          // Clear wishlist khi logout
           if (wishlistItemsRef.current.length > 0) {
             setWishlist([]);
           }
@@ -68,7 +68,6 @@ export const NavbarActions: React.FC = () => {
 
       if (!isMounted) return;
 
-      // Tránh sync liên tục - chỉ sync khi cần thiết
       setIsSyncing(true);
       try {
         const serverWishlistItems = await getAllWishlistItems();
@@ -78,15 +77,12 @@ export const NavbarActions: React.FC = () => {
         const newCount = serverWishlistItems.length;
         const wishlistKey = serverWishlistItems.sort().join(",");
 
-        // Chỉ update nếu có thay đổi so với lần sync trước
         if (lastSyncRef.current !== wishlistKey) {
           setSyncedWishlistCount(newCount);
           lastSyncRef.current = wishlistKey;
 
-          // So sánh với wishlist hiện tại từ ref
           const currentWishlistKey = wishlistItemsRef.current.sort().join(",");
 
-          // Chỉ update wishlist nếu khác với hiện tại
           if (wishlistKey !== currentWishlistKey) {
             if (serverWishlistItems.length > 0) {
               setWishlist(serverWishlistItems);
@@ -96,7 +92,6 @@ export const NavbarActions: React.FC = () => {
           }
         }
       } catch (error) {
-        // Nếu lỗi, giữ nguyên count hiện tại
         if (isMounted) {
           console.error("[WISHLIST_SYNC_ERROR]", error);
         }
@@ -107,20 +102,14 @@ export const NavbarActions: React.FC = () => {
       }
     };
 
-    // Sync ngay khi mount hoặc khi isSignedIn thay đổi
     syncWishlist();
 
-    // Chỉ set interval nếu đã đăng nhập
     if (isSignedIn) {
-      // Clear interval cũ nếu có
       if (syncIntervalRef.current) {
         clearInterval(syncIntervalRef.current);
       }
-
-      // Set interval mới - sync mỗi 30 giây
       syncIntervalRef.current = setInterval(syncWishlist, 30000);
     } else {
-      // Clear interval khi logout
       if (syncIntervalRef.current) {
         clearInterval(syncIntervalRef.current);
         syncIntervalRef.current = null;
@@ -134,7 +123,7 @@ export const NavbarActions: React.FC = () => {
         syncIntervalRef.current = null;
       }
     };
-  }, [isSignedIn, getAllWishlistItems, setWishlist]); // Loại bỏ cart khỏi dependencies
+  }, [isSignedIn, getAllWishlistItems, setWishlist]);
 
   const handleCheckout = () => {
     if (isNavigating) {
@@ -172,17 +161,53 @@ export const NavbarActions: React.FC = () => {
     toast.success("Đã xóa sản phẩm khỏi giỏ hàng");
   };
 
-  // Sử dụng syncedWishlistCount nếu đã đăng nhập, nếu không dùng wishlistItems.length
-  // Nhưng nếu đang sync thì giữ nguyên count để tránh flicker
   const wishlistCount = isSignedIn
     ? isSyncing
       ? syncedWishlistCount
       : syncedWishlistCount
     : wishlistItems.length;
 
+  // Calculate popover position (prevent overflow on both sides)
+  const [popoverPosition, setPopoverPosition] = useState({
+    top: 0,
+    left: 0,
+  });
+
+  useEffect(() => {
+    if (isOpen && cartButtonRef.current) {
+      const rect = cartButtonRef.current.getBoundingClientRect();
+      const popoverMaxWidth = 448; // max-w-md = 448px
+      const popoverWidth = Math.min(popoverMaxWidth, window.innerWidth * 0.9);
+      const viewportWidth = window.innerWidth;
+      const margin = 16;
+
+      // Start from cart button position
+      let left = rect.left;
+
+      // Check if popover would overflow on the right
+      if (left + popoverWidth > viewportWidth - margin) {
+        // Align to right edge with margin
+        left = viewportWidth - popoverWidth - margin;
+      }
+
+      // Ensure minimum margin from left edge
+      left = Math.max(margin, left);
+
+      // Ensure popover doesn't exceed viewport width
+      const maxAllowedWidth = viewportWidth - left - margin;
+      const finalWidth = Math.min(popoverWidth, maxAllowedWidth);
+
+      // Position popover below the cart button
+      setPopoverPosition({
+        top: rect.bottom + 8,
+        left: left,
+      });
+    }
+  }, [isOpen]);
+
   return (
     <div className="flex items-center gap-3 md:gap-4">
-      {/* Search Bar - Inline với icon (Aigle Style) */}
+      {/* Search Bar */}
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -204,7 +229,7 @@ export const NavbarActions: React.FC = () => {
         />
       </form>
 
-      {/* User Account (Aigle Style) */}
+      {/* User Account */}
       {mounted && (
         <motion.div
           whileHover={{ scale: 1.05 }}
@@ -242,7 +267,7 @@ export const NavbarActions: React.FC = () => {
         </motion.div>
       )}
 
-      {/* Wishlist Icon (Aigle Style) */}
+      {/* Wishlist Icon */}
       <motion.button
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
@@ -262,11 +287,17 @@ export const NavbarActions: React.FC = () => {
         )}
       </motion.button>
 
-      {/* Cart Icon (Aigle Style) */}
+      {/* Cart Icon */}
       <motion.button
+        ref={cartButtonRef}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        onClick={() => setIsOpen(true)}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setIsOpen(true);
+        }}
+        type="button"
         className="relative p-2 text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-400 transition-colors duration-200 group flex items-center justify-center"
         aria-label="Giỏ hàng"
         data-cart-icon="true"
@@ -284,15 +315,16 @@ export const NavbarActions: React.FC = () => {
         )}
       </motion.button>
 
-      {/* Cart Drawer */}
+      {/* Cart Popover - Small popover from bottom-left */}
       {mounted &&
+        typeof document !== "undefined" &&
         createPortal(
           <AnimatePresence>
             {isOpen && (
               <>
                 {/* BACKDROP */}
                 <motion.div
-                  className="fixed inset-0 z-100 bg-black/40 backdrop-blur-sm"
+                  className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
@@ -300,23 +332,26 @@ export const NavbarActions: React.FC = () => {
                   onClick={() => setIsOpen(false)}
                 />
 
-                {/* DRAWER */}
+                {/* POPOVER - Small compact popover from bottom-left */}
                 <motion.div
-                  className="fixed bottom-0 right-0 left-0 z-101 bg-white border-t border-gray-200 max-w-md mx-auto h-[90vh] flex flex-col shadow-2xl md:right-4 md:left-auto md:max-w-sm md:rounded-t-2xl md:h-[85vh]"
-                  initial={{ y: "100%" }}
-                  animate={{ y: 0 }}
-                  exit={{ y: "100%" }}
+                  className="fixed z-50 bg-white border border-gray-200 shadow-2xl w-[90vw] max-w-md max-h-[80vh] flex flex-col rounded-none"
+                  style={{
+                    top: `${popoverPosition.top}px`,
+                    left: `${popoverPosition.left}px`,
+                    right: "auto",
+                    maxHeight: `min(600px, calc(100vh - ${popoverPosition.top}px - 16px))`,
+                    maxWidth: `min(448px, calc(100vw - ${popoverPosition.left}px - 16px))`,
+                  }}
+                  initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: -10 }}
                   transition={{
                     type: "spring",
                     stiffness: 300,
                     damping: 30,
                   }}
+                  onClick={(e) => e.stopPropagation()}
                 >
-                  {/* HANDLE */}
-                  <div className="flex justify-center py-2.5">
-                    <div className="w-12 h-1 bg-gray-300 rounded-full" />
-                  </div>
-
                   {/* HEADER */}
                   <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 bg-white">
                     <div className="flex items-center gap-3">
@@ -386,7 +421,7 @@ export const NavbarActions: React.FC = () => {
                               <Link
                                 href={`/product/${item.id}`}
                                 onClick={() => setIsOpen(false)}
-                                className="relative w-20 h-20 shrink-0 bg-gray-50 border border-gray-200 group overflow-hidden"
+                                className="relative w-24 h-24 md:w-28 md:h-28 shrink-0 bg-gray-50 border border-gray-200 group overflow-hidden"
                               >
                                 <Image
                                   src={
@@ -394,38 +429,104 @@ export const NavbarActions: React.FC = () => {
                                   }
                                   alt={item.name}
                                   fill
-                                  sizes="80px"
+                                  sizes="(max-width: 768px) 96px, 112px"
                                   className="object-cover group-hover:scale-105 transition-transform duration-200"
                                 />
                               </Link>
 
-                              {/* Info */}
+                              {/* Info - Đầy đủ thông tin */}
                               <div className="flex-1 min-w-0">
+                                {/* Category */}
+                                {item.category && (
+                                  <div className="mb-1">
+                                    <span className="text-[10px] font-light uppercase tracking-wider text-gray-400">
+                                      {item.category.name}
+                                    </span>
+                                  </div>
+                                )}
+
+                                {/* Product Name */}
                                 <Link
                                   href={`/product/${item.id}`}
                                   onClick={() => setIsOpen(false)}
                                   className="block"
                                 >
-                                  <h3 className="text-black line-clamp-2 hover:text-gray-600 transition text-sm font-light uppercase tracking-wide mb-1">
+                                  <h3 className="text-black line-clamp-2 hover:text-gray-600 transition text-sm font-light uppercase tracking-wide mb-2">
                                     {item.name}
                                   </h3>
                                 </Link>
-                                <div className="mt-1 text-xs font-light text-gray-500 space-x-2">
+
+                                {/* Variant Info */}
+                                <div className="mt-1 mb-2 space-y-1">
                                   {item.size && (
-                                    <span>Size: {item.size.name}</span>
+                                    <div className="text-xs font-light text-gray-600">
+                                      <span className="uppercase tracking-wide">
+                                        Size:
+                                      </span>{" "}
+                                      <span className="text-black">
+                                        {item.size.name}
+                                      </span>
+                                    </div>
                                   )}
                                   {item.color && (
-                                    <span>Màu: {item.color.name}</span>
+                                    <div className="text-xs font-light text-gray-600">
+                                      <span className="uppercase tracking-wide">
+                                        Màu:
+                                      </span>{" "}
+                                      <span className="text-black">
+                                        {item.color.name}
+                                      </span>
+                                    </div>
+                                  )}
+                                  {item.material && (
+                                    <div className="text-xs font-light text-gray-600">
+                                      <span className="uppercase tracking-wide">
+                                        Chất liệu:
+                                      </span>{" "}
+                                      <span className="text-black">
+                                        {item.material.name}
+                                      </span>
+                                    </div>
                                   )}
                                 </div>
-                                <div className="mt-2 mb-3">
-                                  <span className="text-black text-sm font-medium">
-                                    <Currency value={item.price} />
-                                  </span>
+
+                                {/* Price */}
+                                <div className="mt-3 mb-3">
+                                  <div className="flex items-baseline gap-2">
+                                    <span className="text-black text-base font-medium">
+                                      <Currency value={item.price} />
+                                    </span>
+                                    {item.originalPrice &&
+                                      item.originalPrice > item.price && (
+                                        <span className="text-xs text-gray-400 line-through">
+                                          <Currency
+                                            value={item.originalPrice}
+                                          />
+                                        </span>
+                                      )}
+                                  </div>
+                                  {item.quantity > 1 && (
+                                    <div className="mt-1 text-xs text-gray-500">
+                                      {item.quantity} ×{" "}
+                                      <Currency value={item.price} /> ={" "}
+                                      <span className="text-black font-medium">
+                                        <Currency
+                                          value={item.price * item.quantity}
+                                        />
+                                      </span>
+                                    </div>
+                                  )}
                                 </div>
 
+                                {/* Inventory Status */}
+                                {inventory <= 5 && inventory > 0 && (
+                                  <div className="mb-2 text-xs text-amber-600 font-light">
+                                    Chỉ còn {inventory} sản phẩm
+                                  </div>
+                                )}
+
                                 {/* Quantity Controls */}
-                                <div className="flex items-center justify-between">
+                                <div className="flex items-center justify-between mt-3">
                                   <div className="flex items-center gap-2">
                                     <button
                                       onClick={() =>

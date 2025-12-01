@@ -39,7 +39,7 @@ export default function CheckoutPage() {
   const cart = useCart();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { requireAuth, isAuthenticated } = useAuth();
+  const { requireAuth } = useAuth();
   const [step, setStep] = useState(1);
   const [shippingMethod, setShippingMethod] = useState("standard");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(null);
@@ -108,17 +108,9 @@ export default function CheckoutPage() {
   // Total = subtotal - discount + shipping
   const finalTotal = subtotal - discount + shippingFee;
 
-  // Lấy giá trị từ searchParams bằng useMemo với string comparison để tránh vòng lặp
-  const paymentSuccess = useMemo(
-    () => searchParams.get("success"),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [searchParams.toString()]
-  );
-  const paymentCanceled = useMemo(
-    () => searchParams.get("canceled"),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [searchParams.toString()]
-  );
+  // Lấy giá trị từ searchParams
+  const paymentSuccess = searchParams?.get("success") || null;
+  const paymentCanceled = searchParams?.get("canceled") || null;
 
   // Handle success/cancel from payment
   useEffect(() => {
@@ -243,7 +235,10 @@ export default function CheckoutPage() {
 
         console.log("[CHECKOUT] Calling API:", checkoutUrl);
 
-        const response = await axios.post(
+        const response = await axios.post<{
+          success?: boolean;
+          message?: string;
+        }>(
           checkoutUrl,
           {
             items: cart.items.map((item) => ({
@@ -309,7 +304,11 @@ export default function CheckoutPage() {
 
         console.log("[CHECKOUT] Calling API:", checkoutUrl);
 
-        const response = await axios.post(
+        const response = await axios.post<{
+          url?: string;
+          success?: boolean;
+          message?: string;
+        }>(
           checkoutUrl,
           {
             items: cart.items.map((item) => ({
@@ -655,6 +654,7 @@ export default function CheckoutPage() {
                         )}
                       </div>
                       <div className="grid md:grid-cols-3 gap-5">
+                        {/* Tỉnh/Thành phố */}
                         <div className="space-y-2">
                           <Label
                             htmlFor="province"
@@ -665,7 +665,7 @@ export default function CheckoutPage() {
                           </Label>
                           <Input
                             id="province"
-                            placeholder="Hà Nội"
+                            placeholder="Ví dụ: Hồ Chí Minh"
                             value={shippingAddress.province}
                             onChange={(e) => {
                               setShippingAddress({
@@ -687,6 +687,8 @@ export default function CheckoutPage() {
                             </p>
                           )}
                         </div>
+
+                        {/* Quận/Huyện */}
                         <div className="space-y-2">
                           <Label
                             htmlFor="district"
@@ -696,7 +698,7 @@ export default function CheckoutPage() {
                           </Label>
                           <Input
                             id="district"
-                            placeholder="Đống Đa"
+                            placeholder="Ví dụ: Quận 1"
                             value={shippingAddress.district}
                             onChange={(e) => {
                               setShippingAddress({
@@ -718,6 +720,8 @@ export default function CheckoutPage() {
                             </p>
                           )}
                         </div>
+
+                        {/* Phường/Xã */}
                         <div className="space-y-2">
                           <Label
                             htmlFor="ward"
@@ -727,7 +731,7 @@ export default function CheckoutPage() {
                           </Label>
                           <Input
                             id="ward"
-                            placeholder="Trung Liệt"
+                            placeholder="Ví dụ: Phường Bến Nghé"
                             value={shippingAddress.ward}
                             onChange={(e) => {
                               setShippingAddress({
@@ -1145,9 +1149,13 @@ export default function CheckoutPage() {
                             {shippingAddress.phone}
                           </p>
                           <p className="font-light text-sm text-gray-600 mt-1">
-                            {shippingAddress.address}, {shippingAddress.ward},{" "}
-                            {shippingAddress.district},{" "}
-                            {shippingAddress.province}
+                            {shippingAddress.address}
+                            {shippingAddress.ward &&
+                              `, ${shippingAddress.ward}`}
+                            {shippingAddress.district &&
+                              `, ${shippingAddress.district}`}
+                            {shippingAddress.province &&
+                              `, ${shippingAddress.province}`}
                           </p>
                         </div>
                       </div>

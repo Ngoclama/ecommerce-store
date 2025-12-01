@@ -59,6 +59,7 @@ const CartItem: React.FC<CartItemProps> = ({ data }) => {
             fill
             src={data.images?.[0]?.url || "/placeholder.png"}
             alt={data.name}
+            sizes="(max-width: 768px) 80px, 96px"
             className="object-cover group-hover:scale-105 transition-transform duration-200"
           />
         </Link>

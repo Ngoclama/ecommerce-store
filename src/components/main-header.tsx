@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import Container from "@/components/ui/container";
+import { NavbarActions } from "./navbar-action";
 
 interface MainHeaderProps {
   categories: Category[];
@@ -26,26 +27,7 @@ export default function MainHeader({
   categories,
   billboards,
 }: MainHeaderProps) {
-  const router = useRouter();
   const pathname = usePathname();
-  const cart = useCart();
-  const { isSignedIn } = useAuth();
-  const { getAllWishlistItems } = useWishlist();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [mounted, setMounted] = useState(false);
-  const [wishlistCount, setWishlistCount] = useState(0);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (isSignedIn) {
-      getAllWishlistItems().then((items) => setWishlistCount(items.length));
-    } else {
-      setWishlistCount(cart.wishlistItems.length);
-    }
-  }, [isSignedIn, getAllWishlistItems, cart.wishlistItems]);
 
   // Build category tree
   const categoryTree = categories.reduce((acc, category) => {
@@ -60,14 +42,6 @@ export default function MainHeader({
   }, {} as Record<string, Category & { children: Category[] }>);
 
   const parentCategories = Object.values(categoryTree);
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery("");
-    }
-  };
 
   return (
     <header className="sticky top-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
@@ -239,92 +213,8 @@ export default function MainHeader({
               </Link>
             </nav>
 
-            {/* Right Actions */}
-            <div className="flex items-center gap-3 md:gap-4">
-              {/* Search Popover */}
-              <Popover>
-                <PopoverTrigger asChild>
-                  <button
-                    className="p-2 text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-400 transition-colors"
-                    aria-label="Tìm kiếm"
-                  >
-                    <Search className="w-5 h-5" />
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent
-                  className="w-80 p-0 rounded-none border border-gray-200 dark:border-gray-800"
-                  align="end"
-                >
-                  <form onSubmit={handleSearch} className="p-4">
-                    <div className="relative">
-                      <Input
-                        type="text"
-                        placeholder="Tìm kiếm sản phẩm..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-10 pr-4 h-10 border border-gray-300 dark:border-gray-700 rounded-none bg-white dark:bg-gray-900 text-black dark:text-white focus-visible:ring-0 focus-visible:ring-offset-0"
-                        autoFocus
-                      />
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                    </div>
-                  </form>
-                </PopoverContent>
-              </Popover>
-
-              {/* User Account */}
-              {mounted && (
-                <div className="relative">
-                  {isSignedIn ? (
-                    <UserButton
-                      appearance={{
-                        elements: {
-                          avatarBox: "w-8 h-8",
-                          userButtonPopoverCard:
-                            "rounded-none border border-gray-200 shadow-xl bg-white",
-                        },
-                      }}
-                      afterSignOutUrl="/"
-                    />
-                  ) : (
-                    <Link
-                      href="/sign-in"
-                      className="p-2 text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-400 transition-colors"
-                      aria-label="Đăng nhập"
-                    >
-                      <User className="w-5 h-5" />
-                    </Link>
-                  )}
-                </div>
-              )}
-
-              {/* Wishlist */}
-              <Link
-                href="/wishlist"
-                className="relative p-2 text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-400 transition-colors"
-                aria-label="Danh sách yêu thích"
-              >
-                <Heart className="w-5 h-5" />
-                {wishlistCount > 0 && (
-                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-black dark:bg-white text-white dark:text-black text-[10px] rounded-full flex items-center justify-center font-medium px-1">
-                    {wishlistCount > 99 ? "99+" : wishlistCount}
-                  </span>
-                )}
-              </Link>
-
-              {/* Cart */}
-              <Link
-                href="/cart"
-                className="relative p-2 text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-400 transition-colors"
-                aria-label="Giỏ hàng"
-              >
-                <ShoppingBag className="w-5 h-5" />
-                {cart.items.length > 0 && (
-                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-black dark:bg-white text-white dark:text-black text-[10px] rounded-full flex items-center justify-center font-medium px-1">
-                    {cart.items.length > 99 ? "99+" : cart.items.length}
-                  </span>
-                )}
-              </Link>
-            </div>
+            {/* Right Actions - Use NavbarActions component for all icons */}
+            <NavbarActions />
           </div>
         </Container>
       </div>

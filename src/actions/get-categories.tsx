@@ -22,7 +22,6 @@ const getCategories = async (): Promise<Category[]> => {
 
     const res = await fetch(URL, {
       signal: controller.signal,
-      cache: "no-store", // Ensure fresh data
       next: { revalidate: 60 }, // Revalidate every 60 seconds
     });
 

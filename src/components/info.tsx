@@ -168,13 +168,16 @@ const Info: React.FC<InfoProps> = ({ data }) => {
 
     // Add to cart immediately - Zustand will update state synchronously
     cart.addItem(productData, quantity);
-    
+
     // Small delay for toast to show after animation starts
     setTimeout(() => {
       toast.success("Đã thêm vào giỏ hàng");
-      
+
       // If we're on the cart page, trigger a refresh
-      if (typeof window !== "undefined" && window.location.pathname === "/cart") {
+      if (
+        typeof window !== "undefined" &&
+        window.location.pathname === "/cart"
+      ) {
         // Dispatch a custom event that CartClient can listen to
         window.dispatchEvent(new CustomEvent("cart-updated"));
         // Also try router refresh
@@ -224,13 +227,66 @@ const Info: React.FC<InfoProps> = ({ data }) => {
       triggerAnimation(primaryImage, buyNowButtonRef.current);
     }
 
-    // Add to cart first, then navigate after a short delay to ensure state is persisted
+    // Add to cart immediately - Zustand will update state synchronously
     cart.addItem(productData, quantity);
-    
-    // Use a longer delay to ensure Zustand persist middleware has time to save to localStorage
-    setTimeout(() => {
-      router.push("/cart");
-    }, 200);
+
+    // Zustand persist middleware automatically saves to localStorage
+    // But we need to give it a moment to ensure persistence is complete
+    // Also verify the state was saved before navigating
+    let retryCount = 0;
+    const maxRetries = 5;
+
+    const verifyAndNavigate = () => {
+      try {
+        const storageKey = "ecommerce-cart-wishlist-storage";
+        const saved = localStorage.getItem(storageKey);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          const savedItems = parsed?.state?.items || [];
+
+          // Check if our item was saved (by checking if items array has items)
+          if (savedItems.length > 0) {
+            // Dispatch event to notify cart page that cart was updated
+            window.dispatchEvent(
+              new CustomEvent("cart-updated", {
+                detail: { source: "buy-now" },
+              })
+            );
+
+            // Navigate to cart page
+            router.push("/cart");
+            return;
+          }
+        }
+
+        // If not saved yet and haven't exceeded max retries, wait a bit more and try again
+        if (retryCount < maxRetries) {
+          retryCount++;
+          setTimeout(verifyAndNavigate, 100);
+        } else {
+          // After max retries, navigate anyway (Zustand should have synced by now)
+          console.warn("[Info] Max retries reached, navigating anyway");
+          window.dispatchEvent(
+            new CustomEvent("cart-updated", {
+              detail: { source: "buy-now" },
+            })
+          );
+          router.push("/cart");
+        }
+      } catch (error) {
+        console.error("[Info] Error verifying cart state:", error);
+        // On error, still navigate after a delay
+        window.dispatchEvent(
+          new CustomEvent("cart-updated", {
+            detail: { source: "buy-now" },
+          })
+        );
+        router.push("/cart");
+      }
+    };
+
+    // Start verification after a short delay to allow Zustand to persist
+    setTimeout(verifyAndNavigate, 150);
   };
 
   const formatVND = (value: number) => {
@@ -361,7 +417,9 @@ const Info: React.FC<InfoProps> = ({ data }) => {
               Kích thước
             </h3>
             {selectedSizeId && (
-              <span className="text-xs text-gray-500 dark:text-gray-400 font-light">Đã chọn</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400 font-light">
+                Đã chọn
+              </span>
             )}
           </div>
           <ToggleGroup
@@ -423,7 +481,9 @@ const Info: React.FC<InfoProps> = ({ data }) => {
               Màu sắc
             </h3>
             {selectedColorId && (
-              <span className="text-xs text-gray-500 dark:text-gray-400 font-light">Đã chọn</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400 font-light">
+                Đã chọn
+              </span>
             )}
           </div>
           <ToggleGroup
