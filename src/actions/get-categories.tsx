@@ -34,7 +34,12 @@ const getCategories = async (): Promise<Category[]> => {
       return [];
     }
     const data = await res.json();
-    return data.data || [];
+    const allCategories: Category[] = data.data || [];
+    // Lọc chỉ lấy category cha (không có parentId)
+    const parentCategories = allCategories.filter(
+      (category) => !category.parentId
+    );
+    return parentCategories;
   } catch (error: any) {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     if (error.name === "AbortError") {
