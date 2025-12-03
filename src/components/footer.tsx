@@ -292,25 +292,19 @@ export default function Footer() {
               </span>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-light text-gray-400 dark:text-gray-600">
-                  Visa
+                  COD
                 </span>
                 <span className="text-xs font-light text-gray-400 dark:text-gray-600">
                   •
                 </span>
                 <span className="text-xs font-light text-gray-400 dark:text-gray-600">
-                  Mastercard
+                  Visa/Mastercard
                 </span>
                 <span className="text-xs font-light text-gray-400 dark:text-gray-600">
                   •
                 </span>
-                <span className="text-xs font-light text-gray-400 dark:text-gray-600">
-                  PayPal
-                </span>
-                <span className="text-xs font-light text-gray-400 dark:text-gray-600">
-                  •
-                </span>
-                <span className="text-xs font-light text-gray-400 dark:text-gray-600">
-                  Apple Pay
+                <span className="text-xs font-light text-pink-600 dark:text-pink-500 font-medium">
+                  MoMo
                 </span>
               </div>
             </div>

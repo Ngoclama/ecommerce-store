@@ -9,9 +9,13 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { CartItem as CartItemType } from "@/types";
+import { CartItem as CartItemType, Coupon } from "@/types";
 
-const CartClient: React.FC = () => {
+interface CartClientProps {
+  coupons?: Coupon[];
+}
+
+const CartClient: React.FC<CartClientProps> = ({ coupons = [] }) => {
   const cart = useCart();
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
@@ -152,7 +156,7 @@ const CartClient: React.FC = () => {
 
       {/* Summary */}
       <div className="lg:col-span-5">
-        <Summary />
+        <Summary coupons={coupons} />
       </div>
     </div>
   );

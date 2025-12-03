@@ -529,7 +529,13 @@ const Info: React.FC<InfoProps> = ({ data }) => {
                     !variantAvailable && "opacity-40 cursor-not-allowed"
                   )}
                 >
-                  {color.name}
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="h-4 w-4 rounded-full border"
+                      style={{ backgroundColor: color.value }}
+                    />
+                    {color.name}
+                  </div>
                 </ToggleGroupItem>
               );
             })}

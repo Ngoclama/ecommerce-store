@@ -35,11 +35,37 @@ const getCategories = async (): Promise<Category[]> => {
     }
     const data = await res.json();
     const allCategories: Category[] = data.data || [];
+
     // Lọc chỉ lấy category cha (không có parentId)
     const parentCategories = allCategories.filter(
       (category) => !category.parentId
     );
-    return parentCategories;
+
+    // Thêm children vào mỗi parent category
+    const categoriesWithChildren = parentCategories.map((parent) => ({
+      ...parent,
+      children: allCategories.filter((cat) => cat.parentId === parent.id),
+    }));
+
+    // Debug log to check billboard data
+    if (process.env.NODE_ENV === "development") {
+      console.log(
+        "[CATEGORIES] Parent categories count:",
+        parentCategories.length
+      );
+      console.log(
+        "[CATEGORIES] Categories with billboard:",
+        parentCategories.filter((c) => c.billboard?.imageUrl).length
+      );
+      console.log(
+        "[CATEGORIES] Categories without billboard:",
+        parentCategories
+          .filter((c) => !c.billboard?.imageUrl)
+          .map((c) => c.name)
+      );
+    }
+
+    return categoriesWithChildren;
   } catch (error: any) {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     if (error.name === "AbortError") {

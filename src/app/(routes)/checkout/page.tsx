@@ -111,6 +111,7 @@ export default function CheckoutPage() {
   // Lấy giá trị từ searchParams
   const paymentSuccess = searchParams?.get("success") || null;
   const paymentCanceled = searchParams?.get("canceled") || null;
+  const momoPayment = searchParams?.get("momo") || null;
 
   // Handle success/cancel from payment
   useEffect(() => {
@@ -130,11 +131,24 @@ export default function CheckoutPage() {
       return;
     }
 
+    // Handle MoMo payment callback
+    if (momoPayment === "success") {
+      hasProcessedPayment.current = true;
+      toast.success(
+        "Thanh toán MoMo thành công! Đơn hàng của bạn đang được xử lý."
+      );
+      setTimeout(() => {
+        cart.removeAll();
+        router.push("/account/orders");
+      }, 0);
+      return;
+    }
+
     if (paymentCanceled) {
       hasProcessedPayment.current = true;
       toast.error("Thanh toán đã bị hủy. Vui lòng thử lại.");
     }
-  }, [paymentSuccess, paymentCanceled, cart, router]);
+  }, [paymentSuccess, paymentCanceled, momoPayment, cart, router]);
 
   // Validate shipping address
   const validateShippingAddress = (): boolean => {
@@ -349,18 +363,104 @@ export default function CheckoutPage() {
 
         if (response.data?.url) {
           window.location.href = response.data.url;
+        } else if (response.data?.success) {
+          // Đơn hàng miễn phí hoàn toàn (total = 0)
+          toast.success(
+            response.data.message || "Đơn hàng của bạn đã được xác nhận!"
+          );
+          cart.removeAll();
+          router.push("/account/orders");
         } else {
-          toast.error("Không thể tạo phiên thanh toán. Vui lòng thử lại.");
+          toast.error(
+            response.data?.message ||
+              "Không thể tạo phiên thanh toán. Vui lòng thử lại."
+          );
           setLoading(false);
         }
         return;
       }
 
-      if (
-        paymentMethod === "momo" ||
-        paymentMethod === "vnpay" ||
-        paymentMethod === "qr"
-      ) {
+      if (paymentMethod === "momo") {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+        if (!apiUrl) {
+          console.error("[CHECKOUT] NEXT_PUBLIC_API_URL is not configured");
+          toast.error("Cấu hình API không hợp lệ. Vui lòng liên hệ hỗ trợ.");
+          setLoading(false);
+          return;
+        }
+
+        // Normalize API URL (remove trailing slash, ensure proper format)
+        const normalizedApiUrl = apiUrl.replace(/\/$/, "");
+        const checkoutUrl = `${normalizedApiUrl}/api/checkout`;
+
+        console.log("[CHECKOUT] Calling API:", checkoutUrl);
+
+        const response = await axios.post<{
+          success?: boolean;
+          payUrl?: string;
+          deeplink?: string;
+          qrCodeUrl?: string;
+          message?: string;
+        }>(
+          checkoutUrl,
+          {
+            items: cart.items.map((item) => ({
+              productId: item.id,
+              quantity: item.quantity,
+              sizeId: item.size?.id,
+              colorId: item.color?.id,
+              materialId: item.material?.id,
+            })),
+            shippingAddress: {
+              fullName: shippingAddress.fullName,
+              phone: shippingAddress.phone,
+              email: shippingAddress.email || undefined,
+              address: shippingAddress.address,
+              province: shippingAddress.province,
+              district: shippingAddress.district,
+              ward: shippingAddress.ward,
+            },
+            shippingMethod: shippingMethod,
+            paymentMethod: "MOMO",
+            coupon: appliedCoupon
+              ? {
+                  code: appliedCoupon.code,
+                  value: appliedCoupon.value,
+                  type: appliedCoupon.type,
+                }
+              : null,
+            customerNote: customerNote.trim() || null,
+          },
+          {
+            withCredentials: true,
+            timeout: 30000, // 30 seconds timeout
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (response.data?.payUrl) {
+          // Redirect to MoMo payment page
+          window.location.href = response.data.payUrl;
+        } else if (response.data?.success) {
+          // Đơn hàng miễn phí hoàn toàn (total = 0)
+          toast.success(
+            response.data.message || "Đơn hàng của bạn đã được xác nhận!"
+          );
+          cart.removeAll();
+          router.push("/account/orders");
+        } else {
+          toast.error(
+            response.data?.message ||
+              "Không thể tạo thanh toán MoMo. Vui lòng thử lại."
+          );
+          setLoading(false);
+        }
+        return;
+      }
+
+      if (paymentMethod === "vnpay" || paymentMethod === "qr") {
         toast.info(
           "Tính năng thanh toán này đang được phát triển. Vui lòng chọn phương thức khác."
         );
@@ -994,15 +1094,15 @@ export default function CheckoutPage() {
                         </div>
 
                         {/* Momo */}
-                        <div className="flex items-center space-x-3 p-5 border border-gray-300 hover:border-black transition rounded-none cursor-pointer opacity-60">
-                          <RadioGroupItem value="momo" id="momo" disabled />
+                        <div className="flex items-center space-x-3 p-5 border border-gray-300 hover:border-black transition rounded-none cursor-pointer">
+                          <RadioGroupItem value="momo" id="momo" />
                           <Label
                             htmlFor="momo"
                             className="flex-1 cursor-pointer"
                           >
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-3">
-                                <Smartphone className="w-5 h-5 text-black" />
+                                <Smartphone className="w-5 h-5 text-pink-600" />
                                 <div>
                                   <p className="font-light text-sm uppercase tracking-wider text-black">
                                     Ví điện tử MoMo
@@ -1172,7 +1272,8 @@ export default function CheckoutPage() {
                             {paymentMethod === "stripe" &&
                               "Thẻ tín dụng/Ghi nợ (Stripe)"}
                             {paymentMethod === "momo" && "Ví điện tử MoMo"}
-                            {paymentMethod === "vnpay" && "VNPay"}
+                            {paymentMethod === "vnpay" &&
+                              "Cổng thanh toán VNPay"}
                             {paymentMethod === "qr" && "Quét mã QR"}
                           </p>
                         </div>
@@ -1204,6 +1305,8 @@ export default function CheckoutPage() {
                             <Lock className="w-4 h-4 mr-2" />
                             {paymentMethod === "cod"
                               ? "Đặt hàng"
+                              : paymentMethod === "momo"
+                              ? "Thanh toán MoMo"
                               : "Thanh toán"}
                           </>
                         )}

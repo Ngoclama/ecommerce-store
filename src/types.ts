@@ -10,6 +10,7 @@ export interface Category {
   id: string;
   name: string;
   slug?: string;
+  imageUrl?: string;
   billboardId?: string;
   billboard?: Billboard;
   parentId?: string | null;
@@ -18,6 +19,7 @@ export interface Category {
     name: string;
     slug: string;
   } | null;
+  children?: Category[];
 }
 
 export interface Size {
@@ -85,4 +87,13 @@ export interface CartItem extends Product {
 export interface Image {
   id: string;
   url: string;
+}
+
+export interface Coupon {
+  id: string;
+  code: string;
+  value: number;
+  type: "PERCENT" | "FIXED";
+  expiresAt?: string | Date | null;
+  createdAt?: string | Date;
 }

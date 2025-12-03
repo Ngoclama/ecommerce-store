@@ -5,6 +5,7 @@ import getCategories from "@/actions/get-categories";
 import { NavbarActions } from "./navbar-action";
 import SearchBarWrapper from "./search-bar-wrapper";
 import CategorySidebar from "./category-sidebar";
+import MegaMenu from "./mega-menu";
 import { Phone, MapPin } from "lucide-react";
 
 export const revalidate = 0;
@@ -23,7 +24,9 @@ const Navbar = async () => {
                 <Phone className="w-4 h-4 text-black dark:text-white" />
                 <span>
                   Hotline:{" "}
-                  <strong className="text-black dark:text-white">+84 0123456789</strong>
+                  <strong className="text-black dark:text-white">
+                    +84 0123456789
+                  </strong>
                 </span>
               </div>
               <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
@@ -45,7 +48,6 @@ const Navbar = async () => {
                 href="/contact"
                 className="hover:text-black dark:hover:text-white transition-colors font-light uppercase tracking-wide text-xs"
               >
-            
                 Liên hệ
               </Link>
             </div>
@@ -89,6 +91,9 @@ const Navbar = async () => {
           </div>
         </Container>
       </div>
+
+      {/* Mega Menu - Desktop Categories Navigation */}
+      <MegaMenu categories={categories || []} />
     </header>
   );
 };

@@ -55,8 +55,15 @@ const ProductCard: React.FC<ProductCardProps> = ({
   }, [data.originalPrice, data.price]);
 
   const images = data.images || [];
-  const primaryImage = images[0]?.url || "/placeholder.svg";
-  const secondaryImage = images[1]?.url || primaryImage;
+  // Trim and validate URLs to prevent errors with empty or whitespace-only strings
+  const primaryImage =
+    images[0]?.url && images[0].url.trim()
+      ? images[0].url.trim()
+      : "/placeholder.svg";
+  const secondaryImage =
+    images[1]?.url && images[1].url.trim()
+      ? images[1].url.trim()
+      : primaryImage;
   const hasMultipleImages = images.length > 1;
 
   const availableSizes = useMemo(() => {

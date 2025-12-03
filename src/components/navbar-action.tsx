@@ -1,15 +1,6 @@
 "use client";
 
-import {
-  X,
-  Plus,
-  Minus,
-  Heart,
-  Search,
-  User,
-  Trash2,
-  ShoppingBag,
-} from "lucide-react";
+import { X, Plus, Minus, Heart, User, Trash2, ShoppingBag } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -24,10 +15,10 @@ import Currency from "@/components/ui/currency";
 import { CartItem } from "@/types";
 import { UserButton, useAuth } from "@clerk/nextjs";
 import { useWishlist } from "@/hooks/use-wishlist";
+import { SearchDropdown } from "./search-dropdown";
 
 export const NavbarActions: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const [mounted, setMounted] = useState(false);
   const cart = useCart();
   const router = useRouter();
@@ -37,7 +28,6 @@ export const NavbarActions: React.FC = () => {
   const [syncedWishlistCount, setSyncedWishlistCount] = useState(0);
   const [isSyncing, setIsSyncing] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
-  const searchInputRef = useRef<HTMLInputElement>(null);
   const syncIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const lastSyncRef = useRef<string>("");
   const wishlistItemsRef = useRef<string[]>([]);
@@ -74,8 +64,10 @@ export const NavbarActions: React.FC = () => {
 
         if (!isMounted) return;
 
-        const newCount = serverWishlistItems.length;
-        const wishlistKey = serverWishlistItems.sort().join(",");
+        // Remove duplicates from server response
+        const uniqueWishlistItems = Array.from(new Set(serverWishlistItems));
+        const newCount = uniqueWishlistItems.length;
+        const wishlistKey = uniqueWishlistItems.sort().join(",");
 
         if (lastSyncRef.current !== wishlistKey) {
           setSyncedWishlistCount(newCount);
@@ -84,8 +76,8 @@ export const NavbarActions: React.FC = () => {
           const currentWishlistKey = wishlistItemsRef.current.sort().join(",");
 
           if (wishlistKey !== currentWishlistKey) {
-            if (serverWishlistItems.length > 0) {
-              setWishlist(serverWishlistItems);
+            if (uniqueWishlistItems.length > 0) {
+              setWishlist(uniqueWishlistItems);
             } else {
               setWishlist([]);
             }
@@ -207,27 +199,8 @@ export const NavbarActions: React.FC = () => {
 
   return (
     <div className="flex items-center gap-3 md:gap-4">
-      {/* Search Bar */}
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (searchQuery.trim()) {
-            router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-            setSearchQuery("");
-          }
-        }}
-        className="flex items-center gap-2 border-b border-black pb-1"
-      >
-        <Search className="w-4 h-4 text-black shrink-0" />
-        <input
-          ref={searchInputRef}
-          type="text"
-          placeholder="SEARCH"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="border-0 outline-none bg-transparent text-sm font-light uppercase tracking-wider placeholder:text-gray-400 focus:ring-0 w-24 md:w-32"
-        />
-      </form>
+      {/* Search Dropdown - Real-time search */}
+      <SearchDropdown />
 
       {/* User Account */}
       {mounted && (

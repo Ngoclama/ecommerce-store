@@ -49,13 +49,20 @@ export const useWishlist = () => {
           }
         );
 
-        if (response.data.success) {
+        if (
+          response.data &&
+          typeof response.data === "object" &&
+          "success" in response.data &&
+          response.data.success
+        ) {
+          const isLiked =
+            "isLiked" in response.data ? response.data.isLiked : false;
           toast.success(
-            response.data.isLiked
+            isLiked
               ? "Đã thêm vào danh sách yêu thích!"
               : "Đã xóa khỏi danh sách yêu thích."
           );
-          return response.data.isLiked;
+          return isLiked as boolean;
         }
       } catch (error: any) {
         console.error("[WISHLIST_TOGGLE_ERROR]", error);
@@ -106,8 +113,15 @@ export const useWishlist = () => {
           },
         });
 
-        if (response.data.success) {
-          return response.data.data?.includes(productId) || false;
+        if (
+          response.data &&
+          typeof response.data === "object" &&
+          "success" in response.data &&
+          response.data.success &&
+          "data" in response.data &&
+          Array.isArray(response.data.data)
+        ) {
+          return response.data.data.includes(productId) || false;
         }
         return false;
       } catch (error: any) {
@@ -165,7 +179,14 @@ export const useWishlist = () => {
         },
       });
 
-      if (response.data.success && Array.isArray(response.data.data)) {
+      if (
+        response.data &&
+        typeof response.data === "object" &&
+        "success" in response.data &&
+        response.data.success &&
+        "data" in response.data &&
+        Array.isArray(response.data.data)
+      ) {
         return response.data.data;
       }
       return [];

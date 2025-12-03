@@ -155,7 +155,9 @@ const useCart = create(
       wishlistItems: [],
       isItemInWishlist: (id: string) => get().wishlistItems.includes(id),
       setWishlist: (productIds: string[]) => {
-        set({ wishlistItems: productIds });
+        // Remove duplicates using Set
+        const uniqueProductIds = Array.from(new Set(productIds));
+        set({ wishlistItems: uniqueProductIds });
       },
 
       toggleWishlist: async (productId: string) => {
@@ -189,9 +191,17 @@ const useCart = create(
             }
           );
 
-          if (response.data && !response.data.success) {
+          if (
+            response.data &&
+            typeof response.data === "object" &&
+            "success" in response.data &&
+            !response.data.success
+          ) {
             throw new Error(
-              response.data.message || "Failed to update wishlist"
+              ("message" in response.data &&
+                typeof response.data.message === "string" &&
+                response.data.message) ||
+                "Failed to update wishlist"
             );
           }
         } catch (error: any) {

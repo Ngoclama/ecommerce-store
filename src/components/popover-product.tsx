@@ -51,7 +51,7 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
   const [currentImage, setCurrentImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [isInWishlist, setIsInWishlist] = useState(false);
-  const [selectedSizeId, setSelectedSizeId] = useState<string | null>(null);
+      const [selectedSizeId, setSelectedSizeId] = useState<string | null>(null);
   const [selectedColorId, setSelectedColorId] = useState<string | null>(null);
   const [selectedMaterialId, setSelectedMaterialId] = useState<string | null>(
     null
@@ -623,7 +623,13 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
                               aria-label={color.name}
                               className="rounded-none border-gray-300 data-[state=on]:bg-black data-[state=on]:text-white data-[state=on]:border-black"
                             >
-                              {color.value}
+                              <div className="flex items-center gap-2">
+                                <div
+                                  className="h-4 w-4 rounded-full border"
+                                  style={{ backgroundColor: color.value }}
+                                />
+                                {color.name}
+                              </div>
                             </ToggleGroupItem>
                           ))}
                         </ToggleGroup>

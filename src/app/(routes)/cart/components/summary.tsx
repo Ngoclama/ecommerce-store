@@ -10,11 +10,23 @@ import Currency from "@/components/ui/currency";
 import useCart from "@/hooks/use-cart";
 import useAuth from "@/hooks/use-auth";
 import { toast } from "sonner";
-import { Loader2, Tag, X, ShoppingBag, ArrowRight } from "lucide-react";
+import {
+  Loader2,
+  Tag,
+  X,
+  ShoppingBag,
+  ArrowRight,
+  ChevronDown,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { Coupon } from "@/types";
 
-const Summary = () => {
+interface SummaryProps {
+  coupons?: Coupon[];
+}
+
+const Summary = ({ coupons = [] }: SummaryProps) => {
   const searchParams = useSearchParams();
   const items = useCart((state) => state.items);
   const removeAll = useCart((state) => state.removeAll);
@@ -29,7 +41,21 @@ const Summary = () => {
   const [couponLoading, setCouponLoading] = useState(false);
   const [shippingCost, setShippingCost] = useState(0);
   const [customerNote, setCustomerNote] = useState("");
+  const [showCouponList, setShowCouponList] = useState(false);
   const prevItemsRef = useRef<string>("");
+
+  // Filter active and valid coupons
+  const activeCoupons = (coupons || []).filter((coupon) => {
+    try {
+      const now = new Date();
+      const expiryDate = coupon.expiresAt ? new Date(coupon.expiresAt) : null;
+      const isExpired = expiryDate && expiryDate < now;
+      return !isExpired;
+    } catch (error) {
+      console.error("Error filtering coupon:", error, coupon);
+      return false;
+    }
+  });
 
   // Calculate subtotal
   const subtotal = items.reduce((total, item) => {
@@ -124,9 +150,18 @@ const Summary = () => {
         localStorage.setItem("appliedCoupon", JSON.stringify(couponData));
         toast.success("Áp dụng mã giảm giá thành công!");
         setCouponCode("");
-      } else if (response.data && response.data.success === false) {
+      } else if (
+        response.data &&
+        typeof response.data === "object" &&
+        "success" in response.data &&
+        response.data.success === false
+      ) {
         // API trả về error message
-        const message = response.data.message || "";
+        const message =
+          ("message" in response.data &&
+            typeof response.data.message === "string" &&
+            response.data.message) ||
+          "";
         // Kiểm tra nếu mã đã hết hạn
         if (
           message.toLowerCase().includes("expired") ||
@@ -223,9 +258,31 @@ const Summary = () => {
 
   const handleRemoveCoupon = () => {
     setAppliedCoupon(null);
+    setCouponCode("");
     // Xóa coupon khỏi localStorage
     localStorage.removeItem("appliedCoupon");
     toast.info("Đã xóa mã giảm giá");
+  };
+
+  const handleSelectCoupon = async (coupon: Coupon) => {
+    // Validate coupon data before applying
+    if (!coupon.code || !coupon.value || !coupon.type) {
+      toast.error("Dữ liệu mã giảm giá không hợp lệ");
+      return;
+    }
+
+    // Directly apply the selected coupon
+    const couponData = {
+      code: coupon.code,
+      value: coupon.value,
+      type: coupon.type,
+    };
+
+    setAppliedCoupon(couponData);
+    localStorage.setItem("appliedCoupon", JSON.stringify(couponData));
+    setCouponCode("");
+    setShowCouponList(false);
+    toast.success("Áp dụng mã giảm giá thành công!");
   };
 
   // Reset mã giảm giá và ghi chú khi giỏ hàng thay đổi (thêm/xóa sản phẩm)
@@ -282,9 +339,73 @@ const Summary = () => {
 
       {/* Coupon Code */}
       <div className="mb-6 space-y-2">
-        <label className="text-xs font-light text-gray-700 uppercase tracking-wide">
-          Mã giảm giá
-        </label>
+        <div className="flex items-center justify-between">
+          <label className="text-xs font-light text-gray-700 uppercase tracking-wide">
+            Mã giảm giá
+          </label>
+          {activeCoupons.length > 0 && !appliedCoupon && (
+            <button
+              onClick={() => setShowCouponList(!showCouponList)}
+              className="text-xs text-gray-600 hover:text-black transition-colors flex items-center gap-1"
+            >
+              <Tag className="w-3 h-3" />
+              {activeCoupons.length} mã khả dụng
+              <ChevronDown
+                className={cn(
+                  "w-3 h-3 transition-transform",
+                  showCouponList && "rotate-180"
+                )}
+              />
+            </button>
+          )}
+        </div>
+
+        {/* Available Coupons List */}
+        <AnimatePresence>
+          {showCouponList && activeCoupons.length > 0 && !appliedCoupon && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden"
+            >
+              <div className="space-y-2 p-3 bg-gray-50 border border-gray-200 max-h-60 overflow-y-auto">
+                {activeCoupons.map((coupon) => (
+                  <button
+                    key={coupon.id}
+                    onClick={() => handleSelectCoupon(coupon)}
+                    className="w-full text-left p-3 bg-white border border-gray-200 hover:border-black transition-all group"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Tag className="w-3.5 h-3.5 text-black" />
+                          <span className="text-sm font-medium text-black">
+                            {coupon.code}
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          {coupon.expiresAt &&
+                            `HSD: ${new Date(
+                              coupon.expiresAt
+                            ).toLocaleDateString("vi-VN")}`}
+                        </p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <span className="text-sm font-semibold text-green-600">
+                          {coupon.type === "PERCENT"
+                            ? `-${coupon.value}%`
+                            : `-${coupon.value.toLocaleString("vi-VN")}₫`}
+                        </span>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {appliedCoupon ? (
           <motion.div
             initial={{ opacity: 0 }}
