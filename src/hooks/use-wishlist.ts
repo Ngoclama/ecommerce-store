@@ -4,12 +4,14 @@ import { useAuth } from "@clerk/nextjs";
 import { useCallback } from "react";
 import { toast } from "sonner";
 import axios from "axios";
+import useCart from "./use-cart";
 
 // Cấu hình axios để gửi credentials
 axios.defaults.withCredentials = true;
 
 export const useWishlist = () => {
   const { getToken, isSignedIn } = useAuth();
+  const { wishlistItems, addToWishlist, removeFromWishlist } = useCart();
 
   const toggleWishlist = useCallback(
     async (productId: string) => {
@@ -19,12 +21,30 @@ export const useWishlist = () => {
         return;
       }
 
+      // OPTIMISTIC UPDATE: Cập nhật UI ngay lập tức
+      const isCurrentlyLiked = wishlistItems.includes(productId);
+      const newIsLiked = !isCurrentlyLiked;
+
+      if (newIsLiked) {
+        addToWishlist(productId);
+        toast.success("Đã thêm vào danh sách yêu thích!");
+      } else {
+        removeFromWishlist(productId);
+        toast.success("Đã xóa khỏi danh sách yêu thích.");
+      }
+
       try {
         // Lấy token từ Clerk
         const token = await getToken();
 
         const apiUrl = process.env.NEXT_PUBLIC_API_URL;
         if (!apiUrl) {
+          // Rollback nếu không có API URL
+          if (newIsLiked) {
+            removeFromWishlist(productId);
+          } else {
+            addToWishlist(productId);
+          }
           toast.error("API URL chưa được cấu hình. Vui lòng liên hệ admin.");
           return;
         }
@@ -38,7 +58,7 @@ export const useWishlist = () => {
           url,
           {
             productId: productId,
-            action: "toggle", // Hoặc có thể check trước
+            action: "toggle",
           },
           {
             withCredentials: true, // Gửi cookies
@@ -49,23 +69,36 @@ export const useWishlist = () => {
           }
         );
 
+        // Verify response matches optimistic update
         if (
           response.data &&
           typeof response.data === "object" &&
           "success" in response.data &&
           response.data.success
         ) {
-          const isLiked =
+          const serverIsLiked =
             "isLiked" in response.data ? response.data.isLiked : false;
-          toast.success(
-            isLiked
-              ? "Đã thêm vào danh sách yêu thích!"
-              : "Đã xóa khỏi danh sách yêu thích."
-          );
-          return isLiked as boolean;
+
+          // Nếu server response khác optimistic update, rollback
+          if (serverIsLiked !== newIsLiked) {
+            if (serverIsLiked) {
+              addToWishlist(productId);
+            } else {
+              removeFromWishlist(productId);
+            }
+          }
+
+          return serverIsLiked as boolean;
         }
       } catch (error: any) {
         console.error("[WISHLIST_TOGGLE_ERROR]", error);
+
+        // ROLLBACK: Hoàn tác optimistic update nếu API thất bại
+        if (newIsLiked) {
+          removeFromWishlist(productId);
+        } else {
+          addToWishlist(productId);
+        }
 
         if (error.response?.status === 401) {
           toast.error("Vui lòng đăng nhập để thêm vào danh sách yêu thích.");
@@ -77,7 +110,7 @@ export const useWishlist = () => {
         throw error;
       }
     },
-    [getToken, isSignedIn]
+    [getToken, isSignedIn, wishlistItems, addToWishlist, removeFromWishlist]
   );
 
   const isItemInWishlist = useCallback(

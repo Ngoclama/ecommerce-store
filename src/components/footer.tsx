@@ -303,7 +303,7 @@ export default function Footer() {
                 <span className="text-xs font-light text-gray-400 dark:text-gray-600">
                   •
                 </span>
-                <span className="text-xs font-light text-pink-600 dark:text-pink-500 font-medium">
+                <span className="text-xs font-light text-pink-600 dark:text-pink-500">
                   MoMo
                 </span>
               </div>

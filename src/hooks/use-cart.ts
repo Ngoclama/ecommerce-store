@@ -14,6 +14,8 @@ interface WishlistState {
   isItemInWishlist: (id: string) => boolean;
   toggleWishlist: (productId: string) => void;
   setWishlist: (productIds: string[]) => void;
+  addToWishlist: (productId: string) => void;
+  removeFromWishlist: (productId: string) => void;
 }
 
 // --- Cart Types & Logic (Corrected Signatures) ---
@@ -158,6 +160,19 @@ const useCart = create(
         // Remove duplicates using Set
         const uniqueProductIds = Array.from(new Set(productIds));
         set({ wishlistItems: uniqueProductIds });
+      },
+
+      addToWishlist: (productId: string) => {
+        const current = get().wishlistItems;
+        if (!current.includes(productId)) {
+          set({ wishlistItems: [...current, productId] });
+        }
+      },
+
+      removeFromWishlist: (productId: string) => {
+        set({
+          wishlistItems: get().wishlistItems.filter((id) => id !== productId),
+        });
       },
 
       toggleWishlist: async (productId: string) => {

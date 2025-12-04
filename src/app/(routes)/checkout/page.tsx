@@ -32,6 +32,14 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { vietnamProvinces } from "@/lib/vietnam-address";
 
 type PaymentMethod = "cod" | "momo" | "vnpay" | "qr" | "stripe" | null;
 
@@ -55,7 +63,15 @@ export default function CheckoutPage() {
     ward: "",
   });
 
+  // State for cascading address selection
+  const [selectedProvinceCode, setSelectedProvinceCode] = useState("");
+  const [selectedDistrictCode, setSelectedDistrictCode] = useState("");
+  const [selectedWardCode, setSelectedWardCode] = useState("");
+  const [availableDistricts, setAvailableDistricts] = useState<any[]>([]);
+  const [availableWards, setAvailableWards] = useState<any[]>([]);
+
   const [errors, setErrors] = useState<Record<string, string>>({});
+
   const [appliedCoupon, setAppliedCoupon] = useState<{
     code: string;
     value: number;
@@ -64,6 +80,51 @@ export default function CheckoutPage() {
 
   const [customerNote, setCustomerNote] = useState("");
   const hasProcessedPayment = useRef(false);
+
+  // Handle province change
+  const handleProvinceChange = (provinceCode: string) => {
+    setSelectedProvinceCode(provinceCode);
+    const province = vietnamProvinces.find((p) => String(p.code) === provinceCode);
+    if (province) {
+      setShippingAddress({
+        ...shippingAddress,
+        province: province.name,
+        district: "",
+        ward: "",
+      });
+      setAvailableDistricts(province.districts);
+      setAvailableWards([]);
+      setSelectedDistrictCode("");
+      setSelectedWardCode("");
+    }
+  };
+
+  // Handle district change
+  const handleDistrictChange = (districtCode: string) => {
+    setSelectedDistrictCode(districtCode);
+    const district = availableDistricts.find((d) => String(d.code) === districtCode);
+    if (district) {
+      setShippingAddress({
+        ...shippingAddress,
+        district: district.name,
+        ward: "",
+      });
+      setAvailableWards(district.wards);
+      setSelectedWardCode("");
+    }
+  };
+
+  // Handle ward change
+  const handleWardChange = (wardCode: string) => {
+    setSelectedWardCode(wardCode);
+    const ward = availableWards.find((w) => String(w.code) === wardCode);
+    if (ward) {
+      setShippingAddress({
+        ...shippingAddress,
+        ward: ward.name,
+      });
+    }
+  };
 
   useEffect(() => {
     const savedCoupon = localStorage.getItem("appliedCoupon");
@@ -460,7 +521,83 @@ export default function CheckoutPage() {
         return;
       }
 
-      if (paymentMethod === "vnpay" || paymentMethod === "qr") {
+      if (paymentMethod === "vnpay") {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+        if (!apiUrl) {
+          console.error("[CHECKOUT] NEXT_PUBLIC_API_URL is not configured");
+          toast.error("Cấu hình API không hợp lệ. Vui lòng liên hệ hỗ trợ.");
+          setLoading(false);
+          return;
+        }
+
+        const normalizedApiUrl = apiUrl.replace(/\/$/, "");
+        const checkoutUrl = `${normalizedApiUrl}/api/checkout`;
+
+        console.log("[CHECKOUT] Calling VNPay API:", checkoutUrl);
+
+        const response = await axios.post<{
+          success?: boolean;
+          paymentUrl?: string;
+          orderId?: string;
+          message?: string;
+        }>(
+          checkoutUrl,
+          {
+            items: cart.items.map((item) => ({
+              productId: item.id,
+              quantity: item.quantity,
+              sizeId: item.size?.id,
+              colorId: item.color?.id,
+              materialId: item.material?.id,
+            })),
+            shippingAddress: {
+              fullName: shippingAddress.fullName,
+              phone: shippingAddress.phone,
+              email: shippingAddress.email || undefined,
+              address: shippingAddress.address,
+              province: shippingAddress.province,
+              district: shippingAddress.district,
+              ward: shippingAddress.ward,
+            },
+            shippingMethod: shippingMethod,
+            paymentMethod: "VNPAY",
+            coupon: appliedCoupon
+              ? {
+                  code: appliedCoupon.code,
+                  value: appliedCoupon.value,
+                  type: appliedCoupon.type,
+                }
+              : null,
+            customerNote: customerNote.trim() || null,
+          },
+          {
+            withCredentials: true,
+            timeout: 30000,
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (response.data?.paymentUrl) {
+          window.location.href = response.data.paymentUrl;
+        } else if (response.data?.success) {
+          toast.success(
+            response.data.message || "Đơn hàng của bạn đã được xác nhận!"
+          );
+          cart.removeAll();
+          router.push("/account/orders");
+        } else {
+          toast.error(
+            response.data?.message ||
+              "Không thể tạo thanh toán VNPay. Vui lòng thử lại."
+          );
+          setLoading(false);
+        }
+        return;
+      }
+
+      if (paymentMethod === "qr") {
         toast.info(
           "Tính năng thanh toán này đang được phát triển. Vui lòng chọn phương thức khác."
         );
@@ -763,24 +900,35 @@ export default function CheckoutPage() {
                             Tỉnh/Thành phố{" "}
                             <span className="text-red-500">*</span>
                           </Label>
-                          <Input
-                            id="province"
-                            placeholder="Ví dụ: Hồ Chí Minh"
-                            value={shippingAddress.province}
-                            onChange={(e) => {
-                              setShippingAddress({
-                                ...shippingAddress,
-                                province: e.target.value,
-                              });
+                          <Select
+                            value={selectedProvinceCode}
+                            onValueChange={(value) => {
+                              handleProvinceChange(value);
                               if (errors.province) {
                                 setErrors({ ...errors, province: "" });
                               }
                             }}
-                            className={cn(
-                              "rounded-none border-gray-300 focus-visible:ring-black h-11 font-light",
-                              errors.province && "border-red-500"
-                            )}
-                          />
+                          >
+                            <SelectTrigger
+                              className={cn(
+                                "rounded-none border-gray-300 focus:ring-slate-500 h-11 font-light",
+                                errors.province && "border-red-500"
+                              )}
+                            >
+                              <SelectValue placeholder="Chọn tỉnh/thành phố" />
+                            </SelectTrigger>
+                            <SelectContent className="max-h-[300px]">
+                              {vietnamProvinces.map((province) => (
+                                <SelectItem
+                                  key={province.code}
+                                  value={String(province.code)}
+                                  className="font-light"
+                                >
+                                  {province.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                           {errors.province && (
                             <p className="text-xs text-red-500 font-light">
                               {errors.province}
@@ -796,24 +944,38 @@ export default function CheckoutPage() {
                           >
                             Quận/Huyện <span className="text-red-500">*</span>
                           </Label>
-                          <Input
-                            id="district"
-                            placeholder="Ví dụ: Quận 1"
-                            value={shippingAddress.district}
-                            onChange={(e) => {
-                              setShippingAddress({
-                                ...shippingAddress,
-                                district: e.target.value,
-                              });
+                          <Select
+                            value={selectedDistrictCode}
+                            onValueChange={(value) => {
+                              handleDistrictChange(value);
                               if (errors.district) {
                                 setErrors({ ...errors, district: "" });
                               }
                             }}
-                            className={cn(
-                              "rounded-none border-gray-300 focus-visible:ring-black h-11 font-light",
-                              errors.district && "border-red-500"
-                            )}
-                          />
+                            disabled={!selectedProvinceCode}
+                          >
+                            <SelectTrigger
+                              className={cn(
+                                "rounded-none border-gray-300 focus:ring-slate-500 h-11 font-light",
+                                errors.district && "border-red-500",
+                                !selectedProvinceCode &&
+                                  "opacity-50 cursor-not-allowed"
+                              )}
+                            >
+                              <SelectValue placeholder="Chọn quận/huyện" />
+                            </SelectTrigger>
+                            <SelectContent className="max-h-[300px]">
+                              {availableDistricts.map((district) => (
+                                <SelectItem
+                                  key={district.code}
+                                  value={String(district.code)}
+                                  className="font-light"
+                                >
+                                  {district.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                           {errors.district && (
                             <p className="text-xs text-red-500 font-light">
                               {errors.district}
@@ -829,24 +991,38 @@ export default function CheckoutPage() {
                           >
                             Phường/Xã <span className="text-red-500">*</span>
                           </Label>
-                          <Input
-                            id="ward"
-                            placeholder="Ví dụ: Phường Bến Nghé"
-                            value={shippingAddress.ward}
-                            onChange={(e) => {
-                              setShippingAddress({
-                                ...shippingAddress,
-                                ward: e.target.value,
-                              });
+                          <Select
+                            value={selectedWardCode}
+                            onValueChange={(value) => {
+                              handleWardChange(value);
                               if (errors.ward) {
                                 setErrors({ ...errors, ward: "" });
                               }
                             }}
-                            className={cn(
-                              "rounded-none border-gray-300 focus-visible:ring-black h-11 font-light",
-                              errors.ward && "border-red-500"
-                            )}
-                          />
+                            disabled={!selectedDistrictCode}
+                          >
+                            <SelectTrigger
+                              className={cn(
+                                "rounded-none border-gray-300 focus:ring-slate-500 h-11 font-light",
+                                errors.ward && "border-red-500",
+                                !selectedDistrictCode &&
+                                  "opacity-50 cursor-not-allowed"
+                              )}
+                            >
+                              <SelectValue placeholder="Chọn phường/xã" />
+                            </SelectTrigger>
+                            <SelectContent className="max-h-[300px]">
+                              {availableWards.map((ward) => (
+                                <SelectItem
+                                  key={ward.code}
+                                  value={String(ward.code)}
+                                  className="font-light"
+                                >
+                                  {ward.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                           {errors.ward && (
                             <p className="text-xs text-red-500 font-light">
                               {errors.ward}
@@ -1117,21 +1293,22 @@ export default function CheckoutPage() {
                         </div>
 
                         {/* VNPay */}
-                        <div className="flex items-center space-x-3 p-5 border border-gray-300 hover:border-black transition rounded-none cursor-pointer opacity-60">
-                          <RadioGroupItem value="vnpay" id="vnpay" disabled />
+                        <div className="flex items-center space-x-3 p-5 border border-gray-300 hover:border-black transition rounded-none cursor-pointer">
+                          <RadioGroupItem value="vnpay" id="vnpay" />
                           <Label
                             htmlFor="vnpay"
                             className="flex-1 cursor-pointer"
                           >
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-3">
-                                <Building2 className="w-5 h-5 text-black" />
+                                <Building2 className="w-5 h-5 text-blue-600" />
                                 <div>
                                   <p className="font-light text-sm uppercase tracking-wider text-black">
                                     VNPay
                                   </p>
                                   <p className="text-xs text-gray-600 font-light mt-1">
                                     Thanh toán qua cổng VNPay
+                                    (ATM/Visa/MasterCard)
                                   </p>
                                 </div>
                               </div>
@@ -1307,6 +1484,8 @@ export default function CheckoutPage() {
                               ? "Đặt hàng"
                               : paymentMethod === "momo"
                               ? "Thanh toán MoMo"
+                              : paymentMethod === "vnpay"
+                              ? "Thanh toán VNPay"
                               : "Thanh toán"}
                           </>
                         )}

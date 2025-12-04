@@ -91,7 +91,7 @@ const MegaMenu: React.FC<MegaMenuProps> = ({ categories }) => {
                       }}
                       className="absolute left-1/2 -translate-x-1/2 top-full pt-2 z-50"
                     >
-                      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden min-w-[240px]">
+                      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden min-w-60">
                         {/* Parent Category Header with Image */}
                         <div className="bg-gray-50 dark:bg-gray-900 p-4 border-b border-gray-200 dark:border-gray-700">
                           <Link
@@ -99,7 +99,7 @@ const MegaMenu: React.FC<MegaMenuProps> = ({ categories }) => {
                             className="flex items-center gap-3 group"
                           >
                             {category.imageUrl && (
-                              <div className="relative w-12 h-12 rounded-md overflow-hidden flex-shrink-0">
+                              <div className="relative w-12 h-12 rounded-md overflow-hidden shrink-0">
                                 <Image
                                   src={category.imageUrl}
                                   alt={category.name}
@@ -141,7 +141,7 @@ const MegaMenu: React.FC<MegaMenuProps> = ({ categories }) => {
                                 )}
                               >
                                 {child.imageUrl && (
-                                  <div className="relative w-10 h-10 rounded overflow-hidden flex-shrink-0">
+                                  <div className="relative w-10 h-10 rounded overflow-hidden shrink-0">
                                     <Image
                                       src={child.imageUrl}
                                       alt={child.name}

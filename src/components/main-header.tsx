@@ -42,16 +42,16 @@ export default function MainHeader({
               <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                 <Phone className="w-4 h-4 text-black dark:text-white" />
                 <span>
-                  Hotline:{" "}
+                  Hỗ trợ:{" "}
                   <strong className="text-black dark:text-white">
-                    +84 0123456789
+                    +84 123 456 789
                   </strong>
                 </span>
               </div>
               <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                 <MapPin className="w-4 h-4 text-black dark:text-white" />
                 <span className="hidden xl:inline">
-                  CS1: ĐẠI HỌC NGUYỄN TẤT THÀNH - Q12 - TP.HCM
+                  300A Nguyễn Tất Thành, P.An Phú Đông, Q.12, TP.HCM
                 </span>
               </div>
             </div>

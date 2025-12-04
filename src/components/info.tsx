@@ -11,18 +11,33 @@ import {
   Check,
   Sparkles,
   Zap,
+  Heart,
+  Package,
+  Truck,
+  ShieldCheck,
+  TrendingUp,
+  Star,
+  Clock,
+  Award,
+  Gift,
+  RefreshCw,
+  Info as InfoIcon,
+  AlertCircle,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Input } from "./ui/input";
+import { Badge } from "./ui/badge";
+import { Separator } from "./ui/separator";
 import { useState, useEffect, MouseEventHandler, useMemo, useRef } from "react";
 import useCart from "@/hooks/use-cart";
+import { useWishlist } from "@/hooks/use-wishlist";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import SizeGuide from "./size-guide";
 import { useRouter } from "next/navigation";
 import { useCartAnimation } from "@/contexts/cart-animation-context";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface InfoProps {
   data: Product;
@@ -34,9 +49,13 @@ const Info: React.FC<InfoProps> = ({ data }) => {
   const [isNavigating, setIsNavigating] = useState(false);
   const router = useRouter();
   const cart = useCart();
+  const wishlist = useWishlist();
   const { triggerAnimation } = useCartAnimation();
   const addToCartButtonRef = useRef<HTMLButtonElement>(null);
   const buyNowButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Check if product is in wishlist using cart's wishlistItems
+  const isInWishlist = cart.wishlistItems.includes(data.id);
 
   // Variant selection state
   const [selectedSizeId, setSelectedSizeId] = useState<string | null>(null);
@@ -159,28 +178,22 @@ const Info: React.FC<InfoProps> = ({ data }) => {
       price: currentPrice,
     };
 
-    // Trigger animation - thu nhỏ button trước, sau đó bay vào giỏ hàng
+    // Trigger animation
     const primaryImage = data.images?.[0]?.url || "/placeholder.svg";
     if (addToCartButtonRef.current && primaryImage) {
-      // Trigger animation ngay lập tức để có hiệu ứng thu nhỏ và bay
       triggerAnimation(primaryImage, addToCartButtonRef.current);
     }
 
-    // Add to cart immediately - Zustand will update state synchronously
     cart.addItem(productData, quantity);
 
-    // Small delay for toast to show after animation starts
     setTimeout(() => {
       toast.success("Đã thêm vào giỏ hàng");
 
-      // If we're on the cart page, trigger a refresh
       if (
         typeof window !== "undefined" &&
         window.location.pathname === "/cart"
       ) {
-        // Dispatch a custom event that CartClient can listen to
         window.dispatchEvent(new CustomEvent("cart-updated"));
-        // Also try router refresh
         router.refresh();
       }
     }, 100);
@@ -189,7 +202,6 @@ const Info: React.FC<InfoProps> = ({ data }) => {
   const handleBuyNow: MouseEventHandler<HTMLButtonElement> = (e) => {
     e.stopPropagation();
 
-    // Guard để tránh double navigation
     if (isNavigating) {
       return;
     }
@@ -221,18 +233,13 @@ const Info: React.FC<InfoProps> = ({ data }) => {
       price: currentPrice,
     };
 
-    // Trigger animation
     const primaryImage = data.images?.[0]?.url || "/placeholder.svg";
     if (buyNowButtonRef.current && primaryImage) {
       triggerAnimation(primaryImage, buyNowButtonRef.current);
     }
 
-    // Add to cart immediately - Zustand will update state synchronously
     cart.addItem(productData, quantity);
 
-    // Zustand persist middleware automatically saves to localStorage
-    // But we need to give it a moment to ensure persistence is complete
-    // Also verify the state was saved before navigating
     let retryCount = 0;
     const maxRetries = 5;
 
@@ -244,27 +251,21 @@ const Info: React.FC<InfoProps> = ({ data }) => {
           const parsed = JSON.parse(saved);
           const savedItems = parsed?.state?.items || [];
 
-          // Check if our item was saved (by checking if items array has items)
           if (savedItems.length > 0) {
-            // Dispatch event to notify cart page that cart was updated
             window.dispatchEvent(
               new CustomEvent("cart-updated", {
                 detail: { source: "buy-now" },
               })
             );
-
-            // Navigate to cart page
             router.push("/cart");
             return;
           }
         }
 
-        // If not saved yet and haven't exceeded max retries, wait a bit more and try again
         if (retryCount < maxRetries) {
           retryCount++;
           setTimeout(verifyAndNavigate, 100);
         } else {
-          // After max retries, navigate anyway (Zustand should have synced by now)
           console.warn("[Info] Max retries reached, navigating anyway");
           window.dispatchEvent(
             new CustomEvent("cart-updated", {
@@ -275,7 +276,6 @@ const Info: React.FC<InfoProps> = ({ data }) => {
         }
       } catch (error) {
         console.error("[Info] Error verifying cart state:", error);
-        // On error, still navigate after a delay
         window.dispatchEvent(
           new CustomEvent("cart-updated", {
             detail: { source: "buy-now" },
@@ -285,12 +285,19 @@ const Info: React.FC<InfoProps> = ({ data }) => {
       }
     };
 
-    // Start verification after a short delay to allow Zustand to persist
     setTimeout(verifyAndNavigate, 150);
   };
 
   const formatVND = (value: number) => {
     return new Intl.NumberFormat("vi-VN").format(value) + "₫";
+  };
+
+  // Toggle wishlist
+  const onToggleWishlist: MouseEventHandler<HTMLButtonElement> = (e) => {
+    e.stopPropagation();
+
+    // Use async wishlist toggle from hook
+    wishlist.toggleWishlist(data.id);
   };
 
   const handleShare = (type: string) => {
@@ -332,84 +339,232 @@ const Info: React.FC<InfoProps> = ({ data }) => {
   };
 
   return (
-    <div className="space-y-8 lg:space-y-10">
-      {/* Header Section - Modern 2025 Style */}
+    <div className="space-y-6 lg:space-y-8">
+      {/* Header Section */}
       <div className="space-y-4">
-        {/* Category Badge */}
-        {data.category && (
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-black dark:bg-white text-white dark:text-black rounded-none">
-            <span className="text-xs font-light uppercase tracking-wider">
-              {data.category.name}
-            </span>
-          </div>
-        )}
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1 space-y-3">
+            {data.category && (
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-black dark:bg-white text-white dark:text-black rounded-none">
+                <span className="text-xs font-light uppercase tracking-wider">
+                  {data.category.name}
+                </span>
+              </div>
+            )}
 
-        {/* Title - Clean Typography */}
-        <h1 className="text-2xl md:text-3xl lg:text-4xl font-light text-black dark:text-white leading-tight tracking-tight">
-          {data.name}
-        </h1>
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-light text-black dark:text-white leading-tight tracking-tight">
+              {data.name}
+            </h1>
 
-        {/* Discount Badge - Subtle */}
-        {discountPercent > 0 && (
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-black dark:bg-white text-white dark:text-black rounded-none">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span className="text-xs font-light uppercase tracking-wider">
-              Giảm {discountPercent}%
-            </span>
+            <div className="flex flex-wrap items-center gap-2">
+              {discountPercent > 0 && (
+                <motion.div
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-red-600 dark:bg-red-500 text-white rounded-none"
+                >
+                  <Sparkles className="w-3 h-3" />
+                  <span className="text-xs font-medium uppercase tracking-wide">
+                    -{discountPercent}%
+                  </span>
+                </motion.div>
+              )}
+
+              {data.createdAt &&
+                new Date(data.createdAt).getTime() >
+                  Date.now() - 7 * 24 * 60 * 60 * 1000 && (
+                  <Badge
+                    variant="outline"
+                    className="border-green-600 dark:border-green-500 text-green-600 dark:text-green-500 rounded-none text-xs font-light"
+                  >
+                    <TrendingUp className="w-3 h-3 mr-1" />
+                    Mới
+                  </Badge>
+                )}
+
+              {data.isFeatured && (
+                <Badge
+                  variant="outline"
+                  className="border-slate-400 dark:border-slate-500 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900/50 dark:to-slate-800/50 text-slate-600 dark:text-slate-400 rounded-none text-xs font-light shadow-sm"
+                >
+                  <Award className="w-3 h-3 mr-1" />
+                  Bán chạy
+                </Badge>
+              )}
+            </div>
           </div>
-        )}
+
+          <motion.button
+            onClick={onToggleWishlist}
+            whileTap={{ scale: 0.9 }}
+            className={cn(
+              "flex-shrink-0 w-11 h-11 flex items-center justify-center border rounded-none transition-all duration-200",
+              isInWishlist
+                ? "border-red-600 dark:border-red-500 bg-red-600 dark:bg-red-500 text-white"
+                : "border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:border-red-600 dark:hover:border-red-500 hover:text-red-600 dark:hover:text-red-500"
+            )}
+          >
+            <Heart
+              className={cn(
+                "w-5 h-5 transition-all",
+                isInWishlist && "fill-current"
+              )}
+            />
+          </motion.button>
+        </div>
       </div>
 
-      {/* Price Section - Elegant Display */}
-      <div className="space-y-3 pb-6 border-b border-gray-200 dark:border-gray-800">
-        <div className="flex items-baseline gap-4">
-          <span className="text-3xl md:text-4xl font-light text-black dark:text-white tracking-tight">
+      {/* Price Section */}
+      <div className="space-y-4 pb-6 border-b border-gray-200 dark:border-gray-800">
+        <div className="flex items-baseline gap-4 flex-wrap">
+          <motion.span
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="text-3xl md:text-4xl font-light text-black dark:text-white tracking-tight"
+          >
             {formatVND(currentPrice)}
-          </span>
+          </motion.span>
           {data.originalPrice && data.originalPrice > data.price && (
-            <>
+            <div className="flex items-center gap-2">
               <span className="text-base text-gray-400 dark:text-gray-500 line-through font-light">
                 {formatVND(data.originalPrice)}
               </span>
-            </>
+              <span className="text-xs text-green-600 dark:text-green-500 font-medium">
+                Tiết kiệm {formatVND(data.originalPrice - data.price)}
+              </span>
+            </div>
           )}
         </div>
 
-        {/* Total Price when quantity > 1 */}
-        {quantity > 1 && (
-          <div className="flex items-center gap-3 pt-3 border-t border-gray-100 dark:border-gray-800">
-            <span className="text-xs text-gray-600 dark:text-gray-400 font-light">
-              Tổng cộng ({quantity} sản phẩm):
-            </span>
-            <span className="text-xl text-black dark:text-white font-light tracking-tight">
-              {formatVND(currentPrice * quantity)}
-            </span>
-          </div>
-        )}
+        <AnimatePresence>
+          {quantity > 1 && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="flex items-center gap-3 pt-3 border-t border-gray-100 dark:border-gray-800 overflow-hidden"
+            >
+              <span className="text-xs text-gray-600 dark:text-gray-400 font-light">
+                Tổng cộng ({quantity} sản phẩm):
+              </span>
+              <span className="text-xl text-black dark:text-white font-light tracking-tight">
+                {formatVND(currentPrice * quantity)}
+              </span>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        {/* Stock Status */}
-        {isOutOfStock ? (
-          <div className="flex items-center gap-2 text-xs text-red-600 dark:text-red-400 font-light">
-            <span className="w-2 h-2 bg-red-600 dark:bg-red-400 rounded-full"></span>
-            Hết hàng
+        <div className="flex items-center justify-between gap-4 pt-2">
+          <div className="flex items-center gap-6">
+            {isOutOfStock ? (
+              <div className="flex items-center gap-2 text-xs text-red-600 dark:text-red-400 font-light">
+                <AlertCircle className="w-4 h-4" />
+                <span className="font-medium">Hết hàng</span>
+              </div>
+            ) : currentInventory <= 5 ? (
+              <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 font-light">
+                <motion.span
+                  animate={{
+                    scale: [1, 1.2, 1],
+                    opacity: [0.6, 1, 0.6],
+                  }}
+                  transition={{ repeat: Infinity, duration: 2 }}
+                  className="w-2 h-2 bg-gradient-to-r from-slate-400 to-slate-500 dark:from-slate-500 dark:to-slate-400 rounded-full shadow-lg shadow-slate-400/50 dark:shadow-slate-500/30"
+                />
+                <span className="font-medium bg-gradient-to-r from-slate-600 to-slate-500 dark:from-slate-400 dark:to-slate-300 bg-clip-text text-transparent">
+                  Chỉ còn {currentInventory} sản phẩm
+                </span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400 font-light">
+                <Check className="w-4 h-4" />
+                <span className="font-medium">Còn hàng</span>
+              </div>
+            )}
+
+            {selectedVariant?.sku && (
+              <span className="text-xs text-gray-500 dark:text-gray-400 font-light">
+                SKU: {selectedVariant.sku}
+              </span>
+            )}
           </div>
-        ) : currentInventory <= 5 ? (
-          <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 font-light">
-            <span className="w-2 h-2 bg-amber-600 dark:bg-amber-400 rounded-full animate-pulse"></span>
-            Chỉ còn {currentInventory} sản phẩm
-          </div>
-        ) : (
-          <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400 font-light">
-            <Check className="w-3.5 h-3.5" />
-            Còn hàng
-          </div>
-        )}
+        </div>
       </div>
 
-      {/* Size Guide */}
+      {/* Trust Badges */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-none border border-gray-200 dark:border-gray-800"
+        >
+          <Truck className="w-4 h-4 text-gray-700 dark:text-gray-300 flex-shrink-0" />
+          <div className="flex flex-col">
+            <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
+              Giao hàng nhanh
+            </span>
+            <span className="text-[10px] text-gray-600 dark:text-gray-400">
+              2-3 ngày
+            </span>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-none border border-gray-200 dark:border-gray-800"
+        >
+          <ShieldCheck className="w-4 h-4 text-gray-700 dark:text-gray-300 flex-shrink-0" />
+          <div className="flex flex-col">
+            <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
+              Bảo hành
+            </span>
+            <span className="text-[10px] text-gray-600 dark:text-gray-400">
+              12 tháng
+            </span>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-none border border-gray-200 dark:border-gray-800"
+        >
+          <RefreshCw className="w-4 h-4 text-gray-700 dark:text-gray-300 flex-shrink-0" />
+          <div className="flex flex-col">
+            <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
+              Đổi trả
+            </span>
+            <span className="text-[10px] text-gray-600 dark:text-gray-400">
+              7 ngày
+            </span>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-none border border-gray-200 dark:border-gray-800"
+        >
+          <Package className="w-4 h-4 text-gray-700 dark:text-gray-300 flex-shrink-0" />
+          <div className="flex flex-col">
+            <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
+              Đóng gói
+            </span>
+            <span className="text-[10px] text-gray-600 dark:text-gray-400">
+              Chuyên nghiệp
+            </span>
+          </div>
+        </motion.div>
+      </div>
+
       <SizeGuide category={data.category?.name} />
 
-      {/* SIZE Selection - Modern Toggle */}
+      {/* SIZE Selection */}
       {availableSizes.length > 0 && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -460,8 +615,8 @@ const Info: React.FC<InfoProps> = ({ data }) => {
                   className={cn(
                     "px-4 py-2 border rounded-none min-w-[70px] text-xs font-light transition-all duration-200",
                     selectedSizeId === size.id
-                      ? "border-black dark:border-white bg-black dark:bg-white text-white dark:text-black shadow-sm"
-                      : "border-gray-300 dark:border-gray-700 hover:border-black dark:hover:border-white bg-white dark:bg-gray-800 text-black dark:text-white",
+                      ? "border-slate-700 dark:border-slate-300 bg-slate-700 dark:bg-slate-300 text-white dark:text-slate-900 shadow-md"
+                      : "border-slate-300 dark:border-slate-700 hover:border-slate-500 dark:hover:border-slate-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800",
                     !variantAvailable && "opacity-40 cursor-not-allowed"
                   )}
                 >
@@ -473,7 +628,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
         </div>
       )}
 
-      {/* COLOR Selection - Modern Toggle */}
+      {/* COLOR Selection */}
       {availableColors.length > 0 && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -524,14 +679,14 @@ const Info: React.FC<InfoProps> = ({ data }) => {
                   className={cn(
                     "px-4 py-2 border rounded-none min-w-[100px] text-xs font-light transition-all duration-200",
                     selectedColorId === color.id
-                      ? "border-black dark:border-white bg-black dark:bg-white text-white dark:text-black shadow-sm"
-                      : "border-gray-300 dark:border-gray-700 hover:border-black dark:hover:border-white bg-white dark:bg-gray-800 text-black dark:text-white",
+                      ? "border-slate-700 dark:border-slate-300 bg-slate-700 dark:bg-slate-300 text-white dark:text-slate-900 shadow-md"
+                      : "border-slate-300 dark:border-slate-700 hover:border-slate-500 dark:hover:border-slate-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800",
                     !variantAvailable && "opacity-40 cursor-not-allowed"
                   )}
                 >
                   <div className="flex items-center gap-2">
                     <div
-                      className="h-4 w-4 rounded-full border"
+                      className="h-4 w-4 rounded-full border border-slate-300 dark:border-slate-600"
                       style={{ backgroundColor: color.value }}
                     />
                     {color.name}
@@ -543,7 +698,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
         </div>
       )}
 
-      {/* Quantity - Modern Input */}
+      {/* Quantity */}
       <div className="space-y-4">
         <h3 className="text-xs font-light text-black dark:text-white uppercase tracking-wider">
           Số lượng
@@ -594,103 +749,215 @@ const Info: React.FC<InfoProps> = ({ data }) => {
         </div>
       </div>
 
-      {/* Action Buttons - Modern 2025 Style */}
-      <div className="flex flex-col gap-3 pt-2">
-        <Button
-          ref={buyNowButtonRef}
-          onClick={handleBuyNow}
-          disabled={
-            isOutOfStock ||
-            (variants.length > 0 && (!selectedSizeId || !selectedColorId))
-          }
-          className={cn(
-            "w-full h-12 rounded-none bg-black dark:bg-white text-white dark:text-black hover:bg-gray-900 dark:hover:bg-gray-100 text-xs font-light uppercase tracking-wider transition-all duration-200 shadow-sm",
-            (isOutOfStock ||
-              (variants.length > 0 && (!selectedSizeId || !selectedColorId))) &&
-              "opacity-50 cursor-not-allowed"
-          )}
-        >
-          <Zap className="w-3.5 h-3.5 mr-2" />
-          Mua ngay
-        </Button>
-        <motion.button
-          ref={addToCartButtonRef}
-          onClick={onAddToCart}
-          disabled={
-            isOutOfStock ||
-            (variants.length > 0 && (!selectedSizeId || !selectedColorId))
-          }
-          whileTap={{ scale: 0.95 }}
-          transition={{ duration: 0.1 }}
-          className={cn(
-            "w-full h-12 rounded-none border-2 border-black dark:border-white hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black text-xs font-light uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2 bg-transparent",
-            (isOutOfStock ||
-              (variants.length > 0 && (!selectedSizeId || !selectedColorId))) &&
-              "opacity-50 cursor-not-allowed"
-          )}
-        >
-          <ShoppingCart className="w-3.5 h-3.5" />
-          Thêm vào giỏ hàng
-        </motion.button>
-      </div>
+      {/* Action Buttons */}
+      <div className="space-y-3 pt-2">
+        {variants.length > 0 && (!selectedSizeId || !selectedColorId) && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            className="flex items-center gap-2 p-3 bg-gradient-to-r from-slate-50 to-blue-50/50 dark:from-slate-900/30 dark:to-blue-950/20 border border-slate-200 dark:border-slate-800 rounded-none shadow-sm"
+          >
+            <InfoIcon className="w-4 h-4 text-slate-600 dark:text-slate-400 flex-shrink-0" />
+            <span className="text-xs text-slate-700 dark:text-slate-300 font-light">
+              Vui lòng chọn {!selectedSizeId ? "kích thước" : ""}{" "}
+              {!selectedSizeId && !selectedColorId ? "và" : ""}{" "}
+              {!selectedColorId ? "màu sắc" : ""}
+            </span>
+          </motion.div>
+        )}
 
-      {/* Share Section - Minimalist */}
-      <div className="space-y-4 pt-6 border-t border-gray-200 dark:border-gray-800">
-        <h3 className="text-xs font-light text-black dark:text-white uppercase tracking-wider">
-          Chia sẻ
-        </h3>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleShare("facebook")}
-            className="flex items-center gap-2 border-gray-300 dark:border-gray-700 rounded-none hover:border-black dark:hover:border-white bg-white dark:bg-gray-800 text-black dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 text-xs font-light h-8"
+        <div className="flex flex-col gap-3">
+          <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}>
+            <Button
+              ref={buyNowButtonRef}
+              onClick={handleBuyNow}
+              disabled={
+                isOutOfStock ||
+                (variants.length > 0 && (!selectedSizeId || !selectedColorId))
+              }
+              className={cn(
+                "w-full h-12 rounded-none bg-black dark:bg-white text-white dark:text-black hover:bg-gray-900 dark:hover:bg-gray-100 text-xs font-medium uppercase tracking-wider transition-all duration-200 shadow-sm",
+                (isOutOfStock ||
+                  (variants.length > 0 &&
+                    (!selectedSizeId || !selectedColorId))) &&
+                  "opacity-50 cursor-not-allowed"
+              )}
+            >
+              <Zap className="w-4 h-4 mr-2" />
+              Mua ngay
+            </Button>
+          </motion.div>
+
+          <motion.button
+            ref={addToCartButtonRef}
+            onClick={onAddToCart}
+            disabled={
+              isOutOfStock ||
+              (variants.length > 0 && (!selectedSizeId || !selectedColorId))
+            }
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.98 }}
+            className={cn(
+              "w-full h-12 rounded-none border-2 border-black dark:border-white hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black text-xs font-medium uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2 bg-transparent text-black dark:text-white",
+              (isOutOfStock ||
+                (variants.length > 0 &&
+                  (!selectedSizeId || !selectedColorId))) &&
+                "opacity-50 cursor-not-allowed"
+            )}
           >
-            <Facebook className="w-3.5 h-3.5" />
-            Facebook
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleShare("messenger")}
-            className="flex items-center gap-2 border-gray-300 dark:border-gray-700 rounded-none hover:border-black dark:hover:border-white bg-white dark:bg-gray-800 text-black dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 text-xs font-light h-8"
-          >
-            <MessageCircle className="w-3.5 h-3.5" />
-            Messenger
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleShare("twitter")}
-            className="flex items-center gap-2 border-gray-300 dark:border-gray-700 rounded-none hover:border-black dark:hover:border-white bg-white dark:bg-gray-800 text-black dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 text-xs font-light h-8"
-          >
-            <Twitter className="w-3.5 h-3.5" />
-            Twitter
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleShare("copy")}
-            className="flex items-center gap-2 border-gray-300 dark:border-gray-700 rounded-none hover:border-black dark:hover:border-white bg-white dark:bg-gray-800 text-black dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 text-xs font-light h-8"
-          >
-            <LinkIcon className="w-3.5 h-3.5" />
-            Sao chép
-          </Button>
+            <ShoppingCart className="w-4 h-4" />
+            Thêm vào giỏ hàng
+          </motion.button>
         </div>
       </div>
 
-      {/* Product Description - Clean Typography */}
+      {/* Share Section */}
+      <div className="space-y-4 pt-6 border-t border-gray-200 dark:border-gray-800">
+        <h3 className="text-xs font-medium text-black dark:text-white uppercase tracking-wider">
+          Chia sẻ sản phẩm
+        </h3>
+        <div className="flex flex-wrap gap-2">
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleShare("facebook")}
+              className="flex items-center gap-2 border-gray-300 dark:border-gray-700 rounded-none hover:border-blue-600 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950 hover:text-blue-600 dark:hover:text-blue-400 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-light h-9 transition-colors"
+            >
+              <Facebook className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Facebook</span>
+            </Button>
+          </motion.div>
+
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleShare("messenger")}
+              className="flex items-center gap-2 border-gray-300 dark:border-gray-700 rounded-none hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950 hover:text-blue-500 dark:hover:text-blue-400 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-light h-9 transition-colors"
+            >
+              <MessageCircle className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Messenger</span>
+            </Button>
+          </motion.div>
+
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleShare("twitter")}
+              className="flex items-center gap-2 border-gray-300 dark:border-gray-700 rounded-none hover:border-sky-500 dark:hover:border-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950 hover:text-sky-500 dark:hover:text-sky-400 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-light h-9 transition-colors"
+            >
+              <Twitter className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Twitter</span>
+            </Button>
+          </motion.div>
+
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleShare("copy")}
+              className="flex items-center gap-2 border-gray-300 dark:border-gray-700 rounded-none hover:border-gray-900 dark:hover:border-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-light h-9 transition-colors"
+            >
+              <LinkIcon className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Sao chép</span>
+            </Button>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Product Description */}
       {data.description && (
         <div className="space-y-4 pt-6 border-t border-gray-200 dark:border-gray-800">
-          <h3 className="text-xs font-light text-black dark:text-white uppercase tracking-wider">
+          <h3 className="text-xs font-medium text-black dark:text-white uppercase tracking-wider flex items-center gap-2">
+            <Sparkles className="w-3.5 h-3.5" />
             Mô tả sản phẩm
           </h3>
-          <div
-            className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap font-light"
-            dangerouslySetInnerHTML={{ __html: data.description }}
-          />
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="prose prose-sm dark:prose-invert max-w-none"
+          >
+            <div
+              className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap font-light [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mb-1 [&_p]:mb-3 [&_strong]:font-medium [&_strong]:text-gray-900 [&_strong]:dark:text-gray-100"
+              dangerouslySetInnerHTML={{ __html: data.description }}
+            />
+          </motion.div>
         </div>
       )}
+
+      {/* Additional Product Info */}
+      <div className="space-y-4 pt-6 border-t border-gray-200 dark:border-gray-800">
+        <h3 className="text-xs font-medium text-black dark:text-white uppercase tracking-wider">
+          Thông tin thêm
+        </h3>
+        <div className="grid gap-3 text-xs">
+          <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-none">
+            <Package className="w-4 h-4 text-gray-600 dark:text-gray-400 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="font-medium text-gray-900 dark:text-gray-100 mb-1">
+                Chính sách giao hàng
+              </p>
+              <p className="text-gray-600 dark:text-gray-400 font-light leading-relaxed">
+                Giao hàng toàn quốc. Miễn phí vận chuyển cho đơn hàng từ
+                500.000₫
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-none">
+            <RefreshCw className="w-4 h-4 text-gray-600 dark:text-gray-400 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="font-medium text-gray-900 dark:text-gray-100 mb-1">
+                Chính sách đổi trả
+              </p>
+              <p className="text-gray-600 dark:text-gray-400 font-light leading-relaxed">
+                Đổi trả trong vòng 7 ngày nếu sản phẩm lỗi hoặc không đúng mô tả
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-none">
+            <ShieldCheck className="w-4 h-4 text-gray-600 dark:text-gray-400 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="font-medium text-gray-900 dark:text-gray-100 mb-1">
+                Bảo hành chính hãng
+              </p>
+              <p className="text-gray-600 dark:text-gray-400 font-light leading-relaxed">
+                Bảo hành 12 tháng đối với lỗi từ nhà sản xuất
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Customer Support CTA */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+        className="p-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900/50 dark:to-gray-800/50 border border-gray-200 dark:border-gray-800 rounded-none"
+      >
+        <div className="flex items-start gap-3">
+          <InfoIcon className="w-5 h-5 text-gray-700 dark:text-gray-300 flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
+              Cần hỗ trợ?
+            </p>
+            <p className="text-xs text-gray-600 dark:text-gray-400 font-light mb-3">
+              Đội ngũ chăm sóc khách hàng luôn sẵn sàng hỗ trợ bạn 24/7
+            </p>
+            <a
+              href="tel:0123456789"
+              className="inline-flex items-center gap-2 text-xs font-medium text-black dark:text-white hover:underline"
+            >
+              <span>Hotline: 0123 456 789</span>
+            </a>
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
 };

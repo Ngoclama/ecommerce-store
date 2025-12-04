@@ -143,7 +143,7 @@ const CategoryList: React.FC<CategoryListProps> = ({
                   </div>
                 )}
                 {/* Overlay gradient */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               </div>
               <div className="p-4 text-center bg-white dark:bg-gray-800">
                 <h3 className="text-sm font-medium text-black dark:text-white uppercase tracking-wider group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors duration-300">

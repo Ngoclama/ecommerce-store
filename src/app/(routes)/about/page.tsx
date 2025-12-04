@@ -2,13 +2,13 @@
 
 import Container from "@/components/ui/container";
 import { motion } from "framer-motion";
-import { 
-  Award, 
-  Users, 
-  Heart, 
-  Target, 
-  Eye, 
-  Leaf, 
+import {
+  Award,
+  Users,
+  Heart,
+  Target,
+  Eye,
+  Leaf,
   TrendingUp,
   Clock,
   MapPin,
@@ -17,7 +17,7 @@ import {
   Facebook,
   Instagram,
   Twitter,
-  Youtube
+  Youtube,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -26,58 +26,67 @@ const values = [
   {
     icon: Heart,
     title: "Khách hàng là trung tâm",
-    description: "Chúng tôi đặt khách hàng lên hàng đầu trong mọi quyết định, luôn lắng nghe và phục vụ với tất cả sự tận tâm."
+    description:
+      "Chúng tôi đặt khách hàng lên hàng đầu trong mọi quyết định, luôn lắng nghe và phục vụ với tất cả sự tận tâm.",
   },
   {
     icon: Award,
     title: "Chất lượng vượt trội",
-    description: "Cam kết mang đến những sản phẩm chất lượng cao nhất, được kiểm tra kỹ lưỡng trước khi đến tay khách hàng."
+    description:
+      "Cam kết mang đến những sản phẩm chất lượng cao nhất, được kiểm tra kỹ lưỡng trước khi đến tay khách hàng.",
   },
   {
     icon: Leaf,
     title: "Bền vững",
-    description: "Tôn trọng môi trường và xã hội, cam kết phát triển bền vững trong mọi hoạt động kinh doanh."
+    description:
+      "Tôn trọng môi trường và xã hội, cam kết phát triển bền vững trong mọi hoạt động kinh doanh.",
   },
   {
     icon: Users,
     title: "Đổi mới sáng tạo",
-    description: "Không ngừng đổi mới và sáng tạo để mang đến những trải nghiệm thời trang độc đáo và hiện đại."
-  }
+    description:
+      "Không ngừng đổi mới và sáng tạo để mang đến những trải nghiệm thời trang độc đáo và hiện đại.",
+  },
 ];
 
 const milestones = [
   {
     year: "2020",
     title: "Thành lập",
-    description: "Khởi đầu hành trình với tầm nhìn tạo ra thương hiệu thời trang Việt Nam chất lượng cao"
+    description:
+      "Khởi đầu hành trình với tầm nhìn tạo ra thương hiệu thời trang Việt Nam chất lượng cao",
   },
   {
     year: "2021",
     title: "Mở rộng",
-    description: "Mở rộng danh mục sản phẩm và phát triển hệ thống bán hàng trực tuyến"
+    description:
+      "Mở rộng danh mục sản phẩm và phát triển hệ thống bán hàng trực tuyến",
   },
   {
     year: "2022",
     title: "Thành công",
-    description: "Đạt được 10.000 khách hàng thân thiết và mở cửa hàng thứ 5 tại TP.HCM"
+    description:
+      "Đạt được 10.000 khách hàng thân thiết và mở cửa hàng thứ 5 tại TP.HCM",
   },
   {
     year: "2023",
     title: "Phát triển",
-    description: "Ra mắt bộ sưu tập bền vững và nhận giải thưởng Thương hiệu thời trang xuất sắc"
+    description:
+      "Ra mắt bộ sưu tập bền vững và nhận giải thưởng Thương hiệu thời trang xuất sắc",
   },
   {
     year: "2024",
     title: "Vươn xa",
-    description: "Mở rộng thị trường ra toàn quốc và hợp tác với các nhà thiết kế quốc tế"
-  }
+    description:
+      "Mở rộng thị trường ra toàn quốc và hợp tác với các nhà thiết kế quốc tế",
+  },
 ];
 
 const stats = [
   { number: "50K+", label: "Khách hàng" },
   { number: "100+", label: "Sản phẩm" },
   { number: "15+", label: "Cửa hàng" },
-  { number: "98%", label: "Hài lòng" }
+  { number: "98%", label: "Hài lòng" },
 ];
 
 export default function AboutPage() {
@@ -101,8 +110,9 @@ export default function AboutPage() {
               transition={{ duration: 0.6, delay: 0.1 }}
               className="text-lg md:text-xl text-gray-600 dark:text-gray-400 font-light max-w-2xl mx-auto leading-relaxed"
             >
-              Chúng tôi là thương hiệu thời trang Việt Nam với sứ mệnh mang đến những sản phẩm chất lượng cao, 
-              phong cách hiện đại và giá trị bền vững cho mọi khách hàng.
+              Chúng tôi là thương hiệu thời trang Việt Nam với sứ mệnh mang đến
+              những sản phẩm chất lượng cao, phong cách hiện đại và giá trị bền
+              vững cho mọi khách hàng.
             </motion.p>
           </div>
         </Container>
@@ -152,26 +162,31 @@ export default function AboutPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.1 }}
               >
-                Thành lập vào năm 2020, chúng tôi bắt đầu với một tầm nhìn đơn giản: tạo ra những sản phẩm thời trang 
-                chất lượng cao, phù hợp với phong cách sống hiện đại của người Việt Nam. Từ một cửa hàng nhỏ, chúng tôi 
-                đã phát triển thành một thương hiệu được yêu thích với hàng nghìn khách hàng trên khắp cả nước.
+                Thành lập vào năm 2020, chúng tôi bắt đầu với một tầm nhìn đơn
+                giản: tạo ra những sản phẩm thời trang chất lượng cao, phù hợp
+                với phong cách sống hiện đại của người Việt Nam. Từ một cửa hàng
+                nhỏ, chúng tôi đã phát triển thành một thương hiệu được yêu
+                thích với hàng nghìn khách hàng trên khắp cả nước.
               </motion.p>
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
-                Chúng tôi tin rằng thời trang không chỉ là về vẻ ngoài, mà còn là về cảm giác tự tin, thoải mái và 
-                thể hiện cá tính riêng. Mỗi sản phẩm của chúng tôi được thiết kế và sản xuất với sự chú ý đến từng 
-                chi tiết, đảm bảo chất lượng và tính bền vững.
+                Chúng tôi tin rằng thời trang không chỉ là về vẻ ngoài, mà còn
+                là về cảm giác tự tin, thoải mái và thể hiện cá tính riêng. Mỗi
+                sản phẩm của chúng tôi được thiết kế và sản xuất với sự chú ý
+                đến từng chi tiết, đảm bảo chất lượng và tính bền vững.
               </motion.p>
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.3 }}
               >
-                Với cam kết về tính bền vững và trách nhiệm xã hội, chúng tôi không ngừng tìm kiếm các phương pháp sản xuất 
-                thân thiện với môi trường và đảm bảo điều kiện làm việc tốt cho tất cả nhân viên và đối tác.
+                Với cam kết về tính bền vững và trách nhiệm xã hội, chúng tôi
+                không ngừng tìm kiếm các phương pháp sản xuất thân thiện với môi
+                trường và đảm bảo điều kiện làm việc tốt cho tất cả nhân viên và
+                đối tác.
               </motion.p>
             </div>
           </div>
@@ -245,8 +260,10 @@ export default function AboutPage() {
                   </h3>
                 </div>
                 <p className="text-gray-600 dark:text-gray-400 font-light leading-relaxed">
-                  Mang đến những sản phẩm thời trang chất lượng cao, phong cách hiện đại và giá cả hợp lý cho mọi khách hàng. 
-                  Chúng tôi cam kết tạo ra giá trị bền vững cho cộng đồng và môi trường thông qua các hoạt động kinh doanh có trách nhiệm.
+                  Mang đến những sản phẩm thời trang chất lượng cao, phong cách
+                  hiện đại và giá cả hợp lý cho mọi khách hàng. Chúng tôi cam
+                  kết tạo ra giá trị bền vững cho cộng đồng và môi trường thông
+                  qua các hoạt động kinh doanh có trách nhiệm.
                 </p>
               </motion.div>
               <motion.div
@@ -262,8 +279,10 @@ export default function AboutPage() {
                   </h3>
                 </div>
                 <p className="text-gray-600 dark:text-gray-400 font-light leading-relaxed">
-                  Trở thành thương hiệu thời trang hàng đầu Việt Nam, được công nhận về chất lượng, tính bền vững và 
-                  đổi mới sáng tạo. Chúng tôi hướng tới việc mở rộng thị trường quốc tế và trở thành đại diện cho thời trang Việt Nam trên thế giới.
+                  Trở thành thương hiệu thời trang hàng đầu Việt Nam, được công
+                  nhận về chất lượng, tính bền vững và đổi mới sáng tạo. Chúng
+                  tôi hướng tới việc mở rộng thị trường quốc tế và trở thành đại
+                  diện cho thời trang Việt Nam trên thế giới.
                 </p>
               </motion.div>
             </div>
@@ -296,7 +315,9 @@ export default function AboutPage() {
                 >
                   <div className="flex flex-col items-center shrink-0">
                     <div className="w-16 h-16 border-2 border-black dark:border-white flex items-center justify-center">
-                      <span className="text-lg font-light text-black dark:text-white">{milestone.year}</span>
+                      <span className="text-lg font-light text-black dark:text-white">
+                        {milestone.year}
+                      </span>
                     </div>
                     {index < milestones.length - 1 && (
                       <div className="w-0.5 h-full bg-gray-300 dark:bg-gray-700 mt-2"></div>
@@ -330,8 +351,8 @@ export default function AboutPage() {
                 Hãy kết nối với chúng tôi
               </h2>
               <p className="text-gray-600 dark:text-gray-400 font-light mb-8 max-w-2xl mx-auto">
-                Chúng tôi luôn sẵn sàng lắng nghe ý kiến, phản hồi và câu hỏi của bạn. 
-                Hãy liên hệ với chúng tôi để được hỗ trợ tốt nhất.
+                Chúng tôi luôn sẵn sàng lắng nghe ý kiến, phản hồi và câu hỏi
+                của bạn. Hãy liên hệ với chúng tôi để được hỗ trợ tốt nhất.
               </p>
               <div className="flex flex-wrap items-center justify-center gap-6 mb-8">
                 <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
@@ -344,7 +365,10 @@ export default function AboutPage() {
                 </div>
                 <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                   <MapPin className="w-5 h-5 text-black dark:text-white" />
-                  <span className="font-light">ĐẠI HỌC NGUYỄN TẤT THÀNH - Q12 - TP.HCM</span>
+                  <span className="font-light">
+                    300A Nguyễn Tất Thành, Phường An Phú Đông, Quận 12, TP. Hồ
+                    Chí Minh
+                  </span>
                 </div>
               </div>
               <div className="flex items-center justify-center gap-4">
@@ -362,16 +386,28 @@ export default function AboutPage() {
                 </Link>
               </div>
               <div className="flex items-center justify-center gap-4 mt-8">
-                <a href="#" className="text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">
+                <a
+                  href="#"
+                  className="text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors"
+                >
                   <Facebook className="w-5 h-5" />
                 </a>
-                <a href="#" className="text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">
+                <a
+                  href="#"
+                  className="text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors"
+                >
                   <Instagram className="w-5 h-5" />
                 </a>
-                <a href="#" className="text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">
+                <a
+                  href="#"
+                  className="text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors"
+                >
                   <Twitter className="w-5 h-5" />
                 </a>
-                <a href="#" className="text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">
+                <a
+                  href="#"
+                  className="text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors"
+                >
                   <Youtube className="w-5 h-5" />
                 </a>
               </div>
@@ -382,4 +418,3 @@ export default function AboutPage() {
     </div>
   );
 }
-

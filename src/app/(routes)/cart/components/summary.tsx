@@ -469,7 +469,7 @@ const Summary = ({ coupons = [] }: SummaryProps) => {
           placeholder="Nhập ghi chú cho đơn hàng của bạn..."
           value={customerNote}
           onChange={(e) => setCustomerNote(e.target.value)}
-          className="min-h-[80px] text-xs font-light rounded-none border-gray-300 resize-none"
+          className="min-h-20 text-xs font-light rounded-none border-gray-300 resize-none"
           maxLength={500}
         />
         <p className="text-xs text-gray-500 font-light">

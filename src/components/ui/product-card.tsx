@@ -220,7 +220,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
       >
         {/* IMAGE CONTAINER */}
         <div
-          className="relative aspect-[3/4] bg-gray-50 dark:bg-gray-900 overflow-hidden border border-gray-200 dark:border-gray-700 cursor-pointer"
+          className="relative aspect-3/4 bg-gray-50 dark:bg-gray-900 overflow-hidden border border-gray-200 dark:border-gray-700 cursor-pointer"
           onClick={handleClick}
         >
           {/* PRIMARY IMAGE */}
