@@ -3,7 +3,7 @@ import ProductList from "@/components/product-list";
 import NoResult from "@/components/ui/result";
 import Pagination from "@/components/ui/pagination";
 
-export const revalidate = 60;
+export const revalidate = 0;
 
 type SearchParams = Promise<{
   page?: string;

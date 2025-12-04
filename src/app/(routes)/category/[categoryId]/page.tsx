@@ -31,12 +31,11 @@ const CategoryPage = async ({
   searchParams: SearchParams;
 }) => {
     const { categoryId } = await params;
-    const { colorId, sizeId } = await searchParams;
-  const productsResult = await getProducts({
-    categoryId: categoryId,
-    colorId: colorId,
-    sizeId: sizeId,
-  });
+    // Fetch all products for the category (filtering will be done client-side)
+    // This allows instant filtering without page reload
+    const productsResult = await getProducts({
+      categoryId: categoryId,
+    });
   
   // Handle different return types from getProducts
   const products = Array.isArray(productsResult) 

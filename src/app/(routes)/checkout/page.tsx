@@ -25,6 +25,7 @@ import {
   Building2,
   ArrowLeft,
   CheckCircle2,
+  ShoppingBag,
 } from "lucide-react";
 import Currency from "@/components/ui/currency";
 import { toast } from "sonner";
@@ -187,11 +188,11 @@ export default function CheckoutPage() {
 
     if (paymentSuccess) {
       hasProcessedPayment.current = true;
-      toast.success("Thanh toán thành công! Đơn hàng của bạn đang được xử lý.");
-      // Sử dụng setTimeout để tránh cập nhật state trong quá trình render
+      const orderId = searchParams?.get("orderId") || "";
+      const method = searchParams?.get("method") || "stripe";
       setTimeout(() => {
         cart.removeAll();
-        router.push("/account/orders");
+        router.push(`/payment/success?orderId=${orderId}&method=${method}`);
       }, 0);
       return;
     }
@@ -199,12 +200,10 @@ export default function CheckoutPage() {
     // Handle MoMo payment callback
     if (momoPayment === "success") {
       hasProcessedPayment.current = true;
-      toast.success(
-        "Thanh toán MoMo thành công! Đơn hàng của bạn đang được xử lý."
-      );
+      const orderId = searchParams?.get("orderId") || "";
       setTimeout(() => {
         cart.removeAll();
-        router.push("/account/orders");
+        router.push(`/payment/success?orderId=${orderId}&method=momo`);
       }, 0);
       return;
     }
@@ -317,6 +316,7 @@ export default function CheckoutPage() {
         const response = await axios.post<{
           success?: boolean;
           message?: string;
+          orderId?: string;
         }>(
           checkoutUrl,
           {
@@ -357,11 +357,8 @@ export default function CheckoutPage() {
         );
 
         if (response.data.success) {
-          toast.success(
-            "Đặt hàng thành công! Bạn sẽ thanh toán khi nhận hàng."
-          );
           cart.removeAll();
-          router.push("/account/orders");
+          router.push(`/payment/success?orderId=${response.data.orderId || ""}&method=cod`);
         } else {
           toast.error(response.data.message || "Có lỗi xảy ra khi đặt hàng");
         }
@@ -387,6 +384,7 @@ export default function CheckoutPage() {
           url?: string;
           success?: boolean;
           message?: string;
+          orderId?: string;
         }>(
           checkoutUrl,
           {
@@ -430,11 +428,9 @@ export default function CheckoutPage() {
           window.location.href = response.data.url;
         } else if (response.data?.success) {
           // Đơn hàng miễn phí hoàn toàn (total = 0)
-          toast.success(
-            response.data.message || "Đơn hàng của bạn đã được xác nhận!"
-          );
+          const orderId = response.data.orderId || "";
           cart.removeAll();
-          router.push("/account/orders");
+          router.push(`/payment/success?orderId=${orderId}&method=stripe`);
         } else {
           toast.error(
             response.data?.message ||
@@ -466,6 +462,7 @@ export default function CheckoutPage() {
           deeplink?: string;
           qrCodeUrl?: string;
           message?: string;
+          orderId?: string;
         }>(
           checkoutUrl,
           {
@@ -510,11 +507,9 @@ export default function CheckoutPage() {
           window.location.href = response.data.payUrl;
         } else if (response.data?.success) {
           // Đơn hàng miễn phí hoàn toàn (total = 0)
-          toast.success(
-            response.data.message || "Đơn hàng của bạn đã được xác nhận!"
-          );
+          const orderId = response.data.orderId || "";
           cart.removeAll();
-          router.push("/account/orders");
+          router.push(`/payment/success?orderId=${orderId}&method=momo`);
         } else {
           toast.error(
             response.data?.message ||
@@ -586,11 +581,9 @@ export default function CheckoutPage() {
         if (response.data?.paymentUrl) {
           window.location.href = response.data.paymentUrl;
         } else if (response.data?.success) {
-          toast.success(
-            response.data.message || "Đơn hàng của bạn đã được xác nhận!"
-          );
+          const orderId = response.data.orderId || "";
           cart.removeAll();
-          router.push("/account/orders");
+          router.push(`/payment/success?orderId=${orderId}&method=vnpay`);
         } else {
           toast.error(
             response.data?.message ||
@@ -667,70 +660,124 @@ export default function CheckoutPage() {
 
   if (cart.items.length === 0) {
     return (
-      <div className="bg-white min-h-screen py-12">
+      <div className="bg-gradient-to-br from-neutral-50 via-white to-neutral-50 dark:from-neutral-950 dark:via-gray-900 dark:to-neutral-950 min-h-screen py-12 md:py-16 lg:py-20">
         <Container>
-          <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl font-light text-black mb-4 uppercase tracking-wider">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="max-w-4xl mx-auto text-center py-20 md:py-32"
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.2, type: "spring" }}
+              className="inline-flex items-center justify-center w-24 h-24 rounded-sm bg-gradient-to-br from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 border-2 border-neutral-900 dark:border-neutral-100 mb-8"
+            >
+              <ShoppingBag className="w-12 h-12 text-white dark:text-neutral-900" />
+            </motion.div>
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+              className="text-3xl md:text-4xl lg:text-5xl font-light text-neutral-900 dark:text-neutral-100 uppercase tracking-tight mb-4"
+            >
               Giỏ hàng trống
-            </h1>
-            <p className="text-gray-600 mb-8 font-light">
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+              className="text-sm md:text-base text-neutral-600 dark:text-neutral-400 font-light mb-8"
+            >
               Vui lòng thêm sản phẩm vào giỏ hàng để tiếp tục
-            </p>
-            <Button asChild variant="outline" className="rounded-none">
-              <a href="/">Tiếp tục mua sắm</a>
-            </Button>
-          </div>
+            </motion.p>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.5 }}
+            >
+              <Button
+                asChild
+                className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 text-white dark:text-neutral-900 hover:from-neutral-800 hover:to-neutral-700 dark:hover:from-neutral-200 dark:hover:to-neutral-300 border-2 border-neutral-900 dark:border-neutral-100 rounded-sm text-sm font-light uppercase tracking-[0.15em] transition-all duration-300 hover:scale-105 hover:shadow-xl"
+              >
+                <a href="/">Tiếp tục mua sắm</a>
+              </Button>
+            </motion.div>
+          </motion.div>
         </Container>
       </div>
     );
   }
 
   return (
-    <div className="bg-white min-h-screen py-12">
+    <div className="bg-gradient-to-br from-neutral-50 via-white to-neutral-50 dark:from-neutral-950 dark:via-gray-900 dark:to-neutral-950 min-h-screen py-12 md:py-16 lg:py-20">
       <Container>
-        <div className="max-w-7xl mx-auto">
-          {/* Progress Steps */}
-          <div className="mb-12">
-            <div className="flex items-center justify-center gap-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Luxury Progress Steps */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="mb-12 md:mb-16"
+          >
+            <div className="flex items-center justify-center gap-6 md:gap-8">
               {[1, 2, 3].map((stepNum) => (
-                <div key={stepNum} className="flex items-center gap-4">
-                  <div
+                <motion.div
+                  key={stepNum}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5, delay: stepNum * 0.1 }}
+                  className="flex items-center gap-6 md:gap-8"
+                >
+                  <motion.div
+                    whileHover={{ scale: 1.1 }}
                     className={cn(
-                      "w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-300 font-light text-sm",
+                      "w-12 h-12 md:w-14 md:h-14 rounded-sm flex items-center justify-center border-2 transition-all duration-300 font-light text-sm md:text-base",
                       step >= stepNum
-                        ? "bg-black text-white border-black"
-                        : "bg-white text-gray-400 border-gray-300"
+                        ? "bg-gradient-to-br from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 text-white dark:text-neutral-900 border-neutral-900 dark:border-neutral-100 shadow-lg"
+                        : "bg-white dark:bg-gray-900 text-neutral-400 dark:text-neutral-600 border-neutral-300 dark:border-neutral-700"
                     )}
                   >
                     {step > stepNum ? (
-                      <CheckCircle2 className="w-5 h-5" />
+                      <CheckCircle2 className="w-6 h-6 md:w-7 md:h-7" />
                     ) : (
                       stepNum
                     )}
-                  </div>
+                  </motion.div>
                   {stepNum < 3 && (
-                    <div
+                    <motion.div
+                      initial={{ scaleX: 0 }}
+                      animate={{ scaleX: 1 }}
+                      transition={{ duration: 0.5, delay: stepNum * 0.1 + 0.2 }}
                       className={cn(
-                        "w-16 h-0.5 transition-all duration-300",
-                        step > stepNum ? "bg-black" : "bg-gray-300"
+                        "w-16 md:w-24 h-0.5 transition-all duration-300",
+                        step > stepNum
+                          ? "bg-gradient-to-r from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200"
+                          : "bg-neutral-300 dark:bg-neutral-700"
                       )}
                     />
                   )}
-                </div>
+                </motion.div>
               ))}
             </div>
-            <div className="flex items-center justify-center gap-16 mt-4">
-              <p className="text-xs font-light text-gray-600 uppercase tracking-wide">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.5 }}
+              className="flex items-center justify-center gap-12 md:gap-20 mt-6"
+            >
+              <p className="text-xs md:text-sm font-light text-neutral-600 dark:text-neutral-400 uppercase tracking-[0.15em]">
                 Địa chỉ
               </p>
-              <p className="text-xs font-light text-gray-600 uppercase tracking-wide">
+              <p className="text-xs md:text-sm font-light text-neutral-600 dark:text-neutral-400 uppercase tracking-[0.15em]">
                 Thanh toán
               </p>
-              <p className="text-xs font-light text-gray-600 uppercase tracking-wide">
+              <p className="text-xs md:text-sm font-light text-neutral-600 dark:text-neutral-400 uppercase tracking-[0.15em]">
                 Xác nhận
               </p>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
 
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Main Content */}
@@ -742,18 +789,21 @@ export default function CheckoutPage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
-                    transition={{ duration: 0.3 }}
-                    className="bg-white p-8 border border-gray-300 rounded-none"
+                    transition={{ duration: 0.5 }}
+                    className="bg-white dark:bg-gray-900 p-6 md:p-8 lg:p-10 border-2 border-neutral-200 dark:border-neutral-800 rounded-sm shadow-xl"
                   >
-                    <div className="flex items-center gap-3 mb-8">
-                      <div className="w-12 h-12 bg-gray-50 border border-gray-200 flex items-center justify-center rounded-none">
-                        <MapPin className="w-6 h-6 text-black" />
-                      </div>
+                    <div className="flex items-center gap-4 mb-8 pb-6 border-b-2 border-neutral-200 dark:border-neutral-800">
+                      <motion.div
+                        whileHover={{ rotate: 5 }}
+                        className="p-3 rounded-sm bg-gradient-to-br from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 border-2 border-neutral-900 dark:border-neutral-100"
+                      >
+                        <MapPin className="w-6 h-6 md:w-7 md:h-7 text-white dark:text-neutral-900" />
+                      </motion.div>
                       <div>
-                        <h2 className="text-2xl font-light text-black uppercase tracking-wider">
+                        <h2 className="text-2xl md:text-3xl font-light text-neutral-900 dark:text-neutral-100 uppercase tracking-tight">
                           Địa chỉ giao hàng
                         </h2>
-                        <p className="text-xs text-gray-500 font-light mt-1">
+                        <p className="text-xs md:text-sm text-neutral-600 dark:text-neutral-400 font-light mt-2">
                           Vui lòng điền đầy đủ thông tin để nhận hàng
                         </p>
                       </div>
@@ -788,8 +838,8 @@ export default function CheckoutPage() {
                               }
                             }}
                             className={cn(
-                              "rounded-none border-gray-300 focus-visible:ring-black h-11 font-light",
-                              errors.fullName && "border-red-500"
+                              "rounded-sm border-2 border-neutral-200 dark:border-neutral-800 focus:border-neutral-900 dark:focus:border-neutral-100 h-12 font-light bg-white dark:bg-gray-900 transition-all duration-300",
+                              errors.fullName && "border-red-500 dark:border-red-500"
                             )}
                           />
                           {errors.fullName && (
@@ -820,8 +870,8 @@ export default function CheckoutPage() {
                               }
                             }}
                             className={cn(
-                              "rounded-none border-gray-300 focus-visible:ring-black h-11 font-light",
-                              errors.phone && "border-red-500"
+                              "rounded-sm border-2 border-neutral-200 dark:border-neutral-800 focus:border-neutral-900 dark:focus:border-neutral-100 h-12 font-light bg-white dark:bg-gray-900 transition-all duration-300",
+                              errors.phone && "border-red-500 dark:border-red-500"
                             )}
                           />
                           {errors.phone && (
@@ -852,8 +902,8 @@ export default function CheckoutPage() {
                               }
                             }}
                             className={cn(
-                              "rounded-none border-gray-300 focus-visible:ring-black h-11 font-light",
-                              errors.email && "border-red-500"
+                              "rounded-sm border-2 border-neutral-200 dark:border-neutral-800 focus:border-neutral-900 dark:focus:border-neutral-100 h-12 font-light bg-white dark:bg-gray-900 transition-all duration-300",
+                              errors.email && "border-red-500 dark:border-red-500"
                             )}
                           />
                           {errors.email && (
@@ -884,8 +934,8 @@ export default function CheckoutPage() {
                             }
                           }}
                           className={cn(
-                            "rounded-none border-gray-300 focus-visible:ring-black h-11 font-light",
-                            errors.address && "border-red-500"
+                            "rounded-sm border-2 border-neutral-200 dark:border-neutral-800 focus:border-neutral-900 dark:focus:border-neutral-100 h-12 font-light bg-white dark:bg-gray-900 transition-all duration-300",
+                            errors.address && "border-red-500 dark:border-red-500"
                           )}
                         />
                         {errors.address && (
@@ -915,8 +965,8 @@ export default function CheckoutPage() {
                           >
                             <SelectTrigger
                               className={cn(
-                                "rounded-none border-gray-300 focus:ring-slate-500 h-11 font-light",
-                                errors.province && "border-red-500"
+                                "rounded-sm border-2 border-neutral-200 dark:border-neutral-800 focus:border-neutral-900 dark:focus:border-neutral-100 h-12 font-light bg-white dark:bg-gray-900 transition-all duration-300",
+                                errors.province && "border-red-500 dark:border-red-500"
                               )}
                             >
                               <SelectValue placeholder="Chọn tỉnh/thành phố" />
@@ -960,8 +1010,8 @@ export default function CheckoutPage() {
                           >
                             <SelectTrigger
                               className={cn(
-                                "rounded-none border-gray-300 focus:ring-slate-500 h-11 font-light",
-                                errors.district && "border-red-500",
+                                "rounded-sm border-2 border-neutral-200 dark:border-neutral-800 focus:border-neutral-900 dark:focus:border-neutral-100 h-12 font-light bg-white dark:bg-gray-900 transition-all duration-300",
+                                errors.district && "border-red-500 dark:border-red-500",
                                 !selectedProvinceCode &&
                                   "opacity-50 cursor-not-allowed"
                               )}
@@ -1007,8 +1057,8 @@ export default function CheckoutPage() {
                           >
                             <SelectTrigger
                               className={cn(
-                                "rounded-none border-gray-300 focus:ring-slate-500 h-11 font-light",
-                                errors.ward && "border-red-500",
+                                "rounded-sm border-2 border-neutral-200 dark:border-neutral-800 focus:border-neutral-900 dark:focus:border-neutral-100 h-12 font-light bg-white dark:bg-gray-900 transition-all duration-300",
+                                errors.ward && "border-red-500 dark:border-red-500",
                                 !selectedDistrictCode &&
                                   "opacity-50 cursor-not-allowed"
                               )}
@@ -1034,13 +1084,18 @@ export default function CheckoutPage() {
                           )}
                         </div>
                       </div>
-                      <Button
-                        type="submit"
-                        variant="default"
-                        className="w-full rounded-none text-xs font-light uppercase tracking-wider  hover:bg-gray-900 h-11 mt-6"
+                      <motion.div
+                        whileHover={{ scale: 1.01 }}
+                        whileTap={{ scale: 0.99 }}
                       >
-                        Tiếp tục
-                      </Button>
+                        <Button
+                          type="submit"
+                          variant="default"
+                          className="w-full rounded-sm text-sm font-light uppercase tracking-[0.15em] bg-gradient-to-r from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 text-white dark:text-neutral-900 hover:from-neutral-800 hover:to-neutral-700 dark:hover:from-neutral-200 dark:hover:to-neutral-300 border-2 border-neutral-900 dark:border-neutral-100 h-12 mt-6 transition-all duration-300 hover:shadow-xl"
+                        >
+                          Tiếp tục
+                        </Button>
+                      </motion.div>
                     </form>
                   </motion.div>
                 )}
@@ -1054,17 +1109,20 @@ export default function CheckoutPage() {
                     transition={{ duration: 0.3 }}
                     className="space-y-6"
                   >
-                    {/* Shipping Method */}
-                    <div className="bg-white dark:bg-gray-900 p-8 border border-gray-300 dark:border-gray-700 rounded-none">
-                      <div className="flex items-center gap-3 mb-8">
-                        <div className="w-12 h-12 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center rounded-none">
-                          <Truck className="w-6 h-6 text-black dark:text-white" />
-                        </div>
+                    {/* Shipping Method - Luxury Style */}
+                    <div className="bg-white dark:bg-gray-900 p-6 md:p-8 lg:p-10 border-2 border-neutral-200 dark:border-neutral-800 rounded-sm shadow-xl">
+                      <div className="flex items-center gap-4 mb-8 pb-6 border-b-2 border-neutral-200 dark:border-neutral-800">
+                        <motion.div
+                          whileHover={{ rotate: 5 }}
+                          className="p-3 rounded-sm bg-gradient-to-br from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 border-2 border-neutral-900 dark:border-neutral-100"
+                        >
+                          <Truck className="w-6 h-6 md:w-7 md:h-7 text-white dark:text-neutral-900" />
+                        </motion.div>
                         <div>
-                          <h2 className="text-2xl font-light text-black dark:text-white uppercase tracking-wider">
+                          <h2 className="text-2xl md:text-3xl font-light text-neutral-900 dark:text-neutral-100 uppercase tracking-tight">
                             Phương thức vận chuyển
                           </h2>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 font-light mt-1">
+                          <p className="text-xs md:text-sm text-neutral-600 dark:text-neutral-400 font-light mt-2">
                             Chọn cách giao hàng phù hợp với bạn
                           </p>
                         </div>
@@ -1080,10 +1138,10 @@ export default function CheckoutPage() {
                           whileHover={{ scale: 1.01 }}
                           whileTap={{ scale: 0.99 }}
                           className={cn(
-                            "relative flex items-start gap-4 p-6 border-2 rounded-none cursor-pointer transition-all duration-200",
+                            "relative flex items-start gap-4 p-6 md:p-8 border-2 rounded-sm cursor-pointer transition-all duration-300 shadow-lg hover:shadow-xl",
                             shippingMethod === "standard"
-                              ? "border-black dark:border-white bg-gray-50 dark:bg-gray-800"
-                              : "border-gray-300 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-600 bg-white dark:bg-gray-900"
+                              ? "border-neutral-900 dark:border-neutral-100 bg-gradient-to-br from-neutral-50 to-white dark:from-neutral-900 dark:to-neutral-800"
+                              : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 bg-white dark:bg-gray-900"
                           )}
                           onClick={() => setShippingMethod("standard")}
                         >
@@ -1204,17 +1262,20 @@ export default function CheckoutPage() {
                       </RadioGroup>
                     </div>
 
-                    {/* Payment Method */}
-                    <div className="bg-white p-8 border border-gray-300 rounded-none">
-                      <div className="flex items-center gap-3 mb-6">
-                        <div className="w-12 h-12 bg-gray-50 border border-gray-200 flex items-center justify-center rounded-none">
-                          <CreditCard className="w-6 h-6 text-black" />
-                        </div>
+                    {/* Payment Method - Luxury Style */}
+                    <div className="bg-white dark:bg-gray-900 p-6 md:p-8 lg:p-10 border-2 border-neutral-200 dark:border-neutral-800 rounded-sm shadow-xl">
+                      <div className="flex items-center gap-4 mb-8 pb-6 border-b-2 border-neutral-200 dark:border-neutral-800">
+                        <motion.div
+                          whileHover={{ rotate: 5 }}
+                          className="p-3 rounded-sm bg-gradient-to-br from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 border-2 border-neutral-900 dark:border-neutral-100"
+                        >
+                          <CreditCard className="w-6 h-6 md:w-7 md:h-7 text-white dark:text-neutral-900" />
+                        </motion.div>
                         <div>
-                          <h2 className="text-2xl font-light text-black uppercase tracking-wider">
+                          <h2 className="text-2xl md:text-3xl font-light text-neutral-900 dark:text-neutral-100 uppercase tracking-tight">
                             Phương thức thanh toán
                           </h2>
-                          <p className="text-xs text-gray-500 font-light mt-1">
+                          <p className="text-xs md:text-sm text-neutral-600 dark:text-neutral-400 font-light mt-2">
                             Chọn cách thanh toán bạn muốn sử dụng
                           </p>
                         </div>
@@ -1227,209 +1288,264 @@ export default function CheckoutPage() {
                         }
                         className="space-y-4"
                       >
-                        {/* COD */}
-                        <div className="flex items-center space-x-3 p-5 border border-gray-300 hover:border-black transition rounded-none cursor-pointer">
-                          <RadioGroupItem value="cod" id="cod" />
-                          <Label
-                            htmlFor="cod"
-                            className="flex-1 cursor-pointer"
-                          >
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <Wallet className="w-5 h-5 text-black" />
-                                <div>
-                                  <p className="font-light text-sm uppercase tracking-wider text-black">
-                                    Thanh toán khi nhận hàng (COD)
-                                  </p>
-                                  <p className="text-xs text-gray-600 font-light mt-1">
-                                    Thanh toán bằng tiền mặt khi nhận hàng
-                                  </p>
-                                </div>
+                        {/* COD - Luxury Style */}
+                        <motion.div
+                          whileHover={{ scale: 1.01, y: -2 }}
+                          whileTap={{ scale: 0.99 }}
+                          className={cn(
+                            "flex items-center gap-4 p-6 md:p-8 border-2 rounded-sm cursor-pointer transition-all duration-300 shadow-lg hover:shadow-xl",
+                            paymentMethod === "cod"
+                              ? "border-neutral-900 dark:border-neutral-100 bg-gradient-to-br from-neutral-50 to-white dark:from-neutral-900 dark:to-neutral-800"
+                              : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 bg-white dark:bg-gray-900"
+                          )}
+                          onClick={() => setPaymentMethod("cod")}
+                        >
+                          <RadioGroupItem value="cod" id="cod" className="shrink-0" />
+                          <Label htmlFor="cod" className="flex-1 cursor-pointer">
+                            <div className="flex items-center gap-4">
+                              <div className="p-2 rounded-sm bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
+                                <Wallet className="w-5 h-5 md:w-6 md:h-6 text-neutral-900 dark:text-neutral-100" />
+                              </div>
+                              <div>
+                                <p className="font-light text-sm md:text-base uppercase tracking-[0.15em] text-neutral-900 dark:text-neutral-100">
+                                  Thanh toán khi nhận hàng (COD)
+                                </p>
+                                <p className="text-xs md:text-sm text-neutral-600 dark:text-neutral-400 font-light mt-1">
+                                  Thanh toán bằng tiền mặt khi nhận hàng
+                                </p>
                               </div>
                             </div>
                           </Label>
-                        </div>
+                        </motion.div>
 
-                        {/* Stripe */}
-                        <div className="flex items-center space-x-3 p-5 border border-gray-300 hover:border-black transition rounded-none cursor-pointer">
-                          <RadioGroupItem value="stripe" id="stripe" />
-                          <Label
-                            htmlFor="stripe"
-                            className="flex-1 cursor-pointer"
-                          >
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <Building2 className="w-5 h-5 text-black" />
-                                <div>
-                                  <p className="font-light text-sm uppercase tracking-wider text-black">
-                                    Thẻ tín dụng/Ghi nợ (Stripe)
-                                  </p>
-                                  <p className="text-xs text-gray-600 font-light mt-1">
-                                    Thanh toán an toàn qua Stripe
-                                  </p>
-                                </div>
+                        {/* Stripe - Luxury Style */}
+                        <motion.div
+                          whileHover={{ scale: 1.01, y: -2 }}
+                          whileTap={{ scale: 0.99 }}
+                          className={cn(
+                            "flex items-center gap-4 p-6 md:p-8 border-2 rounded-sm cursor-pointer transition-all duration-300 shadow-lg hover:shadow-xl",
+                            paymentMethod === "stripe"
+                              ? "border-neutral-900 dark:border-neutral-100 bg-gradient-to-br from-neutral-50 to-white dark:from-neutral-900 dark:to-neutral-800"
+                              : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 bg-white dark:bg-gray-900"
+                          )}
+                          onClick={() => setPaymentMethod("stripe")}
+                        >
+                          <RadioGroupItem value="stripe" id="stripe" className="shrink-0" />
+                          <Label htmlFor="stripe" className="flex-1 cursor-pointer">
+                            <div className="flex items-center gap-4">
+                              <div className="p-2 rounded-sm bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
+                                <Building2 className="w-5 h-5 md:w-6 md:h-6 text-neutral-900 dark:text-neutral-100" />
+                              </div>
+                              <div>
+                                <p className="font-light text-sm md:text-base uppercase tracking-[0.15em] text-neutral-900 dark:text-neutral-100">
+                                  Thẻ tín dụng/Ghi nợ (Stripe)
+                                </p>
+                                <p className="text-xs md:text-sm text-neutral-600 dark:text-neutral-400 font-light mt-1">
+                                  Thanh toán an toàn qua Stripe
+                                </p>
                               </div>
                             </div>
                           </Label>
-                        </div>
+                        </motion.div>
 
-                        {/* Momo */}
-                        <div className="flex items-center space-x-3 p-5 border border-gray-300 hover:border-black transition rounded-none cursor-pointer">
-                          <RadioGroupItem value="momo" id="momo" />
-                          <Label
-                            htmlFor="momo"
-                            className="flex-1 cursor-pointer"
-                          >
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <Smartphone className="w-5 h-5 text-pink-600" />
-                                <div>
-                                  <p className="font-light text-sm uppercase tracking-wider text-black">
-                                    Ví điện tử MoMo
-                                  </p>
-                                  <p className="text-xs text-gray-600 font-light mt-1">
-                                    Thanh toán qua ứng dụng MoMo
-                                  </p>
-                                </div>
+                        {/* Momo - Luxury Style */}
+                        <motion.div
+                          whileHover={{ scale: 1.01, y: -2 }}
+                          whileTap={{ scale: 0.99 }}
+                          className={cn(
+                            "flex items-center gap-4 p-6 md:p-8 border-2 rounded-sm cursor-pointer transition-all duration-300 shadow-lg hover:shadow-xl",
+                            paymentMethod === "momo"
+                              ? "border-neutral-900 dark:border-neutral-100 bg-gradient-to-br from-neutral-50 to-white dark:from-neutral-900 dark:to-neutral-800"
+                              : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 bg-white dark:bg-gray-900"
+                          )}
+                          onClick={() => setPaymentMethod("momo")}
+                        >
+                          <RadioGroupItem value="momo" id="momo" className="shrink-0" />
+                          <Label htmlFor="momo" className="flex-1 cursor-pointer">
+                            <div className="flex items-center gap-4">
+                              <div className="p-2 rounded-sm bg-pink-100 dark:bg-pink-900/30 border border-pink-200 dark:border-pink-800">
+                                <Smartphone className="w-5 h-5 md:w-6 md:h-6 text-pink-600 dark:text-pink-400" />
+                              </div>
+                              <div>
+                                <p className="font-light text-sm md:text-base uppercase tracking-[0.15em] text-neutral-900 dark:text-neutral-100">
+                                  Ví điện tử MoMo
+                                </p>
+                                <p className="text-xs md:text-sm text-neutral-600 dark:text-neutral-400 font-light mt-1">
+                                  Thanh toán qua ứng dụng MoMo
+                                </p>
                               </div>
                             </div>
                           </Label>
-                        </div>
+                        </motion.div>
 
-                        {/* VNPay */}
-                        <div className="flex items-center space-x-3 p-5 border border-gray-300 hover:border-black transition rounded-none cursor-pointer">
-                          <RadioGroupItem value="vnpay" id="vnpay" />
-                          <Label
-                            htmlFor="vnpay"
-                            className="flex-1 cursor-pointer"
-                          >
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <Building2 className="w-5 h-5 text-blue-600" />
-                                <div>
-                                  <p className="font-light text-sm uppercase tracking-wider text-black">
-                                    VNPay
-                                  </p>
-                                  <p className="text-xs text-gray-600 font-light mt-1">
-                                    Thanh toán qua cổng VNPay
-                                    (ATM/Visa/MasterCard)
-                                  </p>
-                                </div>
+                        {/* VNPay - Luxury Style */}
+                        <motion.div
+                          whileHover={{ scale: 1.01, y: -2 }}
+                          whileTap={{ scale: 0.99 }}
+                          className={cn(
+                            "flex items-center gap-4 p-6 md:p-8 border-2 rounded-sm cursor-pointer transition-all duration-300 shadow-lg hover:shadow-xl",
+                            paymentMethod === "vnpay"
+                              ? "border-neutral-900 dark:border-neutral-100 bg-gradient-to-br from-neutral-50 to-white dark:from-neutral-900 dark:to-neutral-800"
+                              : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 bg-white dark:bg-gray-900"
+                          )}
+                          onClick={() => setPaymentMethod("vnpay")}
+                        >
+                          <RadioGroupItem value="vnpay" id="vnpay" className="shrink-0" />
+                          <Label htmlFor="vnpay" className="flex-1 cursor-pointer">
+                            <div className="flex items-center gap-4">
+                              <div className="p-2 rounded-sm bg-blue-100 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800">
+                                <Building2 className="w-5 h-5 md:w-6 md:h-6 text-blue-600 dark:text-blue-400" />
+                              </div>
+                              <div>
+                                <p className="font-light text-sm md:text-base uppercase tracking-[0.15em] text-neutral-900 dark:text-neutral-100">
+                                  VNPay
+                                </p>
+                                <p className="text-xs md:text-sm text-neutral-600 dark:text-neutral-400 font-light mt-1">
+                                  Thanh toán qua cổng VNPay (ATM/Visa/MasterCard)
+                                </p>
                               </div>
                             </div>
                           </Label>
-                        </div>
+                        </motion.div>
 
-                        {/* QR Code */}
-                        <div className="flex items-center space-x-3 p-5 border border-gray-300 hover:border-black transition rounded-none cursor-pointer opacity-60">
-                          <RadioGroupItem value="qr" id="qr" disabled />
-                          <Label htmlFor="qr" className="flex-1 cursor-pointer">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <QrCode className="w-5 h-5 text-black" />
-                                <div>
-                                  <p className="font-light text-sm uppercase tracking-wider text-black">
-                                    Quét mã QR
-                                  </p>
-                                  <p className="text-xs text-gray-600 font-light mt-1">
-                                    Thanh toán bằng cách quét mã QR
-                                  </p>
-                                </div>
+                        {/* QR Code - Luxury Style */}
+                        <motion.div
+                          className="flex items-center gap-4 p-6 md:p-8 border-2 border-neutral-200 dark:border-neutral-800 rounded-sm cursor-not-allowed opacity-60 bg-neutral-50 dark:bg-neutral-900"
+                        >
+                          <RadioGroupItem value="qr" id="qr" disabled className="shrink-0" />
+                          <Label htmlFor="qr" className="flex-1 cursor-not-allowed">
+                            <div className="flex items-center gap-4">
+                              <div className="p-2 rounded-sm bg-neutral-200 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700">
+                                <QrCode className="w-5 h-5 md:w-6 md:h-6 text-neutral-400 dark:text-neutral-600" />
+                              </div>
+                              <div>
+                                <p className="font-light text-sm md:text-base uppercase tracking-[0.15em] text-neutral-400 dark:text-neutral-600">
+                                  Quét mã QR
+                                </p>
+                                <p className="text-xs md:text-sm text-neutral-500 dark:text-neutral-500 font-light mt-1">
+                                  Thanh toán bằng cách quét mã QR
+                                </p>
                               </div>
                             </div>
                           </Label>
-                        </div>
+                        </motion.div>
                       </RadioGroup>
                     </div>
 
-                    {/* Customer Note */}
-                    <div className="bg-white p-8 border border-gray-300 rounded-none">
-                      <div className="flex items-center gap-3 mb-6">
-                        <div className="w-12 h-12 bg-gray-50 border border-gray-200 flex items-center justify-center rounded-none">
-                          <MapPin className="w-6 h-6 text-black" />
-                        </div>
+                    {/* Customer Note - Luxury Style */}
+                    <div className="bg-white dark:bg-gray-900 p-6 md:p-8 lg:p-10 border-2 border-neutral-200 dark:border-neutral-800 rounded-sm shadow-xl">
+                      <div className="flex items-center gap-4 mb-6 pb-6 border-b-2 border-neutral-200 dark:border-neutral-800">
+                        <motion.div
+                          whileHover={{ rotate: 5 }}
+                          className="p-3 rounded-sm bg-gradient-to-br from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 border-2 border-neutral-900 dark:border-neutral-100"
+                        >
+                          <MapPin className="w-6 h-6 md:w-7 md:h-7 text-white dark:text-neutral-900" />
+                        </motion.div>
                         <div>
-                          <h2 className="text-2xl font-light text-black uppercase tracking-wider">
+                          <h2 className="text-2xl md:text-3xl font-light text-neutral-900 dark:text-neutral-100 uppercase tracking-tight">
                             Ghi chú đơn hàng
                           </h2>
-                          <p className="text-xs text-gray-500 font-light mt-1">
+                          <p className="text-xs md:text-sm text-neutral-600 dark:text-neutral-400 font-light mt-2">
                             Thêm ghi chú cho đơn hàng của bạn (tùy chọn)
                           </p>
                         </div>
                       </div>
 
-                      <div className="space-y-2">
+                      <div className="space-y-3">
                         <Textarea
                           placeholder="Ví dụ: Giao hàng vào buổi sáng, gọi điện trước khi giao, để ở cổng..."
                           value={customerNote}
                           onChange={(e) => setCustomerNote(e.target.value)}
-                          className="min-h-[100px] text-xs font-light rounded-none border-gray-300 resize-none"
+                          className="min-h-[120px] text-sm font-light rounded-sm border-2 border-neutral-200 dark:border-neutral-800 focus:border-neutral-900 dark:focus:border-neutral-100 resize-none bg-white dark:bg-gray-900 transition-all duration-300"
                           maxLength={500}
                         />
-                        <p className="text-xs text-gray-500 font-light">
+                        <p className="text-xs text-neutral-500 dark:text-neutral-400 font-light">
                           {customerNote.length}/500 ký tự
                         </p>
                       </div>
                     </div>
 
                     <div className="flex gap-4">
-                      <Button
-                        variant="outline"
-                        onClick={() => setStep(1)}
-                        className="flex-1 rounded-none text-xs font-light uppercase tracking-wider border-gray-300 hover:border-black h-11"
+                      <motion.div
+                        whileHover={{ scale: 1.01 }}
+                        whileTap={{ scale: 0.99 }}
+                        className="flex-1"
                       >
-                        <ArrowLeft className="w-4 h-4 mr-2" />
-                        Quay lại
-                      </Button>
-                      <Button
-                        onClick={handleContinueToStep3}
-                        disabled={!paymentMethod}
-                        variant="default"
-                        className="flex-1 rounded-none text-xs font-light uppercase tracking-wider  hover:bg-gray-900 h-11"
+                        <Button
+                          variant="outline"
+                          onClick={() => setStep(1)}
+                          className="w-full rounded-sm text-sm font-light uppercase tracking-[0.15em] border-2 border-neutral-200 dark:border-neutral-800 hover:border-neutral-900 dark:hover:border-neutral-100 h-12 transition-all duration-300"
+                        >
+                          <ArrowLeft className="w-4 h-4 mr-2" />
+                          Quay lại
+                        </Button>
+                      </motion.div>
+                      <motion.div
+                        whileHover={{ scale: 1.01 }}
+                        whileTap={{ scale: 0.99 }}
+                        className="flex-1"
                       >
-                        Tiếp tục
-                      </Button>
+                        <Button
+                          onClick={handleContinueToStep3}
+                          disabled={!paymentMethod}
+                          className={cn(
+                            "w-full rounded-sm text-sm font-light uppercase tracking-[0.15em] h-12 transition-all duration-300",
+                            !paymentMethod
+                              ? "bg-neutral-200 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-600 cursor-not-allowed border-2 border-neutral-200 dark:border-neutral-800"
+                              : "bg-gradient-to-r from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 text-white dark:text-neutral-900 hover:from-neutral-800 hover:to-neutral-700 dark:hover:from-neutral-200 dark:hover:to-neutral-300 border-2 border-neutral-900 dark:border-neutral-100 hover:shadow-xl"
+                          )}
+                        >
+                          Tiếp tục
+                        </Button>
+                      </motion.div>
                     </div>
                   </motion.div>
                 )}
 
-                {/* Step 3: Review & Confirm */}
+                {/* Step 3: Review & Confirm - Luxury Style */}
                 {step === 3 && (
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
-                    transition={{ duration: 0.3 }}
-                    className="bg-white p-8 border border-gray-300 rounded-none"
+                    transition={{ duration: 0.5 }}
+                    className="bg-white dark:bg-gray-900 p-6 md:p-8 lg:p-10 border-2 border-neutral-200 dark:border-neutral-800 rounded-sm shadow-xl"
                   >
-                    <div className="flex items-center gap-3 mb-8">
-                      <div className="w-12 h-12 bg-gray-50 border border-gray-200 flex items-center justify-center rounded-none">
-                        <Lock className="w-6 h-6 text-black" />
-                      </div>
+                    <div className="flex items-center gap-4 mb-8 pb-6 border-b-2 border-neutral-200 dark:border-neutral-800">
+                      <motion.div
+                        whileHover={{ rotate: 5 }}
+                        className="p-3 rounded-sm bg-gradient-to-br from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 border-2 border-neutral-900 dark:border-neutral-100"
+                      >
+                        <Lock className="w-6 h-6 md:w-7 md:h-7 text-white dark:text-neutral-900" />
+                      </motion.div>
                       <div>
-                        <h2 className="text-2xl font-light text-black uppercase tracking-wider">
+                        <h2 className="text-2xl md:text-3xl font-light text-neutral-900 dark:text-neutral-100 uppercase tracking-tight">
                           Xác nhận đơn hàng
                         </h2>
-                        <p className="text-xs text-gray-500 font-light mt-1">
+                        <p className="text-xs md:text-sm text-neutral-600 dark:text-neutral-400 font-light mt-2">
                           Kiểm tra lại thông tin trước khi đặt hàng
                         </p>
                       </div>
                     </div>
 
                     <div className="space-y-6">
-                      {/* Shipping Address Summary */}
-                      <div>
-                        <h3 className="text-sm font-light text-black uppercase tracking-wide mb-3">
+                      {/* Shipping Address Summary - Luxury Style */}
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: 0.1 }}
+                      >
+                        <h3 className="text-sm md:text-base font-light text-neutral-900 dark:text-neutral-100 uppercase tracking-[0.15em] mb-4">
                           Địa chỉ giao hàng
                         </h3>
-                        <div className="p-4 bg-gray-50 border border-gray-200 rounded-none">
-                          <p className="font-light text-sm text-black">
+                        <div className="p-5 md:p-6 bg-gradient-to-br from-neutral-50 to-white dark:from-neutral-900 dark:to-neutral-800 border-2 border-neutral-200 dark:border-neutral-800 rounded-sm">
+                          <p className="font-light text-sm md:text-base text-neutral-900 dark:text-neutral-100">
                             {shippingAddress.fullName}
                           </p>
-                          <p className="font-light text-sm text-gray-600 mt-1">
+                          <p className="font-light text-sm md:text-base text-neutral-600 dark:text-neutral-400 mt-2">
                             {shippingAddress.phone}
                           </p>
-                          <p className="font-light text-sm text-gray-600 mt-1">
+                          <p className="font-light text-sm md:text-base text-neutral-600 dark:text-neutral-400 mt-2">
                             {shippingAddress.address}
                             {shippingAddress.ward &&
                               `, ${shippingAddress.ward}`}
@@ -1439,15 +1555,19 @@ export default function CheckoutPage() {
                               `, ${shippingAddress.province}`}
                           </p>
                         </div>
-                      </div>
+                      </motion.div>
 
-                      {/* Payment Summary */}
-                      <div>
-                        <h3 className="text-sm font-light text-black uppercase tracking-wide mb-3">
+                      {/* Payment Summary - Luxury Style */}
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: 0.2 }}
+                      >
+                        <h3 className="text-sm md:text-base font-light text-neutral-900 dark:text-neutral-100 uppercase tracking-[0.15em] mb-4">
                           Phương thức thanh toán
                         </h3>
-                        <div className="p-4 bg-gray-50 border border-gray-200 rounded-none">
-                          <p className="font-light text-sm text-black">
+                        <div className="p-5 md:p-6 bg-gradient-to-br from-neutral-50 to-white dark:from-neutral-900 dark:to-neutral-800 border-2 border-neutral-200 dark:border-neutral-800 rounded-sm">
+                          <p className="font-light text-sm md:text-base text-neutral-900 dark:text-neutral-100">
                             {paymentMethod === "cod" &&
                               "Thanh toán khi nhận hàng (COD)"}
                             {paymentMethod === "stripe" &&
@@ -1458,152 +1578,192 @@ export default function CheckoutPage() {
                             {paymentMethod === "qr" && "Quét mã QR"}
                           </p>
                         </div>
-                      </div>
+                      </motion.div>
                     </div>
 
                     <div className="flex gap-4 mt-8">
-                      <Button
-                        variant="outline"
-                        onClick={() => setStep(2)}
-                        className="flex-1 rounded-none text-xs font-light uppercase tracking-wider border-gray-300 hover:border-black h-11"
+                      <motion.div
+                        whileHover={{ scale: 1.01 }}
+                        whileTap={{ scale: 0.99 }}
+                        className="flex-1"
                       >
-                        <ArrowLeft className="w-4 h-4 mr-2" />
-                        Quay lại
-                      </Button>
-                      <Button
-                        onClick={handleCheckout}
-                        disabled={loading}
-                        variant="default"
-                        className="flex-1 rounded-none text-xs font-light uppercase tracking-wider  hover:bg-gray-900 h-11"
+                        <Button
+                          variant="outline"
+                          onClick={() => setStep(2)}
+                          className="w-full rounded-sm text-sm font-light uppercase tracking-[0.15em] border-2 border-neutral-200 dark:border-neutral-800 hover:border-neutral-900 dark:hover:border-neutral-100 h-12 transition-all duration-300"
+                        >
+                          <ArrowLeft className="w-4 h-4 mr-2" />
+                          Quay lại
+                        </Button>
+                      </motion.div>
+                      <motion.div
+                        whileHover={{ scale: 1.01 }}
+                        whileTap={{ scale: 0.99 }}
+                        className="flex-1"
                       >
-                        {loading ? (
-                          <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Đang xử lý...
-                          </>
-                        ) : (
-                          <>
-                            <Lock className="w-4 h-4 mr-2" />
-                            {paymentMethod === "cod"
-                              ? "Đặt hàng"
-                              : paymentMethod === "momo"
-                              ? "Thanh toán MoMo"
-                              : paymentMethod === "vnpay"
-                              ? "Thanh toán VNPay"
-                              : "Thanh toán"}
-                          </>
-                        )}
-                      </Button>
+                        <Button
+                          onClick={handleCheckout}
+                          disabled={loading}
+                          className="w-full rounded-sm text-sm font-light uppercase tracking-[0.15em] bg-gradient-to-r from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 text-white dark:text-neutral-900 hover:from-neutral-800 hover:to-neutral-700 dark:hover:from-neutral-200 dark:hover:to-neutral-300 border-2 border-neutral-900 dark:border-neutral-100 h-12 transition-all duration-300 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {loading ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Đang xử lý...
+                            </>
+                          ) : (
+                            <>
+                              <Lock className="w-4 h-4 mr-2" />
+                              {paymentMethod === "cod"
+                                ? "Đặt hàng"
+                                : paymentMethod === "momo"
+                                ? "Thanh toán MoMo"
+                                : paymentMethod === "vnpay"
+                                ? "Thanh toán VNPay"
+                                : "Thanh toán"}
+                            </>
+                          )}
+                        </Button>
+                      </motion.div>
                     </div>
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
 
-            {/* Order Summary Sidebar */}
+            {/* Order Summary Sidebar - Luxury Style */}
             <div className="lg:col-span-1">
-              <div className="bg-white p-6 border border-gray-300 sticky top-4 rounded-none">
-                <h2 className="text-sm font-light text-black mb-6 uppercase tracking-wider">
-                  Tóm tắt đơn hàng
-                </h2>
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+                className="bg-white dark:bg-gray-900 p-6 md:p-8 border-2 border-neutral-200 dark:border-neutral-800 sticky top-4 rounded-sm shadow-xl"
+              >
+                <div className="flex items-center gap-3 mb-6 pb-6 border-b-2 border-neutral-200 dark:border-neutral-800">
+                  <motion.div
+                    whileHover={{ rotate: 5 }}
+                    className="p-2 rounded-sm bg-gradient-to-br from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 border-2 border-neutral-900 dark:border-neutral-100"
+                  >
+                    <ShoppingBag className="w-5 h-5 text-white dark:text-neutral-900" />
+                  </motion.div>
+                  <h2 className="text-sm md:text-base font-light text-neutral-900 dark:text-neutral-100 uppercase tracking-[0.15em]">
+                    Tóm tắt đơn hàng
+                  </h2>
+                </div>
 
                 <div className="space-y-4 mb-6 max-h-[400px] overflow-y-auto">
-                  {cart.items.map((item) => (
-                    <div
+                  {cart.items.map((item, index) => (
+                    <motion.div
                       key={item.cartItemId}
-                      className="flex gap-3 pb-4 border-b border-gray-200 last:border-0"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: index * 0.05 }}
+                      className="flex gap-3 pb-4 border-b-2 border-neutral-200 dark:border-neutral-800 last:border-0"
                     >
-                      <div className="w-20 h-20 bg-gray-100 shrink-0 border border-gray-200">
+                      <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        className="w-20 h-20 md:w-24 md:h-24 bg-neutral-100 dark:bg-neutral-900 shrink-0 border-2 border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden"
+                      >
                         <img
                           src={item.images?.[0]?.url || "/placeholder.svg"}
                           alt={item.name}
                           className="w-full h-full object-cover"
                         />
-                      </div>
+                      </motion.div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-light text-xs text-black line-clamp-2 uppercase tracking-wide">
+                        <p className="font-light text-xs md:text-sm text-neutral-900 dark:text-neutral-100 line-clamp-2 uppercase tracking-wide">
                           {item.name}
                         </p>
-                        <p className="text-xs font-light text-gray-600 mt-1">
+                        <p className="text-xs font-light text-neutral-600 dark:text-neutral-400 mt-1">
                           {item.size?.name} / {item.color?.name}
                         </p>
-                        <div className="flex items-center justify-between mt-2">
-                          <div className="flex items-center gap-2 border border-gray-300">
-                            <button
+                        <div className="flex items-center justify-between mt-3">
+                          <div className="flex items-center gap-2 border-2 border-neutral-200 dark:border-neutral-800 rounded-sm">
+                            <motion.button
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
                               onClick={() =>
                                 cart.decreaseQuantity(item.cartItemId)
                               }
-                              className="p-1 hover:bg-gray-100 transition-colors"
+                              className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors rounded-sm"
                               disabled={item.quantity <= 1}
                             >
-                              <Minus className="w-3 h-3 text-black" />
-                            </button>
-                            <span className="text-xs font-light text-black px-2 min-w-8 text-center">
+                              <Minus className="w-3 h-3 text-neutral-900 dark:text-neutral-100" />
+                            </motion.button>
+                            <span className="text-xs font-light text-neutral-900 dark:text-neutral-100 px-2 min-w-8 text-center">
                               {item.quantity}
                             </span>
-                            <button
+                            <motion.button
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
                               onClick={() =>
                                 cart.increaseQuantity(item.cartItemId)
                               }
-                              className="p-1 hover:bg-gray-100 transition-colors"
+                              className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors rounded-sm"
                             >
-                              <Plus className="w-3 h-3 text-black" />
-                            </button>
+                              <Plus className="w-3 h-3 text-neutral-900 dark:text-neutral-100" />
+                            </motion.button>
                           </div>
-                          <button
+                          <motion.button
+                            whileHover={{ scale: 1.1, rotate: 5 }}
+                            whileTap={{ scale: 0.9 }}
                             onClick={() => cart.removeItem(item.cartItemId)}
-                            className="p-1 hover:bg-red-50 transition-colors"
+                            className="p-1.5 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors rounded-sm"
                           >
-                            <Trash2 className="w-4 h-4 text-red-500" />
-                          </button>
+                            <Trash2 className="w-4 h-4 text-red-500 dark:text-red-400" />
+                          </motion.button>
                         </div>
-                        <p className="text-sm font-light text-black mt-2">
+                        <p className="text-sm md:text-base font-light text-neutral-900 dark:text-neutral-100 mt-3">
                           <Currency value={item.price * item.quantity} />
                         </p>
                       </div>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
 
-                <Separator className="bg-gray-300" />
+                <div className="h-px bg-gradient-to-r from-transparent via-neutral-200 to-transparent dark:via-neutral-800 my-6" />
 
-                <div className="space-y-3 mt-6">
-                  <div className="flex justify-between text-gray-600 text-xs font-light">
-                    <span>Tạm tính:</span>
+                <div className="space-y-4 mt-6">
+                  <div className="flex justify-between text-neutral-600 dark:text-neutral-400 text-xs md:text-sm font-light">
+                    <span className="uppercase tracking-[0.15em]">Tạm tính:</span>
                     <span>
                       <Currency value={subtotal} />
                     </span>
                   </div>
                   {discount > 0 && appliedCoupon && (
-                    <div className="flex justify-between text-green-600 text-xs font-light">
-                      <span>Giảm giá ({appliedCoupon.code}):</span>
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="flex justify-between text-green-600 dark:text-green-400 text-xs md:text-sm font-light"
+                    >
+                      <span className="uppercase tracking-[0.15em]">Giảm giá ({appliedCoupon.code}):</span>
                       <span>
                         -<Currency value={discount} />
                       </span>
-                    </div>
+                    </motion.div>
                   )}
-                  <div className="flex justify-between text-gray-600 text-xs font-light">
-                    <span>
+                  <div className="flex justify-between text-neutral-600 dark:text-neutral-400 text-xs md:text-sm font-light">
+                    <span className="uppercase tracking-[0.15em]">
                       Phí vận chuyển (
                       {shippingMethod === "express" ? "Nhanh" : "Tiêu chuẩn"}):
                     </span>
                     <span>
                       {shippingFee === 0 ? (
-                        <span className="text-black">Miễn phí</span>
+                        <span className="text-green-600 dark:text-green-400 font-light">Miễn phí</span>
                       ) : (
                         <Currency value={shippingFee} />
                       )}
                     </span>
                   </div>
-                  <Separator className="bg-gray-300" />
-                  <div className="flex justify-between text-base font-medium text-black">
-                    <span>Tổng cộng:</span>
+                  <div className="h-px bg-gradient-to-r from-transparent via-neutral-900 to-transparent dark:via-neutral-100 my-4" />
+                  <div className="flex justify-between text-base md:text-lg font-light text-neutral-900 dark:text-neutral-100">
+                    <span className="uppercase tracking-[0.15em]">Tổng cộng:</span>
                     <span>
                       <Currency value={finalTotal} />
                     </span>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </div>
           </div>
         </div>

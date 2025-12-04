@@ -339,22 +339,37 @@ const Info: React.FC<InfoProps> = ({ data }) => {
   };
 
   return (
-    <div className="space-y-6 lg:space-y-8">
-      {/* Header Section */}
-      <div className="space-y-4">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 space-y-3">
+    <div className="space-y-8 lg:space-y-12">
+      {/* Header Section - Luxury Style */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        className="space-y-6"
+      >
+        <div className="flex items-start justify-between gap-6">
+          <div className="flex-1 space-y-4">
             {data.category && (
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-400 dark:bg-gray-500 text-white rounded-none">
-                <span className="text-xs font-light uppercase tracking-wider">
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 rounded-sm border-2 border-neutral-900 dark:border-neutral-100"
+              >
+                <span className="text-xs font-light uppercase tracking-[0.15em]">
                   {data.category.name}
                 </span>
-              </div>
+              </motion.div>
             )}
 
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-light text-black dark:text-white leading-tight tracking-tight">
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="text-4xl md:text-5xl lg:text-6xl font-light text-neutral-900 dark:text-neutral-100 leading-[1.1] tracking-tight uppercase"
+            >
               {data.name}
-            </h1>
+            </motion.h1>
 
             <div className="flex flex-wrap items-center gap-2">
               {discountPercent > 0 && (
@@ -412,27 +427,38 @@ const Info: React.FC<InfoProps> = ({ data }) => {
             />
           </motion.button>
         </div>
-      </div>
+      </motion.div>
 
-      {/* Price Section */}
-      <div className="space-y-4 pb-6 border-b border-gray-200 dark:border-gray-800">
-        <div className="flex items-baseline gap-4 flex-wrap">
+      {/* Price Section - Luxury Style */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 0.3 }}
+        className="space-y-6 pb-8 border-b-2 border-neutral-200 dark:border-neutral-800"
+      >
+        <div className="flex items-baseline gap-6 flex-wrap">
           <motion.span
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="text-3xl md:text-4xl font-light text-black dark:text-white tracking-tight"
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="text-5xl md:text-6xl lg:text-7xl font-light text-neutral-900 dark:text-neutral-100 tracking-tight"
           >
             {formatVND(currentPrice)}
           </motion.span>
           {data.originalPrice && data.originalPrice > data.price && (
-            <div className="flex items-center gap-2">
-              <span className="text-base text-gray-400 dark:text-gray-500 line-through font-light">
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.5 }}
+              className="flex flex-col gap-2"
+            >
+              <span className="text-lg text-neutral-400 dark:text-neutral-500 line-through font-light">
                 {formatVND(data.originalPrice)}
               </span>
-              <span className="text-xs text-green-600 dark:text-green-500 font-medium">
+              <span className="text-sm text-green-600 dark:text-green-400 font-light tracking-wide">
                 Tiết kiệm {formatVND(data.originalPrice - data.price)}
               </span>
-            </div>
+            </motion.div>
           )}
         </div>
 
@@ -489,78 +515,58 @@ const Info: React.FC<InfoProps> = ({ data }) => {
             )}
           </div>
         </div>
-      </div>
+      </motion.div>
 
-      {/* Trust Badges */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-none border border-gray-200 dark:border-gray-800"
-        >
-          <Truck className="w-4 h-4 text-gray-700 dark:text-gray-300 flex-shrink-0" />
-          <div className="flex flex-col">
-            <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
-              Giao hàng nhanh
-            </span>
-            <span className="text-[10px] text-gray-600 dark:text-gray-400">
-              2-3 ngày
-            </span>
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-none border border-gray-200 dark:border-gray-800"
-        >
-          <ShieldCheck className="w-4 h-4 text-gray-700 dark:text-gray-300 flex-shrink-0" />
-          <div className="flex flex-col">
-            <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
-              Bảo hành
-            </span>
-            <span className="text-[10px] text-gray-600 dark:text-gray-400">
-              12 tháng
-            </span>
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-none border border-gray-200 dark:border-gray-800"
-        >
-          <RefreshCw className="w-4 h-4 text-gray-700 dark:text-gray-300 flex-shrink-0" />
-          <div className="flex flex-col">
-            <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
-              Đổi trả
-            </span>
-            <span className="text-[10px] text-gray-600 dark:text-gray-400">
-              7 ngày
-            </span>
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-none border border-gray-200 dark:border-gray-800"
-        >
-          <Package className="w-4 h-4 text-gray-700 dark:text-gray-300 flex-shrink-0" />
-          <div className="flex flex-col">
-            <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
-              Đóng gói
-            </span>
-            <span className="text-[10px] text-gray-600 dark:text-gray-400">
-              Chuyên nghiệp
-            </span>
-          </div>
-        </motion.div>
-      </div>
+      {/* Trust Badges - Luxury Style */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 0.5 }}
+        className="grid grid-cols-2 lg:grid-cols-4 gap-4"
+      >
+        {[
+          {
+            icon: Truck,
+            title: "Giao hàng nhanh",
+            desc: "2-3 ngày",
+            delay: 0.1,
+          },
+          {
+            icon: ShieldCheck,
+            title: "Bảo hành",
+            desc: "12 tháng",
+            delay: 0.2,
+          },
+          { icon: RefreshCw, title: "Đổi trả", desc: "7 ngày", delay: 0.3 },
+          {
+            icon: Package,
+            title: "Đóng gói",
+            desc: "Chuyên nghiệp",
+            delay: 0.4,
+          },
+        ].map(({ icon: Icon, title, desc, delay }, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 + delay }}
+            whileHover={{ scale: 1.02, y: -2 }}
+            className="flex items-center gap-3 p-4 bg-neutral-50 dark:bg-neutral-900/50 rounded-sm border-2 border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 transition-all duration-300"
+          >
+            <div className="p-2 bg-white dark:bg-neutral-800 rounded-sm border border-neutral-200 dark:border-neutral-700">
+              <Icon className="w-5 h-5 text-neutral-700 dark:text-neutral-300" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-xs font-light text-neutral-900 dark:text-neutral-100 uppercase tracking-wide">
+                {title}
+              </span>
+              <span className="text-[10px] text-neutral-600 dark:text-neutral-400 font-light">
+                {desc}
+              </span>
+            </div>
+          </motion.div>
+        ))}
+      </motion.div>
 
       <SizeGuide category={data.category?.name} />
 
@@ -882,7 +888,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
           >
             <div
               className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap font-light [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mb-1 [&_p]:mb-3 [&_strong]:font-medium [&_strong]:text-gray-900 [&_strong]:dark:text-gray-100"
-              dangerouslySetInnerHTML={{ __html: data.description }}
+              dangerouslySetInnerHTML={{ __html: data.description || "" }}
             />
           </motion.div>
         </div>

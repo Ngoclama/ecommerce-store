@@ -3,8 +3,8 @@ import getProduct from "@/actions/get-products";
 import getCategories from "@/actions/get-categories";
 import HomePageClient from "./page-client";
 
-// Revalidate every 60 seconds instead of 0 (no cache)
-export const revalidate = 60;
+// Always fetch fresh data to avoid F5 issues
+export const revalidate = 0;
 
 const HomePage = async () => {
   // Fetch data in parallel with timeout protection

@@ -17,6 +17,7 @@ import {
   ShoppingBag,
   ArrowRight,
   ChevronDown,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -108,7 +109,6 @@ const Summary = ({ coupons = [] }: SummaryProps) => {
         return;
       }
 
-      // Sử dụng API route proxy trong store thay vì gọi trực tiếp admin
       const url = `/api/coupons?code=${encodeURIComponent(
         couponCode.trim().toUpperCase()
       )}`;
@@ -125,7 +125,6 @@ const Summary = ({ coupons = [] }: SummaryProps) => {
         console.log("[COUPON_APPLY] Response:", response.data);
       }
 
-      // Kiểm tra response format
       if (
         response.data &&
         Array.isArray(response.data) &&
@@ -133,7 +132,6 @@ const Summary = ({ coupons = [] }: SummaryProps) => {
       ) {
         const coupon = response.data[0];
 
-        // Validate coupon data
         if (!coupon.code || !coupon.value || !coupon.type) {
           toast.error("Dữ liệu mã giảm giá không hợp lệ");
           setCouponLoading(false);
@@ -146,7 +144,6 @@ const Summary = ({ coupons = [] }: SummaryProps) => {
           type: coupon.type,
         };
         setAppliedCoupon(couponData);
-        // Lưu coupon vào localStorage để truyền sang checkout
         localStorage.setItem("appliedCoupon", JSON.stringify(couponData));
         toast.success("Áp dụng mã giảm giá thành công!");
         setCouponCode("");
@@ -156,13 +153,11 @@ const Summary = ({ coupons = [] }: SummaryProps) => {
         "success" in response.data &&
         response.data.success === false
       ) {
-        // API trả về error message
         const message =
           ("message" in response.data &&
             typeof response.data.message === "string" &&
             response.data.message) ||
           "";
-        // Kiểm tra nếu mã đã hết hạn
         if (
           message.toLowerCase().includes("expired") ||
           message.toLowerCase().includes("hết hạn")
@@ -175,77 +170,43 @@ const Summary = ({ coupons = [] }: SummaryProps) => {
         toast.error("Mã giảm giá không hợp lệ hoặc đã hết hạn");
       }
     } catch (error: any) {
-      // Xử lý lỗi chi tiết hơn
       if (error.response) {
-        // Server trả về error response
         const status = error.response.status;
         const message =
           error.response.data?.message || error.response.data?.error || "";
 
         if (status === 404) {
-          // 404 có thể là endpoint không tồn tại hoặc coupon không tìm thấy/hết hạn
-          // Kiểm tra nếu message chứa "expired" hoặc "hết hạn" - đây là mã hết hạn, chỉ toast không log error
           const isExpired =
             message.toLowerCase().includes("expired") ||
             message.toLowerCase().includes("hết hạn") ||
             message.toLowerCase().includes("not found or expired");
 
           if (isExpired) {
-            // Mã hết hạn - chỉ toast, không log error
             toast.error("Mã này đã hết hạn sử dụng");
           } else {
-            // Lỗi thực sự (endpoint không tồn tại, server error) - log error
             if (process.env.NODE_ENV === "development") {
-              console.error(
-                "[COUPON_APPLY_ERROR] 404 - URL:",
-                error.config?.url
-              );
-              console.error(
-                "[COUPON_APPLY_ERROR] Response:",
-                error.response.data
-              );
-              console.error(
-                "[COUPON_APPLY_ERROR] Admin server should be running on port 3000"
-              );
+              console.error("[COUPON_APPLY_ERROR] 404 - URL:", error.config?.url);
+              console.error("[COUPON_APPLY_ERROR] Response:", error.response.data);
             }
-
-            if (message) {
-              toast.error(message);
-            } else {
-              toast.error(
+            toast.error(
+              message ||
                 "Mã giảm giá không tồn tại. Vui lòng kiểm tra lại mã hoặc đảm bảo admin server đang chạy."
-              );
-            }
+            );
           }
         } else if (status === 400) {
           toast.error(message || "Mã giảm giá không hợp lệ");
         } else {
-          // Lỗi server (500, etc.) - log error
           if (process.env.NODE_ENV === "development") {
-            console.error(
-              "[COUPON_APPLY_ERROR] Server error:",
-              status,
-              error.response.data
-            );
+            console.error("[COUPON_APPLY_ERROR] Server error:", status, error.response.data);
           }
           toast.error(message || "Không thể áp dụng mã giảm giá");
         }
       } else if (error.request) {
-        // Request được gửi nhưng không nhận được response - đây là lỗi network, log error
         if (process.env.NODE_ENV === "development") {
-          console.error(
-            "[COUPON_APPLY_ERROR] No response - URL:",
-            error.config?.url
-          );
-          console.error(
-            "[COUPON_APPLY_ERROR] Check if admin server is running on port 3000"
-          );
+          console.error("[COUPON_APPLY_ERROR] No response - URL:", error.config?.url);
         }
-        toast.error(
-          "Không thể kết nối đến server. Vui lòng đảm bảo admin server đang chạy."
-        );
+        toast.error("Không thể kết nối đến server. Vui lòng đảm bảo admin server đang chạy.");
       } else {
-        // Lỗi khác - log error
         if (process.env.NODE_ENV === "development") {
           console.error("[COUPON_APPLY_ERROR]", error);
         }
@@ -259,19 +220,16 @@ const Summary = ({ coupons = [] }: SummaryProps) => {
   const handleRemoveCoupon = () => {
     setAppliedCoupon(null);
     setCouponCode("");
-    // Xóa coupon khỏi localStorage
     localStorage.removeItem("appliedCoupon");
     toast.info("Đã xóa mã giảm giá");
   };
 
   const handleSelectCoupon = async (coupon: Coupon) => {
-    // Validate coupon data before applying
     if (!coupon.code || !coupon.value || !coupon.type) {
       toast.error("Dữ liệu mã giảm giá không hợp lệ");
       return;
     }
 
-    // Directly apply the selected coupon
     const couponData = {
       code: coupon.code,
       value: coupon.value,
@@ -285,42 +243,35 @@ const Summary = ({ coupons = [] }: SummaryProps) => {
     toast.success("Áp dụng mã giảm giá thành công!");
   };
 
-  // Reset mã giảm giá và ghi chú khi giỏ hàng thay đổi (thêm/xóa sản phẩm)
+  // Reset mã giảm giá và ghi chú khi giỏ hàng thay đổi
   useEffect(() => {
-    // Tạo một key duy nhất từ danh sách items để detect thay đổi
     const itemsKey = items
       .map((item) => item.cartItemId)
       .sort()
       .join(",");
 
-    // Chỉ reset khi items thực sự thay đổi (không phải lần đầu mount)
     if (prevItemsRef.current && prevItemsRef.current !== itemsKey) {
       setAppliedCoupon(null);
       setCustomerNote("");
       setCouponCode("");
-      // Xóa khỏi localStorage
       localStorage.removeItem("appliedCoupon");
       localStorage.removeItem("customerNote");
     }
 
-    // Lưu key hiện tại
     prevItemsRef.current = itemsKey;
   }, [items]);
 
   const onCheckout = () => {
-    // Yêu cầu đăng nhập trước khi thanh toán
     if (!requireAuth("thanh toán")) {
       return;
     }
 
-    // Lưu customerNote vào localStorage để truyền sang checkout
     if (customerNote.trim()) {
       localStorage.setItem("customerNote", customerNote.trim());
     } else {
       localStorage.removeItem("customerNote");
     }
 
-    // Redirect to checkout page
     window.location.href = "/checkout";
   };
 
@@ -328,78 +279,90 @@ const Summary = ({ coupons = [] }: SummaryProps) => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white border border-gray-200 px-5 md:px-6 py-6 md:py-8 sticky top-4 shadow-sm"
+      className="bg-white dark:bg-gray-900 border-2 border-neutral-200 dark:border-neutral-800 rounded-sm px-6 md:px-8 py-8 md:py-10 sticky top-4 shadow-xl"
     >
-      <div className="flex items-center gap-2 mb-6">
-        <ShoppingBag className="w-5 h-5 text-black" />
-        <h2 className="text-sm font-light text-black uppercase tracking-wider">
+      {/* Header - Luxury Style */}
+      <div className="flex items-center gap-3 mb-8 pb-6 border-b-2 border-neutral-200 dark:border-neutral-800">
+        <motion.div
+          whileHover={{ rotate: 5 }}
+          className="p-2 rounded-sm bg-gradient-to-br from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 border-2 border-neutral-900 dark:border-neutral-100"
+        >
+          <ShoppingBag className="w-5 h-5 text-white dark:text-neutral-900" />
+        </motion.div>
+        <h2 className="text-sm font-light text-neutral-900 dark:text-neutral-100 uppercase tracking-[0.15em]">
           Tóm tắt đơn hàng
         </h2>
       </div>
 
-      {/* Coupon Code */}
-      <div className="mb-6 space-y-2">
+      {/* Coupon Code - Luxury Style */}
+      <div className="mb-6 space-y-3">
         <div className="flex items-center justify-between">
-          <label className="text-xs font-light text-gray-700 uppercase tracking-wide">
+          <label className="text-xs font-light text-neutral-700 dark:text-neutral-300 uppercase tracking-[0.15em]">
             Mã giảm giá
           </label>
           {activeCoupons.length > 0 && !appliedCoupon && (
-            <button
+            <motion.button
               onClick={() => setShowCouponList(!showCouponList)}
-              className="text-xs text-gray-600 hover:text-black transition-colors flex items-center gap-1"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="text-xs text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors flex items-center gap-1.5"
             >
-              <Tag className="w-3 h-3" />
+              <Tag className="w-3.5 h-3.5" />
               {activeCoupons.length} mã khả dụng
               <ChevronDown
                 className={cn(
-                  "w-3 h-3 transition-transform",
+                  "w-3.5 h-3.5 transition-transform duration-300",
                   showCouponList && "rotate-180"
                 )}
               />
-            </button>
+            </motion.button>
           )}
         </div>
 
-        {/* Available Coupons List */}
+        {/* Available Coupons List - Luxury Style */}
         <AnimatePresence>
           {showCouponList && activeCoupons.length > 0 && !appliedCoupon && (
             <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
               className="overflow-hidden"
             >
-              <div className="space-y-2 p-3 bg-gray-50 border border-gray-200 max-h-60 overflow-y-auto">
-                {activeCoupons.map((coupon) => (
-                  <button
+              <div className="space-y-2 p-4 bg-neutral-50 dark:bg-neutral-900/50 border-2 border-neutral-200 dark:border-neutral-800 rounded-sm max-h-60 overflow-y-auto">
+                {activeCoupons.map((coupon, index) => (
+                  <motion.button
                     key={coupon.id}
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
                     onClick={() => handleSelectCoupon(coupon)}
-                    className="w-full text-left p-3 bg-white border border-gray-200 hover:border-black transition-all group"
+                    whileHover={{ scale: 1.02, y: -2 }}
+                    className="w-full text-left p-4 bg-white dark:bg-gray-900 border-2 border-neutral-200 dark:border-neutral-800 hover:border-neutral-900 dark:hover:border-neutral-100 rounded-sm transition-all duration-300 group"
                   >
-                    <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-start justify-between gap-3">
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Tag className="w-3.5 h-3.5 text-black" />
-                          <span className="text-sm font-medium text-black">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Tag className="w-4 h-4 text-neutral-900 dark:text-neutral-100" />
+                          <span className="text-sm font-light text-neutral-900 dark:text-neutral-100 uppercase tracking-wide">
                             {coupon.code}
                           </span>
                         </div>
-                        <p className="text-xs text-gray-500">
-                          {coupon.expiresAt &&
-                            `HSD: ${new Date(
-                              coupon.expiresAt
-                            ).toLocaleDateString("vi-VN")}`}
-                        </p>
+                        {coupon.expiresAt && (
+                          <p className="text-xs text-neutral-500 dark:text-neutral-400 font-light">
+                            HSD: {new Date(coupon.expiresAt).toLocaleDateString("vi-VN")}
+                          </p>
+                        )}
                       </div>
                       <div className="text-right shrink-0">
-                        <span className="text-sm font-semibold text-green-600">
+                        <span className="text-sm font-light text-green-600 dark:text-green-400">
                           {coupon.type === "PERCENT"
                             ? `-${coupon.value}%`
                             : `-${coupon.value.toLocaleString("vi-VN")}₫`}
                         </span>
                       </div>
                     </div>
-                  </button>
+                  </motion.button>
                 ))}
               </div>
             </motion.div>
@@ -410,24 +373,26 @@ const Summary = ({ coupons = [] }: SummaryProps) => {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex items-center justify-between p-3 bg-gray-50 border border-gray-300"
+            className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-2 border-green-200 dark:border-green-800 rounded-sm"
           >
             <div className="flex items-center gap-2">
-              <Tag className="w-4 h-4 text-black" />
-              <span className="text-xs font-light text-black">
+              <Tag className="w-4 h-4 text-green-600 dark:text-green-400" />
+              <span className="text-xs font-light text-neutral-900 dark:text-neutral-100 uppercase tracking-wide">
                 {appliedCoupon.code} -{" "}
                 {appliedCoupon.type === "PERCENT"
                   ? `${appliedCoupon.value}%`
                   : `${appliedCoupon.value.toLocaleString("vi-VN")} ₫`}
               </span>
             </div>
-            <button
+            <motion.button
               onClick={handleRemoveCoupon}
-              className="text-gray-400 hover:text-black transition-colors duration-200"
+              whileHover={{ scale: 1.1, rotate: 90 }}
+              whileTap={{ scale: 0.9 }}
+              className="text-neutral-400 dark:text-neutral-600 hover:text-red-500 dark:hover:text-red-400 transition-colors duration-300"
               aria-label="Xóa mã giảm giá"
             >
               <X className="w-4 h-4" />
-            </button>
+            </motion.button>
           </motion.div>
         ) : (
           <div className="flex gap-2">
@@ -436,7 +401,7 @@ const Summary = ({ coupons = [] }: SummaryProps) => {
               placeholder="Nhập mã giảm giá"
               value={couponCode}
               onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-              className="flex-1 rounded-none border-gray-300 text-xs font-light"
+              className="flex-1 rounded-sm border-2 border-neutral-200 dark:border-neutral-800 focus:border-neutral-900 dark:focus:border-neutral-100 text-xs font-light bg-white dark:bg-gray-900"
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   handleApplyCoupon();
@@ -448,7 +413,7 @@ const Summary = ({ coupons = [] }: SummaryProps) => {
               disabled={couponLoading || !couponCode.trim()}
               size="sm"
               variant="outline"
-              className="rounded-none text-xs font-light uppercase tracking-wider border-gray-300 hover:border-black transition-colors duration-200"
+              className="rounded-sm text-xs font-light uppercase tracking-[0.15em] border-2 border-neutral-200 dark:border-neutral-800 hover:border-neutral-900 dark:hover:border-neutral-100 transition-all duration-300"
             >
               {couponLoading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -460,27 +425,27 @@ const Summary = ({ coupons = [] }: SummaryProps) => {
         )}
       </div>
 
-      {/* Customer Note */}
+      {/* Customer Note - Luxury Style */}
       <div className="mb-6 space-y-2">
-        <label className="text-xs font-light text-gray-700 uppercase tracking-wide">
+        <label className="text-xs font-light text-neutral-700 dark:text-neutral-300 uppercase tracking-[0.15em]">
           Ghi chú đơn hàng (tùy chọn)
         </label>
         <Textarea
           placeholder="Nhập ghi chú cho đơn hàng của bạn..."
           value={customerNote}
           onChange={(e) => setCustomerNote(e.target.value)}
-          className="min-h-20 text-xs font-light rounded-none border-gray-300 resize-none"
+          className="min-h-24 text-xs font-light rounded-sm border-2 border-neutral-200 dark:border-neutral-800 focus:border-neutral-900 dark:focus:border-neutral-100 resize-none bg-white dark:bg-gray-900"
           maxLength={500}
         />
-        <p className="text-xs text-gray-500 font-light">
+        <p className="text-xs text-neutral-500 dark:text-neutral-400 font-light">
           {customerNote.length}/500 ký tự
         </p>
       </div>
 
-      {/* Order Summary */}
-      <div className="space-y-3 mb-6">
+      {/* Order Summary - Luxury Style */}
+      <div className="space-y-4 mb-8 pb-6 border-b-2 border-neutral-200 dark:border-neutral-800">
         <div className="flex items-center justify-between text-xs font-light">
-          <span className="text-gray-600 uppercase tracking-wide">
+          <span className="text-neutral-600 dark:text-neutral-400 uppercase tracking-[0.15em]">
             Tạm tính
           </span>
           <Currency value={subtotal} />
@@ -490,9 +455,9 @@ const Summary = ({ coupons = [] }: SummaryProps) => {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex items-center justify-between text-xs font-light text-green-600"
+            className="flex items-center justify-between text-xs font-light text-green-600 dark:text-green-400"
           >
-            <span className="uppercase tracking-wide">Giảm giá</span>
+            <span className="uppercase tracking-[0.15em]">Giảm giá</span>
             <span>
               -<Currency value={discount} />
             </span>
@@ -500,12 +465,12 @@ const Summary = ({ coupons = [] }: SummaryProps) => {
         )}
 
         <div className="flex items-center justify-between text-xs font-light">
-          <span className="text-gray-600 uppercase tracking-wide">
+          <span className="text-neutral-600 dark:text-neutral-400 uppercase tracking-[0.15em]">
             Phí vận chuyển
           </span>
           <span>
             {shippingCost === 0 ? (
-              <span className="text-green-600 font-medium">Miễn phí</span>
+              <span className="text-green-600 dark:text-green-400 font-light">Miễn phí</span>
             ) : (
               <Currency value={shippingCost} />
             )}
@@ -513,30 +478,30 @@ const Summary = ({ coupons = [] }: SummaryProps) => {
         </div>
 
         {subtotal < 500000 && (
-          <p className="text-xs font-light text-gray-500 pt-2 border-t border-gray-100">
-            Thêm <Currency value={500000 - subtotal} /> để được miễn phí vận
-            chuyển
+          <p className="text-xs font-light text-neutral-500 dark:text-neutral-400 pt-2 border-t border-neutral-200 dark:border-neutral-800">
+            Thêm <Currency value={500000 - subtotal} /> để được miễn phí vận chuyển
           </p>
         )}
 
-        <div className="flex items-center justify-between border-t border-gray-300 pt-4 mt-4">
-          <div className="text-base font-medium text-black uppercase tracking-wider">
+        <div className="flex items-center justify-between pt-4 mt-4 border-t-2 border-neutral-900 dark:border-neutral-100">
+          <div className="text-lg font-light text-neutral-900 dark:text-neutral-100 uppercase tracking-[0.15em]">
             Tổng tiền
           </div>
-          <div className="text-xl font-medium text-black">
+          <div className="text-2xl font-light text-neutral-900 dark:text-neutral-100">
             <Currency value={totalPrice} />
           </div>
         </div>
       </div>
 
+      {/* Checkout Button - Luxury Style */}
       <Button
         disabled={items.length === 0}
         onClick={onCheckout}
         className={cn(
-          "w-full rounded-none py-3.5 text-sm font-light uppercase tracking-wider transition-colors duration-200",
+          "w-full rounded-sm py-4 text-sm font-light uppercase tracking-[0.15em] transition-all duration-300 flex items-center justify-center gap-2",
           items.length === 0
-            ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-            : "bg-gray-400 text-white hover:bg-gray-900 hover:shadow-lg hover:shadow-gray-400/30 transition-all duration-300 ease-in-out hover:scale-[1.01] active:scale-[0.99]"
+            ? "bg-neutral-200 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-600 cursor-not-allowed border-2 border-neutral-200 dark:border-neutral-800"
+            : "bg-gradient-to-r from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 text-white dark:text-neutral-900 hover:from-neutral-800 hover:to-neutral-700 dark:hover:from-neutral-200 dark:hover:to-neutral-300 border-2 border-neutral-900 dark:border-neutral-100 hover:scale-105 hover:shadow-xl"
         )}
       >
         <span className="flex items-center justify-center gap-2">

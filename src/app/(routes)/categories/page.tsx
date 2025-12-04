@@ -2,7 +2,7 @@ import getCategories from "@/actions/get-categories";
 import Container from "@/components/ui/container";
 import CategoryList from "@/components/category-list";
 
-export const revalidate = 60;
+export const revalidate = 0;
 
 const CategoriesPage = async () => {
   const categories = await getCategories();

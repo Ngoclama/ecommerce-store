@@ -41,7 +41,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ className }) => {
         <Input
           ref={inputRef}
           type="text"
-          placeholder="Search"
+          placeholder="Tìm kiếm"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full pl-8 pr-8 h-9 border-0 rounded-none bg-transparent focus-visible:ring-0 text-sm font-light"

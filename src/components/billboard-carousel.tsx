@@ -94,106 +94,134 @@ const BillboardCarousel: React.FC<BillboardCarouselProps> = ({
   const currentBillboard = billboards[currentIndex];
 
   return (
-    <div className="w-full relative overflow-hidden bg-white dark:bg-gray-900">
-      {/* Carousel Container - Aigle Style */}
-      <div className="relative w-full min-h-[500px] md:min-h-[600px] lg:min-h-[700px] group">
+    <div className="w-full relative overflow-hidden bg-gradient-to-br from-neutral-50 via-white to-neutral-50 dark:from-neutral-950 dark:via-gray-900 dark:to-neutral-950">
+      {/* Carousel Container - Luxury Style */}
+      <div className="relative w-full min-h-screen flex items-center justify-center group">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentIndex}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1, ease: "easeInOut" }}
+            initial={{ opacity: 0, scale: 1.1 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 1.2, ease: [0.25, 0.1, 0.25, 1] }}
             className="absolute inset-0"
             style={{
               background: currentBillboard?.imageUrl
                 ? `url(${currentBillboard.imageUrl}) center/cover`
-                : "rgb(249 250 251)",
+                : "linear-gradient(135deg, #fafafa 0%, #ffffff 50%, #fafafa 100%)",
             }}
           >
-            {/* Subtle Overlay - Aigle Style */}
-            <div className="absolute inset-0 bg-black/20 dark:bg-black/40" />
+            {/* Luxury Gradient Overlay */}
+            <motion.div
+              className="absolute inset-0 bg-gradient-to-br from-neutral-900/70 via-neutral-900/60 to-neutral-900/80 dark:from-neutral-950/80 dark:via-neutral-950/70 dark:to-neutral-950/90"
+              animate={{
+                background: [
+                  "linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0.8) 100%)",
+                  "linear-gradient(135deg, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.55) 50%, rgba(0,0,0,0.75) 100%)",
+                  "linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0.8) 100%)",
+                ],
+              }}
+              transition={{
+                duration: 8,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            />
 
-            {/* Content - Aigle Style: Left-aligned, Clean */}
+            {/* Content - Luxury Style: Centered, Elegant */}
             <div
-              className="relative h-full flex flex-col justify-center items-start gap-6 px-6 sm:px-12 md:px-16 lg:px-24 py-16 cursor-pointer"
+              className="relative h-full flex flex-col justify-center items-center gap-8 px-6 sm:px-12 md:px-16 lg:px-24 py-16 cursor-pointer"
               onClick={handleBillboardClick}
             >
-              {/* Main Text - Aigle Typography */}
+              {/* Main Text - Luxury Typography */}
               <motion.div
-                initial={{ opacity: 0, x: -30 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-                className="space-y-4 max-w-2xl"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+                className="space-y-6 max-w-4xl text-center"
               >
-                <h1 className="text-white dark:text-white text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-light leading-tight tracking-tight">
+                <motion.h1
+                  className="text-white text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-light leading-[1.1] tracking-tight uppercase"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 1, delay: 0.4 }}
+                >
                   {currentBillboard?.label || "Thời trang thanh lịch"}
-                </h1>
+                </motion.h1>
                 {currentBillboard?.description && (
-                  <p className="text-white/90 dark:text-white/80 text-base md:text-lg font-light max-w-xl">
+                  <motion.p
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 1, delay: 0.5 }}
+                    className="text-white/90 dark:text-white/80 text-lg md:text-xl lg:text-2xl font-light max-w-2xl mx-auto leading-relaxed"
+                  >
                     {currentBillboard.description}
-                  </p>
+                  </motion.p>
                 )}
               </motion.div>
 
-              {/* CTA Button - Aigle Style */}
+              {/* CTA Button - Luxury Style */}
               {currentBillboard?.label && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
-                  className="pt-2"
+                  transition={{ duration: 1, delay: 0.6, ease: "easeOut" }}
+                  className="pt-4"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <Button
-                    size="lg"
-                    onClick={handleBillboardClick}
-                    className="bg-white dark:bg-white text-black dark:text-black border-0 hover:bg-gray-100 dark:hover:bg-gray-100 rounded-none px-8 py-3 text-xs font-light uppercase tracking-wider transition-all duration-300"
-                  >
-                    Khám phá ngay
-                  </Button>
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Button
+                      size="lg"
+                      onClick={handleBillboardClick}
+                      className="bg-white/95 dark:bg-white/95 text-neutral-900 dark:text-neutral-900 border-2 border-white/50 hover:bg-white dark:hover:bg-white hover:border-white rounded-sm px-10 py-4 text-xs font-light uppercase tracking-[0.2em] transition-all duration-300 shadow-lg hover:shadow-xl backdrop-blur-sm"
+                    >
+                      Khám phá ngay
+                    </Button>
+                  </motion.div>
                 </motion.div>
               )}
             </div>
           </motion.div>
         </AnimatePresence>
 
-        {/* Navigation Arrows - Aigle Style: Minimal, Elegant */}
+        {/* Navigation Arrows - Luxury Style: Elegant, Smooth */}
         {billboards.length > 1 && (
           <>
-            <Button
+            <motion.button
               onClick={goToPrevious}
-              className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-10 bg-white/80 dark:bg-white/80 hover:bg-white dark:hover:bg-white text-black dark:text-black border-0 rounded-none w-10 h-10 md:w-12 md:h-12 transition-all duration-300 opacity-0 group-hover:opacity-100"
-              size="icon"
-              variant="ghost"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              className="absolute left-6 md:left-12 top-1/2 -translate-y-1/2 z-10 bg-white/10 backdrop-blur-md dark:bg-white/10 hover:bg-white/20 dark:hover:bg-white/20 text-white dark:text-white border border-white/20 hover:border-white/40 rounded-sm w-12 h-12 md:w-14 md:h-14 transition-all duration-300 opacity-0 group-hover:opacity-100 shadow-lg flex items-center justify-center"
               aria-label="Slide trước"
             >
-              <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
-            </Button>
-            <Button
+              <ChevronLeft className="w-6 h-6 md:w-7 md:h-7" />
+            </motion.button>
+            <motion.button
               onClick={goToNext}
-              className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-10 bg-white/80 dark:bg-white/80 hover:bg-white dark:hover:bg-white text-black dark:text-black border-0 rounded-none w-10 h-10 md:w-12 md:h-12 transition-all duration-300 opacity-0 group-hover:opacity-100"
-              size="icon"
-              variant="ghost"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              className="absolute right-6 md:right-12 top-1/2 -translate-y-1/2 z-10 bg-white/10 backdrop-blur-md dark:bg-white/10 hover:bg-white/20 dark:hover:bg-white/20 text-white dark:text-white border border-white/20 hover:border-white/40 rounded-sm w-12 h-12 md:w-14 md:h-14 transition-all duration-300 opacity-0 group-hover:opacity-100 shadow-lg flex items-center justify-center"
               aria-label="Slide sau"
             >
-              <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
-            </Button>
+              <ChevronRight className="w-6 h-6 md:w-7 md:h-7" />
+            </motion.button>
           </>
         )}
 
-        {/* Dots Indicator - Aigle Style: Minimal */}
+        {/* Dots Indicator - Luxury Style: Minimal, Elegant */}
         {billboards.length > 1 && (
-          <div className="absolute bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+          <div className="absolute bottom-8 md:bottom-12 left-1/2 -translate-x-1/2 flex gap-3 z-10">
             {billboards.map((_, index) => (
-              <button
+              <motion.button
                 key={index}
                 onClick={() => goToSlide(index)}
+                whileHover={{ scale: 1.2 }}
+                whileTap={{ scale: 0.9 }}
                 className={cn(
-                  "h-0.5 transition-all duration-500 rounded-full",
+                  "h-1 transition-all duration-500 rounded-full",
                   index === currentIndex
-                    ? "w-8 bg-white dark:bg-white"
-                    : "w-6 bg-white/50 dark:bg-white/50 hover:bg-white/70 dark:hover:bg-white/70"
+                    ? "w-10 bg-white dark:bg-white"
+                    : "w-8 bg-white/40 dark:bg-white/40 hover:bg-white/60 dark:hover:bg-white/60"
                 )}
                 aria-label={`Chuyển đến slide ${index + 1}`}
               />

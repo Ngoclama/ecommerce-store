@@ -47,108 +47,120 @@ const CartItem: React.FC<CartItemProps> = ({ data }) => {
   return (
     <motion.div
       layout
-      className="border-b border-gray-200 pb-6 mb-6 bg-white last:border-0 last:pb-0 last:mb-0"
+      whileHover={{ y: -2 }}
+      className="bg-white dark:bg-gray-900 border-2 border-neutral-200 dark:border-neutral-800 rounded-sm p-4 md:p-6 shadow-lg hover:shadow-xl transition-all duration-300"
     >
       <div className="flex items-start gap-4 md:gap-6">
-        {/* Image */}
+        {/* Image - Luxury Style */}
         <Link
           href={`/product/${data.id}`}
-          className="relative w-20 h-20 md:w-24 md:h-24 overflow-hidden shrink-0 bg-gray-50 border border-gray-200 group"
+          className="relative w-24 h-24 md:w-32 md:h-32 overflow-hidden shrink-0 bg-neutral-100 dark:bg-neutral-900 border-2 border-neutral-200 dark:border-neutral-800 rounded-sm group"
         >
-          <Image
-            fill
-            src={data.images?.[0]?.url || "/placeholder.png"}
-            alt={data.name}
-            sizes="(max-width: 768px) 80px, 96px"
-            className="object-cover group-hover:scale-105 transition-transform duration-200"
-          />
+          <motion.div
+            whileHover={{ scale: 1.1 }}
+            transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+            className="absolute inset-0"
+          >
+            <Image
+              fill
+              src={data.images?.[0]?.url || "/placeholder.png"}
+              alt={data.name}
+              sizes="(max-width: 768px) 96px, 128px"
+              className="object-cover"
+            />
+          </motion.div>
         </Link>
 
-        {/* Product info */}
+        {/* Product info - Luxury Style */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start justify-between gap-4 mb-4">
             <div className="flex-1 min-w-0">
               <Link href={`/product/${data.id}`}>
-                <h3 className="text-sm md:text-base font-light text-black uppercase tracking-wide hover:text-gray-600 transition-colors duration-200 line-clamp-2 mb-2">
+                <motion.h3
+                  whileHover={{ x: 4 }}
+                  className="text-base md:text-lg font-light text-neutral-900 dark:text-neutral-100 uppercase tracking-tight hover:text-neutral-600 dark:hover:text-neutral-400 transition-colors duration-300 line-clamp-2 mb-3"
+                >
                   {data.name}
-                </h3>
+                </motion.h3>
               </Link>
 
-              <div className="mt-1 text-xs font-light text-gray-500 space-y-0.5">
+              <div className="flex flex-wrap items-center gap-3 mb-4">
                 {data.size && (
-                  <p>
-                    <span className="uppercase tracking-wide">Size:</span>{" "}
-                    {data.size.name}
-                  </p>
+                  <span className="px-3 py-1 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-sm text-xs font-light text-neutral-600 dark:text-neutral-400 uppercase tracking-[0.15em]">
+                    Size: {data.size.name}
+                  </span>
                 )}
                 {data.color && (
-                  <p>
-                    <span className="uppercase tracking-wide">Màu:</span>{" "}
-                    {data.color.name}
-                  </p>
+                  <span className="px-3 py-1 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-sm text-xs font-light text-neutral-600 dark:text-neutral-400 uppercase tracking-[0.15em]">
+                    Màu: {data.color.name}
+                  </span>
                 )}
               </div>
 
-              {/* Price */}
-              <div className="mt-3 mb-4">
-                <span className="text-base md:text-lg font-medium text-black">
+              {/* Price - Luxury Style */}
+              <div className="mb-4">
+                <div className="text-xl md:text-2xl font-light text-neutral-900 dark:text-neutral-100 mb-1">
                   <Currency value={data.price * data.quantity} />
-                </span>
+                </div>
                 {data.quantity > 1 && (
-                  <span className="text-xs text-gray-500 ml-2">
-                    ({data.quantity} × <Currency value={data.price} />)
-                  </span>
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 font-light">
+                    {data.quantity} × <Currency value={data.price} />
+                  </p>
                 )}
               </div>
             </div>
 
-            {/* Delete button */}
-            <Button
-              variant="ghost"
-              size="icon"
+            {/* Delete button - Luxury Style */}
+            <motion.button
               onClick={handleRemove}
-              className="rounded-none hover:bg-gray-100 transition-colors duration-200 p-1.5"
+              whileHover={{ scale: 1.1, rotate: 5 }}
+              whileTap={{ scale: 0.9 }}
+              className="p-2 rounded-sm border-2 border-neutral-200 dark:border-neutral-800 hover:border-red-500 dark:hover:border-red-500 bg-white dark:bg-gray-900 hover:bg-red-50 dark:hover:bg-red-950/20 transition-all duration-300 shrink-0"
               aria-label="Xóa sản phẩm"
             >
-              <Trash2 className="h-4 w-4 text-gray-400 hover:text-red-500 transition-colors duration-200" />
-            </Button>
+              <Trash2 className="h-4 w-4 text-neutral-400 dark:text-neutral-600 hover:text-red-500 dark:hover:text-red-400 transition-colors duration-300" />
+            </motion.button>
           </div>
 
-          {/* Quantity Controls */}
-          <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
-            <span className="text-xs font-light text-gray-600 uppercase tracking-wide">
+          {/* Quantity Controls - Luxury Style */}
+          <div className="flex items-center justify-between pt-4 border-t-2 border-neutral-200 dark:border-neutral-800">
+            <span className="text-xs font-light text-neutral-600 dark:text-neutral-400 uppercase tracking-[0.15em]">
               Số lượng:
             </span>
             <div className="flex items-center gap-2">
-              <button
+              <motion.button
                 onClick={() => handleQuantityChange(data.quantity - 1)}
                 disabled={data.quantity <= 1}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
                 className={cn(
-                  "w-8 h-8 border border-gray-300 flex items-center justify-center transition-all duration-200 rounded-none bg-white",
+                  "w-10 h-10 border-2 rounded-sm flex items-center justify-center transition-all duration-300 bg-white dark:bg-gray-900",
                   data.quantity <= 1
-                    ? "border-gray-200 text-gray-300 cursor-not-allowed"
-                    : "text-black hover:border-black hover:bg-gray-50"
+                    ? "border-neutral-200 dark:border-neutral-800 text-neutral-300 dark:text-neutral-700 cursor-not-allowed"
+                    : "border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100 hover:border-neutral-900 dark:hover:border-neutral-100 hover:bg-neutral-50 dark:hover:bg-neutral-800"
                 )}
                 aria-label="Giảm số lượng"
               >
-                <Minus className="w-3.5 h-3.5" />
-              </button>
-              <span className="w-10 text-center text-black text-sm font-medium">
+                <Minus className="w-4 h-4" />
+              </motion.button>
+              <span className="w-12 text-center text-neutral-900 dark:text-neutral-100 text-sm font-light">
                 {data.quantity}
               </span>
-              <button
+              <motion.button
                 onClick={() => handleQuantityChange(data.quantity + 1)}
                 disabled={!canIncrease}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
                 className={cn(
-                  "w-8 h-8 border border-gray-300 flex items-center justify-center transition-all duration-200 rounded-none bg-white",
+                  "w-10 h-10 border-2 rounded-sm flex items-center justify-center transition-all duration-300 bg-white dark:bg-gray-900",
                   !canIncrease
-                    ? "border-gray-200 text-gray-300 cursor-not-allowed"
-                    : "text-black hover:border-black hover:bg-gray-50"
+                    ? "border-neutral-200 dark:border-neutral-800 text-neutral-300 dark:text-neutral-700 cursor-not-allowed"
+                    : "border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100 hover:border-neutral-900 dark:hover:border-neutral-100 hover:bg-neutral-50 dark:hover:bg-neutral-800"
                 )}
                 aria-label="Tăng số lượng"
               >
-                <Plus className="w-3.5 h-3.5" />
-              </button>
+                <Plus className="w-4 h-4" />
+              </motion.button>
             </div>
           </div>
         </div>

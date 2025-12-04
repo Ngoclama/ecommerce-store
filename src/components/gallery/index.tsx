@@ -10,6 +10,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface GalleryProps {
   images?: ImageType[];
@@ -32,16 +33,14 @@ const Gallery: React.FC<GalleryProps> = ({
     const container = thumbnailScrollRef.current;
     const { scrollTop, scrollHeight, clientHeight } = container;
 
-    // Nếu đang ở đầu, scroll đến cuối (loop)
     if (scrollTop <= 0) {
       container.scrollTo({
         top: scrollHeight - clientHeight,
         behavior: "smooth",
       });
     } else {
-      // Scroll lên bình thường
       container.scrollBy({
-        top: -80,
+        top: -100,
         behavior: "smooth",
       });
     }
@@ -53,65 +52,27 @@ const Gallery: React.FC<GalleryProps> = ({
     const container = thumbnailScrollRef.current;
     const { scrollTop, scrollHeight, clientHeight } = container;
 
-    // Nếu đang ở cuối, scroll đến đầu (loop)
     if (scrollTop >= scrollHeight - clientHeight - 1) {
       container.scrollTo({
         top: 0,
         behavior: "smooth",
       });
     } else {
-      // Scroll xuống bình thường
       container.scrollBy({
-        top: 80,
+        top: 100,
         behavior: "smooth",
       });
     }
   };
 
-  // Keyboard navigation với vòng lặp
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (images.length === 0) return;
-
-      if (e.key === "ArrowLeft") {
-        e.preventDefault();
-        prevImage();
-      } else if (e.key === "ArrowRight") {
-        e.preventDefault();
-        nextImage();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [images.length]);
-
-  if (!images.length) {
-    return (
-      <div className="flex items-center justify-center w-full h-full">
-        <div className="w-full h-full bg-gray-100 flex items-center justify-center border border-gray-300 rounded-none">
-          <p className="text-gray-500 font-light">No Image</p>
-        </div>
-      </div>
-    );
-  }
-
   const nextImage = useCallback(() => {
     if (images.length === 0) return;
-    setCurrentIndex((prev) => {
-      // Loop: nếu đang ở ảnh cuối, quay về ảnh đầu
-      return (prev + 1) % images.length;
-    });
+    setCurrentIndex((prev) => (prev + 1) % images.length);
   }, [images.length]);
 
   const prevImage = useCallback(() => {
     if (images.length === 0) return;
-    setCurrentIndex((prev) => {
-      // Loop: nếu đang ở ảnh đầu, quay về ảnh cuối
-      return (prev - 1 + images.length) % images.length;
-    });
+    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
   }, [images.length]);
 
   const goToImage = (index: number) => {
@@ -120,7 +81,7 @@ const Gallery: React.FC<GalleryProps> = ({
     }
   };
 
-  // Keyboard navigation với vòng lặp
+  // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (images.length === 0) return;
@@ -140,151 +101,208 @@ const Gallery: React.FC<GalleryProps> = ({
     };
   }, [images.length, nextImage, prevImage]);
 
+  if (!images.length) {
+    return (
+      <div className="flex items-center justify-center w-full h-full min-h-[600px]">
+        <div className="w-full h-full bg-neutral-100 dark:bg-neutral-900 flex items-center justify-center border-2 border-neutral-200 dark:border-neutral-800 rounded-sm">
+          <p className="text-neutral-500 dark:text-neutral-400 font-light tracking-wide uppercase text-sm">
+            No Image
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full bg-gray-50 flex flex-col md:flex-row gap-3 p-3">
+    <div className="w-full bg-white dark:bg-gray-900 flex flex-col md:flex-row gap-4 md:gap-6">
       {/* Thumbnails Sidebar - Left (Desktop) */}
       {hasMultipleImages && images.length > 1 && (
-        <div className="hidden md:flex flex-col gap-2 items-center">
-          {/* Scroll Up Button - Vòng lặp */}
-          <button
+        <div className="hidden md:flex flex-col gap-3 items-center">
+          {/* Scroll Up Button */}
+          <motion.button
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
               scrollThumbnailsUp();
             }}
-            className="p-1.5 bg-white border border-gray-300 rounded-none hover:bg-gray-50 transition-colors z-10 relative"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            className="p-2 bg-white dark:bg-gray-900 border-2 border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 rounded-sm transition-all duration-300 z-10 relative shadow-sm hover:shadow-md"
             aria-label="Scroll up"
             type="button"
           >
-            <ChevronUp className="w-4 h-4 text-black" />
-          </button>
+            <ChevronUp className="w-4 h-4 text-neutral-700 dark:text-neutral-300" />
+          </motion.button>
 
           {/* Thumbnails Container */}
           <div
             ref={thumbnailScrollRef}
-            className="flex flex-col gap-2 overflow-y-auto max-h-[600px] scrollbar-hide"
+            className="flex flex-col gap-3 overflow-y-auto max-h-[600px] scrollbar-hide px-1"
           >
             {images.map((img, idx) => (
-              <button
+              <motion.button
                 key={img.id}
                 onClick={(e) => {
                   e.stopPropagation();
                   goToImage(idx);
                 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 className={cn(
-                  "relative w-16 h-16 border-2 rounded-none overflow-hidden shrink-0 transition-all",
+                  "relative w-20 h-20 border-2 rounded-sm overflow-hidden shrink-0 transition-all duration-300",
                   idx === currentIndex
-                    ? "border-black"
-                    : "border-gray-300 hover:border-gray-400"
+                    ? "border-neutral-900 dark:border-neutral-100 ring-2 ring-offset-2 ring-neutral-900 dark:ring-neutral-100"
+                    : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600"
                 )}
               >
                 <Image
                   src={img.url}
                   alt={`Thumbnail ${idx + 1}`}
                   fill
-                  sizes="(max-width: 640px) 60px, 100px"
+                  sizes="80px"
                   className="object-cover"
                 />
-              </button>
+              </motion.button>
             ))}
           </div>
 
-          {/* Scroll Down Button - Vòng lặp */}
-          <button
+          {/* Scroll Down Button */}
+          <motion.button
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
               scrollThumbnailsDown();
             }}
-            className="p-1.5 bg-white border border-gray-300 rounded-none hover:bg-gray-50 transition-colors z-10 relative"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            className="p-2 bg-white dark:bg-gray-900 border-2 border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 rounded-sm transition-all duration-300 z-10 relative shadow-sm hover:shadow-md"
             aria-label="Scroll down"
             type="button"
           >
-            <ChevronDown className="w-4 h-4 text-black" />
-          </button>
+            <ChevronDown className="w-4 h-4 text-neutral-700 dark:text-neutral-300" />
+          </motion.button>
         </div>
       )}
 
       {/* Main Image Container */}
-      <div className="flex-1 relative aspect-square bg-gray-100 overflow-hidden group">
-        <Image
-          src={images[currentIndex]?.url || "/placeholder.svg"}
-          alt="Product image"
-          fill
-          sizes="(max-width: 1024px) 100vw, 50vw"
-          className="object-cover transition-opacity duration-500"
-          priority={currentIndex === 0}
-        />
+      <div className="flex-1 relative aspect-square bg-neutral-100 dark:bg-neutral-900 overflow-hidden group rounded-sm border-2 border-neutral-200 dark:border-neutral-800 cursor-zoom-in">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentIndex}
+            initial={{ opacity: 0, scale: 1.05 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            whileHover={{ 
+              scale: 1.1,
+              transition: {
+                duration: 0.6,
+                ease: [0.25, 0.1, 0.25, 1],
+              }
+            }}
+            transition={{
+              duration: 0.5,
+              ease: [0.25, 0.1, 0.25, 1],
+            }}
+            className="absolute inset-0"
+          >
+            <Image
+              src={images[currentIndex]?.url || "/placeholder.svg"}
+              alt="Product image"
+              fill
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              className="object-cover"
+              priority={currentIndex === 0}
+            />
+          </motion.div>
+        </AnimatePresence>
 
         {/* Navigation Arrows */}
         {hasMultipleImages && (
           <>
-            <button
+            <motion.button
               onClick={(e) => {
                 e.stopPropagation();
                 prevImage();
               }}
-              className="absolute left-4 top-1/2 -translate-y-1/2 z-10 p-2 bg-white/90 hover:bg-white border border-gray-300 rounded-none opacity-0 group-hover:opacity-100 transition-opacity"
+              whileHover={{ scale: 1.1, x: -5 }}
+              whileTap={{ scale: 0.9 }}
+              className="absolute left-6 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-md dark:bg-neutral-900/90 hover:bg-white dark:hover:bg-neutral-800 border-2 border-neutral-200 dark:border-neutral-700 hover:border-neutral-400 dark:hover:border-neutral-600 rounded-sm p-3 opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-lg"
               aria-label="Ảnh trước"
             >
-              <ChevronLeft className="w-5 h-5 text-black" />
-            </button>
-            <button
+              <ChevronLeft className="w-5 h-5 text-neutral-900 dark:text-neutral-100" />
+            </motion.button>
+            <motion.button
               onClick={(e) => {
                 e.stopPropagation();
                 nextImage();
               }}
-              className="absolute right-4 top-1/2 -translate-y-1/2 z-10 p-2 bg-white/90 hover:bg-white border border-gray-300 rounded-none opacity-0 group-hover:opacity-100 transition-opacity"
+              whileHover={{ scale: 1.1, x: 5 }}
+              whileTap={{ scale: 0.9 }}
+              className="absolute right-6 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-md dark:bg-neutral-900/90 hover:bg-white dark:hover:bg-neutral-800 border-2 border-neutral-200 dark:border-neutral-700 hover:border-neutral-400 dark:hover:border-neutral-600 rounded-sm p-3 opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-lg"
               aria-label="Ảnh sau"
             >
-              <ChevronRight className="w-5 h-5 text-black" />
-            </button>
+              <ChevronRight className="w-5 h-5 text-neutral-900 dark:text-neutral-100" />
+            </motion.button>
           </>
         )}
 
         {/* Image Counter */}
         {hasMultipleImages && (
-          <div className="absolute bottom-4 right-4 bg-white/90 text-black border border-gray-300 px-3 py-1 text-xs rounded-none font-light">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="absolute bottom-6 right-6 bg-white/90 backdrop-blur-md dark:bg-neutral-900/90 text-neutral-900 dark:text-neutral-100 border-2 border-neutral-200 dark:border-neutral-700 px-4 py-2 text-xs rounded-sm font-light tracking-wide shadow-lg"
+          >
             {currentIndex + 1} / {images.length}
-          </div>
+          </motion.div>
         )}
 
         {/* Discount Badge */}
         {discountPercent > 0 && (
-          <div className="absolute top-4 left-4 z-10">
-            <span className="px-2 py-1 bg-black text-white text-xs font-light uppercase rounded-none">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3, type: "spring" }}
+            className="absolute top-6 left-6 z-10"
+          >
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              className="px-4 py-2 bg-gradient-to-br from-red-600 to-red-700 text-white text-xs font-light uppercase tracking-wider rounded-sm shadow-lg border-2 border-red-500"
+            >
               -{discountPercent}%
-            </span>
-          </div>
+            </motion.div>
+          </motion.div>
         )}
       </div>
 
       {/* Thumbnails - Mobile (Below main image) */}
       {hasMultipleImages && images.length > 1 && (
-        <div className="md:hidden w-full bg-gray-50 border-t border-gray-200">
-          <div className="flex gap-2 p-4 overflow-x-auto">
+        <div className="md:hidden w-full bg-neutral-50 dark:bg-neutral-950 border-t-2 border-neutral-200 dark:border-neutral-800">
+          <div className="flex gap-3 p-4 overflow-x-auto scrollbar-hide">
             {images.map((img, idx) => (
-              <button
+              <motion.button
                 key={img.id}
                 onClick={(e) => {
                   e.stopPropagation();
                   goToImage(idx);
                 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 className={cn(
-                  "relative w-16 h-16 border-2 rounded-none overflow-hidden shrink-0 transition-all",
+                  "relative w-20 h-20 border-2 rounded-sm overflow-hidden shrink-0 transition-all duration-300",
                   idx === currentIndex
-                    ? "border-black"
-                    : "border-gray-300 hover:border-gray-400"
+                    ? "border-neutral-900 dark:border-neutral-100 ring-2 ring-offset-2 ring-neutral-900 dark:ring-neutral-100"
+                    : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600"
                 )}
               >
                 <Image
                   src={img.url}
                   alt={`Thumbnail ${idx + 1}`}
                   fill
-                  sizes="(max-width: 640px) 60px, 100px"
+                  sizes="80px"
                   className="object-cover"
                 />
-              </button>
+              </motion.button>
             ))}
           </div>
         </div>

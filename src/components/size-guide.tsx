@@ -1,7 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Ruler, Info, TrendingUp, ChevronRight } from "lucide-react";
+import {
+  Ruler,
+  Info,
+  TrendingUp,
+  ChevronRight,
+  Sparkles,
+  Crown,
+  Gem,
+} from "lucide-react";
 import { Button } from "./ui/button";
 import {
   Dialog,
@@ -13,6 +21,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface SizeGuideProps {
   category?: string;
@@ -87,108 +96,133 @@ const SizeGuide: React.FC<SizeGuideProps> = ({ category = "Áo" }) => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button
-          variant="outline"
-          className="gap-2 rounded-none w-full border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all duration-300 group"
-        >
-          <Ruler className="w-4 h-4 text-slate-700 dark:text-slate-300 group-hover:scale-110 transition-transform" />
-          <span className="text-xs font-light uppercase tracking-wider text-slate-900 dark:text-slate-100">
-            HƯỚNG DẪN CHỌN SIZE
-          </span>
-          <ChevronRight className="w-3 h-3 ml-auto text-slate-400 group-hover:translate-x-1 transition-transform" />
-        </Button>
+        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+          <Button
+            variant="outline"
+            className="gap-3 rounded-sm w-full border-2 border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 bg-white dark:bg-gray-900 hover:bg-neutral-50 dark:hover:bg-gray-800 transition-all duration-300 group"
+          >
+            <motion.div
+              animate={{ rotate: [0, 5, -5, 0] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <Ruler className="w-4 h-4 text-neutral-700 dark:text-neutral-300" />
+            </motion.div>
+            <span className="text-xs font-light uppercase tracking-[0.15em] text-neutral-900 dark:text-neutral-100">
+              Hướng dẫn chọn size
+            </span>
+            <ChevronRight className="w-3 h-3 ml-auto text-neutral-400 group-hover:translate-x-1 transition-transform" />
+          </Button>
+        </motion.div>
       </DialogTrigger>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto rounded-none border-slate-200 dark:border-slate-800 bg-gradient-to-br from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-950/50 p-0">
-        <DialogHeader className="border-b border-slate-200 dark:border-slate-800 px-6 py-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-none bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700">
-              <Ruler className="w-5 h-5 text-slate-700 dark:text-slate-300" />
-            </div>
-            <div>
-              <DialogTitle className="text-xl text-slate-900 dark:text-white font-light uppercase tracking-wide">
-                Hướng dẫn chọn size chính xác
+      <DialogContent className="max-w-6xl max-h-[95vh] overflow-y-auto rounded-sm border-2 border-neutral-200 dark:border-neutral-800 bg-gradient-to-br from-neutral-50 via-white to-neutral-50 dark:from-neutral-950 dark:via-gray-900 dark:to-neutral-950 p-0">
+        <DialogHeader className="border-b-2 border-neutral-200 dark:border-neutral-800 px-8 py-6 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="flex items-center gap-4"
+          >
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.1, type: "spring" }}
+              className="p-3 rounded-sm bg-gradient-to-br from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 border-2 border-neutral-900 dark:border-neutral-100"
+            >
+              <Ruler className="w-6 h-6 text-white dark:text-neutral-900" />
+            </motion.div>
+            <div className="flex-1">
+              <DialogTitle className="text-2xl md:text-3xl font-light text-neutral-900 dark:text-neutral-100 uppercase tracking-tight mb-2">
+                Hướng dẫn chọn size
               </DialogTitle>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-light">
+              <motion.div
+                initial={{ opacity: 0, width: 0 }}
+                animate={{ opacity: 1, width: "100%" }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="h-px bg-gradient-to-r from-neutral-900 via-neutral-400 to-transparent dark:from-neutral-100 dark:via-neutral-600"
+              />
+              <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-3 font-light tracking-wide">
                 Tìm size hoàn hảo cho bạn với bảng size chi tiết
               </p>
             </div>
-          </div>
+          </motion.div>
         </DialogHeader>
 
-        <div className="px-6 py-6 space-y-6">
-          {/* Gender Toggle */}
-          <div className="flex gap-3 p-1 bg-slate-100/80 dark:bg-slate-800/50 rounded-none border border-slate-200 dark:border-slate-700">
-            <Button
-              variant={selectedGender === "women" ? "default" : "ghost"}
+        <div className="px-8 py-8 space-y-8">
+          {/* Gender Toggle - Luxury Style */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="flex gap-3 p-1.5 bg-neutral-100 dark:bg-neutral-900/50 rounded-sm border-2 border-neutral-200 dark:border-neutral-800"
+          >
+            <motion.button
               onClick={() => setSelectedGender("women")}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               className={cn(
-                "flex-1 rounded-none text-xs font-medium uppercase tracking-wider transition-all duration-300",
+                "flex-1 rounded-sm text-xs font-light uppercase tracking-[0.15em] transition-all duration-300 py-3 px-4",
                 selectedGender === "women"
-                  ? "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 shadow-lg"
-                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
+                  ? "bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 shadow-lg"
+                  : "text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200/50 dark:hover:bg-neutral-800/50"
               )}
             >
-              <span className="relative">
-                Nữ
-                {selectedGender === "women" && (
-                  <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-white dark:bg-slate-900"></span>
-                )}
-              </span>
-            </Button>
-            <Button
-              variant={selectedGender === "men" ? "default" : "ghost"}
+              Nữ
+            </motion.button>
+            <motion.button
               onClick={() => setSelectedGender("men")}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               className={cn(
-                "flex-1 rounded-none text-xs font-medium uppercase tracking-wider transition-all duration-300",
+                "flex-1 rounded-sm text-xs font-light uppercase tracking-[0.15em] transition-all duration-300 py-3 px-4",
                 selectedGender === "men"
-                  ? "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 shadow-lg"
-                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
+                  ? "bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 shadow-lg"
+                  : "text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200/50 dark:hover:bg-neutral-800/50"
               )}
             >
-              <span className="relative">
-                Nam
-                {selectedGender === "men" && (
-                  <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-white dark:bg-slate-900"></span>
-                )}
-              </span>
-            </Button>
-          </div>
+              Nam
+            </motion.button>
+          </motion.div>
 
-          {/* Tabs for Chart and Guide */}
+          {/* Tabs for Chart and Guide - Luxury Style */}
           <Tabs
             value={activeTab}
             onValueChange={(v: string) => setActiveTab(v as "chart" | "guide")}
             className="w-full"
           >
-            <TabsList className="grid w-full grid-cols-2 bg-slate-100/80 dark:bg-slate-800/50 rounded-none h-11 p-1 border border-slate-200 dark:border-slate-700">
+            <TabsList className="grid w-full grid-cols-2 bg-neutral-100 dark:bg-neutral-900/50 rounded-sm h-12 p-1 border-2 border-neutral-200 dark:border-neutral-800">
               <TabsTrigger
                 value="chart"
-                className="rounded-none data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm text-xs uppercase tracking-wider font-medium transition-all"
+                className="rounded-sm data-[state=active]:bg-neutral-900 dark:data-[state=active]:bg-neutral-100 data-[state=active]:text-white dark:data-[state=active]:text-neutral-900 data-[state=active]:shadow-lg text-xs uppercase tracking-[0.15em] font-light transition-all duration-300"
               >
-                <TrendingUp className="w-3.5 h-3.5 mr-2" />
+                <TrendingUp className="w-4 h-4 mr-2" />
                 Bảng size
               </TabsTrigger>
               <TabsTrigger
                 value="guide"
-                className="rounded-none data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm text-xs uppercase tracking-wider font-medium transition-all"
+                className="rounded-sm data-[state=active]:bg-neutral-900 dark:data-[state=active]:bg-neutral-100 data-[state=active]:text-white dark:data-[state=active]:text-neutral-900 data-[state=active]:shadow-lg text-xs uppercase tracking-[0.15em] font-light transition-all duration-300"
               >
-                <Info className="w-3.5 h-3.5 mr-2" />
+                <Info className="w-4 h-4 mr-2" />
                 Cách đo
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="chart" className="mt-6 space-y-6">
-              {/* Size Chart Table */}
-              <div className="border border-slate-200 dark:border-slate-700 overflow-hidden rounded-none shadow-lg">
+            <TabsContent value="chart" className="mt-8 space-y-8">
+              {/* Size Chart Table - Luxury Style */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+                className="border-2 border-neutral-200 dark:border-neutral-800 overflow-hidden rounded-sm shadow-xl"
+              >
                 <table className="w-full">
-                  <thead className="bg-gradient-to-r from-slate-900 to-slate-800 dark:from-slate-800 dark:to-slate-700">
+                  <thead className="bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-900 dark:from-neutral-100 dark:via-neutral-200 dark:to-neutral-100">
                     <tr>
                       {headers.map((header, index) => (
                         <th
                           key={header}
                           className={cn(
-                            "px-6 py-4 text-left font-medium uppercase tracking-wide text-xs text-white",
-                            index === 0 && "rounded-tl-none"
+                            "px-6 py-5 text-left font-light uppercase tracking-[0.15em] text-xs text-white dark:text-neutral-900",
+                            index === 0 && "rounded-tl-sm"
                           )}
                         >
                           {header}
@@ -196,239 +230,280 @@ const SizeGuide: React.FC<SizeGuideProps> = ({ category = "Áo" }) => {
                       ))}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                  <tbody className="divide-y-2 divide-neutral-200 dark:divide-neutral-800">
                     {currentChart.map((row, index) => {
                       const pantsRow = row as PantsSizeRow;
                       const shirtRow = row as ShirtSizeRow;
 
                       return (
-                        <tr
+                        <motion.tr
                           key={index}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{
+                            duration: 0.4,
+                            delay: 0.4 + index * 0.05,
+                          }}
+                          whileHover={{ backgroundColor: "rgba(0,0,0,0.02)" }}
                           className={cn(
-                            "transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50",
+                            "transition-colors",
                             index % 2 === 0
-                              ? "bg-white dark:bg-slate-900"
-                              : "bg-slate-50/50 dark:bg-slate-800/30"
+                              ? "bg-white dark:bg-gray-900"
+                              : "bg-neutral-50/50 dark:bg-neutral-900/50"
                           )}
                         >
-                          <td className="px-6 py-4">
-                            <span className="inline-flex items-center justify-center w-10 h-10 rounded-none bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 text-slate-900 dark:text-white font-semibold text-sm shadow-sm">
+                          <td className="px-6 py-5">
+                            <motion.span
+                              whileHover={{ scale: 1.1 }}
+                              className="inline-flex items-center justify-center w-12 h-12 rounded-sm bg-gradient-to-br from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 text-white dark:text-neutral-900 font-light text-sm shadow-md border-2 border-neutral-900 dark:border-neutral-100"
+                            >
                               {row.size}
-                            </span>
+                            </motion.span>
                           </td>
                           {isPants ? (
                             <>
-                              <td className="px-6 py-4 text-slate-700 dark:text-slate-300 font-medium text-sm">
+                              <td className="px-6 py-5 text-neutral-700 dark:text-neutral-300 font-light text-sm">
                                 {pantsRow.waist}
                               </td>
-                              <td className="px-6 py-4 text-slate-700 dark:text-slate-300 font-medium text-sm">
+                              <td className="px-6 py-5 text-neutral-700 dark:text-neutral-300 font-light text-sm">
                                 {pantsRow.hip}
                               </td>
-                              <td className="px-6 py-4 text-slate-700 dark:text-slate-300 font-medium text-sm">
+                              <td className="px-6 py-5 text-neutral-700 dark:text-neutral-300 font-light text-sm">
                                 {pantsRow.length}
                               </td>
                             </>
                           ) : (
                             <>
-                              <td className="px-6 py-4 text-slate-700 dark:text-slate-300 font-medium text-sm">
+                              <td className="px-6 py-5 text-neutral-700 dark:text-neutral-300 font-light text-sm">
                                 {shirtRow.chest}
                               </td>
-                              <td className="px-6 py-4 text-slate-700 dark:text-slate-300 font-medium text-sm">
+                              <td className="px-6 py-5 text-neutral-700 dark:text-neutral-300 font-light text-sm">
                                 {shirtRow.length}
                               </td>
-                              <td className="px-6 py-4 text-slate-700 dark:text-slate-300 font-medium text-sm">
+                              <td className="px-6 py-5 text-neutral-700 dark:text-neutral-300 font-light text-sm">
                                 {shirtRow.shoulder}
                               </td>
                             </>
                           )}
-                        </tr>
+                        </motion.tr>
                       );
                     })}
                   </tbody>
                 </table>
-              </div>
+              </motion.div>
 
-              {/* Quick Tips */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-gradient-to-br from-blue-50 to-slate-50 dark:from-slate-800 dark:to-blue-950/20 border border-blue-200 dark:border-blue-900/30 rounded-none p-4 shadow-sm">
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 rounded-none bg-blue-100 dark:bg-blue-900/30 mt-0.5">
-                      <Info className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                    </div>
+              {/* Quick Tips - Luxury Style */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.5 }}
+                className="grid grid-cols-1 md:grid-cols-2 gap-6"
+              >
+                <motion.div
+                  whileHover={{ scale: 1.02, y: -2 }}
+                  className="bg-gradient-to-br from-blue-50 to-neutral-50 dark:from-blue-950/20 dark:to-neutral-900/50 border-2 border-blue-200 dark:border-blue-900/30 rounded-sm p-6 shadow-lg"
+                >
+                  <div className="flex items-start gap-4">
+                    <motion.div
+                      whileHover={{ rotate: 5 }}
+                      className="p-3 rounded-sm bg-blue-100 dark:bg-blue-900/30 border-2 border-blue-200 dark:border-blue-800"
+                    >
+                      <Info className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    </motion.div>
                     <div>
-                      <h5 className="text-sm font-semibold text-slate-900 dark:text-white mb-1.5">
+                      <h5 className="text-sm font-light text-neutral-900 dark:text-neutral-100 mb-2 uppercase tracking-wide">
                         Giữa hai size?
                       </h5>
-                      <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                      <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed font-light">
                         Nếu số đo của bạn nằm giữa hai size, chúng tôi khuyến
                         nghị chọn size lớn hơn để đảm bảo sự thoải mái.
                       </p>
                     </div>
                   </div>
-                </div>
+                </motion.div>
 
-                <div className="bg-gradient-to-br from-amber-50 to-slate-50 dark:from-slate-800 dark:to-amber-950/20 border border-amber-200 dark:border-amber-900/30 rounded-none p-4 shadow-sm">
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 rounded-none bg-amber-100 dark:bg-amber-900/30 mt-0.5">
-                      <TrendingUp className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                    </div>
+                <motion.div
+                  whileHover={{ scale: 1.02, y: -2 }}
+                  className="bg-gradient-to-br from-amber-50 to-neutral-50 dark:from-amber-950/20 dark:to-neutral-900/50 border-2 border-amber-200 dark:border-amber-900/30 rounded-sm p-6 shadow-lg"
+                >
+                  <div className="flex items-start gap-4">
+                    <motion.div
+                      whileHover={{ rotate: 5 }}
+                      className="p-3 rounded-sm bg-amber-100 dark:bg-amber-900/30 border-2 border-amber-200 dark:border-amber-800"
+                    >
+                      <TrendingUp className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                    </motion.div>
                     <div>
-                      <h5 className="text-sm font-semibold text-slate-900 dark:text-white mb-1.5">
+                      <h5 className="text-sm font-light text-neutral-900 dark:text-neutral-100 mb-2 uppercase tracking-wide">
                         Sai số cho phép
                       </h5>
-                      <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                      <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed font-light">
                         Kích thước có thể sai lệch ±2cm do đặc tính vải và quy
                         trình sản xuất thủ công.
                       </p>
                     </div>
                   </div>
-                </div>
-              </div>
+                </motion.div>
+              </motion.div>
             </TabsContent>
 
-            <TabsContent value="guide" className="mt-6 space-y-6">
-              {/* Size Guide Image */}
-              <div className="relative w-full aspect-[16/10] bg-slate-100 dark:bg-slate-800 rounded-none overflow-hidden border border-slate-200 dark:border-slate-700 shadow-lg">
-                <Image
-                  src="/size.jpg"
-                  alt="Hướng dẫn đo size"
-                  fill
-                  className="object-contain"
-                  priority
-                />
-              </div>
+            <TabsContent value="guide" className="mt-8 space-y-8">
+              {/* Size Guide Image - Luxury Style */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+                className="relative w-full aspect-[16/10] bg-neutral-100 dark:bg-neutral-900 rounded-sm overflow-hidden border-2 border-neutral-200 dark:border-neutral-800 shadow-xl group"
+              >
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ duration: 0.5 }}
+                  className="absolute inset-0"
+                >
+                  <Image
+                    src="/size.jpg"
+                    alt="Hướng dẫn đo size"
+                    fill
+                    className="object-contain transition-transform duration-500"
+                    priority
+                  />
+                </motion.div>
+              </motion.div>
 
-              {/* Detailed Instructions */}
-              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-none p-6 shadow-sm">
-                <h4 className="text-slate-900 dark:text-white font-semibold uppercase tracking-wide text-sm mb-4 flex items-center gap-2">
-                  <Ruler className="w-4 h-4" />
+              {/* Detailed Instructions - Luxury Style */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                className="bg-white dark:bg-gray-900 border-2 border-neutral-200 dark:border-neutral-800 rounded-sm p-8 shadow-lg"
+              >
+                <h4 className="text-neutral-900 dark:text-neutral-100 font-light uppercase tracking-[0.15em] text-sm mb-6 flex items-center gap-3">
+                  <Ruler className="w-5 h-5" />
                   Hướng dẫn đo chi tiết
                 </h4>
-                <div className="space-y-4">
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 flex items-center justify-center text-xs font-bold">
-                      1
-                    </div>
-                    <div className="flex-1">
-                      <h5 className="text-sm font-semibold text-slate-900 dark:text-white mb-1">
-                        Vòng ngực / Vòng eo
-                      </h5>
-                      <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                        Đo vòng quanh phần rộng nhất của ngực (đối với áo) hoặc
-                        phần nhỏ nhất của eo (đối với quần). Giữ thước đo nằm
-                        ngang và vừa khít với cơ thể.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 flex items-center justify-center text-xs font-bold">
-                      2
-                    </div>
-                    <div className="flex-1">
-                      <h5 className="text-sm font-semibold text-slate-900 dark:text-white mb-1">
-                        Chiều dài áo
-                      </h5>
-                      <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                        Đo từ điểm cao nhất của vai xuống đến điểm bạn muốn áo
-                        kết thúc. Đối với áo, thường đo từ vai đến gấu áo.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 flex items-center justify-center text-xs font-bold">
-                      3
-                    </div>
-                    <div className="flex-1">
-                      <h5 className="text-sm font-semibold text-slate-900 dark:text-white mb-1">
-                        Chiều rộng vai
-                      </h5>
-                      <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                        Đo từ điểm nối vai này đến điểm nối vai kia, đi ngang
-                        qua phía sau lưng. Đảm bảo thước đo nằm thẳng.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 flex items-center justify-center text-xs font-bold">
-                      4
-                    </div>
-                    <div className="flex-1">
-                      <h5 className="text-sm font-semibold text-slate-900 dark:text-white mb-1">
-                        Vòng mông (đối với quần)
-                      </h5>
-                      <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                        Đo vòng quanh phần rộng nhất của mông. Giữ thước đo nằm
-                        ngang và không quá chặt hoặc quá lỏng.
-                      </p>
-                    </div>
-                  </div>
+                <div className="space-y-6">
+                  {[
+                    {
+                      num: 1,
+                      title: "Vòng ngực / Vòng eo",
+                      desc: "Đo vòng quanh phần rộng nhất của ngực (đối với áo) hoặc phần nhỏ nhất của eo (đối với quần). Giữ thước đo nằm ngang và vừa khít với cơ thể.",
+                    },
+                    {
+                      num: 2,
+                      title: "Chiều dài áo",
+                      desc: "Đo từ điểm cao nhất của vai xuống đến điểm bạn muốn áo kết thúc. Đối với áo, thường đo từ vai đến gấu áo.",
+                    },
+                    {
+                      num: 3,
+                      title: "Chiều rộng vai",
+                      desc: "Đo từ điểm nối vai này đến điểm nối vai kia, đi ngang qua phía sau lưng. Đảm bảo thước đo nằm thẳng.",
+                    },
+                    {
+                      num: 4,
+                      title: "Vòng mông (đối với quần)",
+                      desc: "Đo vòng quanh phần rộng nhất của mông. Giữ thước đo nằm ngang và không quá chặt hoặc quá lỏng.",
+                    },
+                  ].map((item, index) => (
+                    <motion.div
+                      key={item.num}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.5, delay: 0.5 + index * 0.1 }}
+                      className="flex items-start gap-4"
+                    >
+                      <motion.div
+                        whileHover={{ scale: 1.1, rotate: 5 }}
+                        className="shrink-0 w-8 h-8 rounded-sm bg-gradient-to-br from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 text-white dark:text-neutral-900 flex items-center justify-center text-xs font-light border-2 border-neutral-900 dark:border-neutral-100 shadow-md"
+                      >
+                        {item.num}
+                      </motion.div>
+                      <div className="flex-1">
+                        <h5 className="text-sm font-light text-neutral-900 dark:text-neutral-100 mb-2 uppercase tracking-wide">
+                          {item.title}
+                        </h5>
+                        <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed font-light">
+                          {item.desc}
+                        </p>
+                      </div>
+                    </motion.div>
+                  ))}
                 </div>
-              </div>
+              </motion.div>
 
-              {/* Pro Tips */}
-              <div className="bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-blue-950/20 border border-slate-200 dark:border-slate-700 rounded-none p-5 shadow-sm">
-                <h4 className="text-slate-900 dark:text-white font-semibold uppercase tracking-wide text-sm mb-3 flex items-center gap-2">
-                  <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs">
+              {/* Pro Tips - Luxury Style */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.6 }}
+                className="bg-gradient-to-br from-neutral-50 to-blue-50 dark:from-neutral-900 dark:to-blue-950/20 border-2 border-neutral-200 dark:border-neutral-800 rounded-sm p-8 shadow-lg"
+              >
+                <h4 className="text-neutral-900 dark:text-neutral-100 font-light uppercase tracking-[0.15em] text-sm mb-6 flex items-center gap-3">
+                  <motion.span
+                    animate={{ rotate: [0, 10, -10, 0] }}
+                    transition={{
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                    className="inline-flex items-center justify-center w-6 h-6 rounded-sm bg-gradient-to-br from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 text-white dark:text-neutral-900 text-xs font-light border-2 border-neutral-900 dark:border-neutral-100"
+                  >
                     ✓
-                  </span>
+                  </motion.span>
                   Mẹo chọn size chính xác
                 </h4>
-                <ul className="space-y-2.5">
-                  <li className="flex items-start gap-2 text-xs text-slate-700 dark:text-slate-300">
-                    <ChevronRight className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-slate-400" />
-                    <span className="leading-relaxed">
-                      Đo trực tiếp trên cơ thể, không đo qua quần áo dày
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2 text-xs text-slate-700 dark:text-slate-300">
-                    <ChevronRight className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-slate-400" />
-                    <span className="leading-relaxed">
-                      Thước đo nên vừa khít nhưng không quá chặt, bạn có thể đút
-                      được 1 ngón tay vào
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2 text-xs text-slate-700 dark:text-slate-300">
-                    <ChevronRight className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-slate-400" />
-                    <span className="leading-relaxed">
-                      Đo vào buổi chiều hoặc tối để có số đo chính xác nhất (cơ
-                      thể có thể phồng lên trong ngày)
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2 text-xs text-slate-700 dark:text-slate-300">
-                    <ChevronRight className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-slate-400" />
-                    <span className="leading-relaxed">
-                      Nếu không chắc chắn, hãy liên hệ bộ phận tư vấn để được hỗ
-                      trợ chọn size phù hợp
-                    </span>
-                  </li>
+                <ul className="space-y-4">
+                  {[
+                    "Đo trực tiếp trên cơ thể, không đo qua quần áo dày",
+                    "Thước đo nên vừa khít nhưng không quá chặt, bạn có thể đút được 1 ngón tay vào",
+                    "Đo vào buổi chiều hoặc tối để có số đo chính xác nhất (cơ thể có thể phồng lên trong ngày)",
+                    "Nếu không chắc chắn, hãy liên hệ bộ phận tư vấn để được hỗ trợ chọn size phù hợp",
+                  ].map((tip, index) => (
+                    <motion.li
+                      key={index}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.4, delay: 0.7 + index * 0.1 }}
+                      className="flex items-start gap-3 text-xs text-neutral-700 dark:text-neutral-300"
+                    >
+                      <ChevronRight className="w-4 h-4 mt-0.5 shrink-0 text-neutral-400 dark:text-neutral-600" />
+                      <span className="leading-relaxed font-light">{tip}</span>
+                    </motion.li>
+                  ))}
                 </ul>
-              </div>
+              </motion.div>
             </TabsContent>
           </Tabs>
 
-          {/* Contact Support */}
-          <div className="bg-gradient-to-r from-slate-900 to-slate-800 dark:from-slate-800 dark:to-slate-700 rounded-none p-5 shadow-lg">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div>
-                <h4 className="text-white font-semibold text-sm mb-1">
+          {/* Contact Support - Luxury Style */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.8 }}
+            className=" dark:from-neutral-100 dark:via-neutral-200 dark:to-neutral-100 rounded-sm p-8 shadow-xl border-2 border-neutral-900 dark:border-neutral-100"
+          >
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+              <div className="flex-1">
+                <h4 className="text-black dark:text-neutral-900 font-light text-base mb-2 uppercase tracking-wide">
                   Cần hỗ trợ thêm?
                 </h4>
-                <p className="text-slate-300 text-xs">
+                <p className="text-black-300 dark:text-neutral-600 text-xs font-light leading-relaxed">
                   Đội ngũ tư vấn của chúng tôi sẵn sàng giúp bạn chọn size hoàn
                   hảo
                 </p>
               </div>
-              <Button
-                variant="outline"
-                className="rounded-none bg-white dark:bg-slate-100 text-slate-900 dark:text-slate-900 hover:bg-slate-100 dark:hover:bg-white border-0 shadow-sm text-xs uppercase tracking-wider font-medium"
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
-                Liên hệ tư vấn
-              </Button>
+                <Button
+                  variant="outline"
+                  className="rounded-sm bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 hover: dark:hover:bg-neutral-800 border-2 border-white dark:border-neutral-900 shadow-lg text-xs uppercase tracking-[0.15em] font-light px-6 py-3"
+                >
+                  Liên hệ tư vấn
+                </Button>
+              </motion.div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </DialogContent>
     </Dialog>

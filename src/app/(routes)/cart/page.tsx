@@ -16,14 +16,9 @@ const CartPage = async () => {
   }
 
   return (
-    <div className="bg-white min-h-screen py-12 md:py-16">
+    <div className="bg-gradient-to-br from-neutral-50 via-white to-neutral-50 dark:from-neutral-950 dark:via-gray-900 dark:to-neutral-950 min-h-screen">
       <Container>
-        <div className="px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-light text-black mb-8 md:mb-12 uppercase tracking-tight">
-            Giỏ hàng
-          </h1>
-          <CartClient coupons={coupons} />
-        </div>
+        <CartClient coupons={coupons} />
       </Container>
     </div>
   );
