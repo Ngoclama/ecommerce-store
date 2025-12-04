@@ -536,7 +536,7 @@ const Summary = ({ coupons = [] }: SummaryProps) => {
           "w-full rounded-none py-3.5 text-sm font-light uppercase tracking-wider transition-colors duration-200",
           items.length === 0
             ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-            : "bg-black text-white hover:bg-gray-800"
+            : "bg-gray-400 text-white hover:bg-gray-900 hover:shadow-lg hover:shadow-gray-400/30 transition-all duration-300 ease-in-out hover:scale-[1.01] active:scale-[0.99]"
         )}
       >
         <span className="flex items-center justify-center gap-2">

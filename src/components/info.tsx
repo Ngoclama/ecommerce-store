@@ -345,7 +345,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 space-y-3">
             {data.category && (
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-black dark:bg-white text-white dark:text-black rounded-none">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-400 dark:bg-gray-500 text-white rounded-none">
                 <span className="text-xs font-light uppercase tracking-wider">
                   {data.category.name}
                 </span>
@@ -444,7 +444,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
               exit={{ height: 0, opacity: 0 }}
               className="flex items-center gap-3 pt-3 border-t border-gray-100 dark:border-gray-800 overflow-hidden"
             >
-              <span className="text-xs text-gray-600 dark:text-gray-400 font-light">
+              <span className="text-xs text-gray-800 dark:text-gray-400 font-light">
                 Tổng cộng ({quantity} sản phẩm):
               </span>
               <span className="text-xl text-black dark:text-white font-light tracking-tight">
@@ -776,7 +776,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
                 (variants.length > 0 && (!selectedSizeId || !selectedColorId))
               }
               className={cn(
-                "w-full h-12 rounded-none bg-black dark:bg-white text-white dark:text-black hover:bg-gray-900 dark:hover:bg-gray-100 text-xs font-medium uppercase tracking-wider transition-all duration-200 shadow-sm",
+                "w-full h-12 rounded-none bg-gray-400 dark:bg-gray-500 text-white hover:bg-gray-900 dark:hover:bg-gray-700 hover:shadow-lg hover:shadow-gray-400/30 text-xs font-medium uppercase tracking-wider transition-all duration-300 ease-in-out shadow-sm hover:scale-[1.01] active:scale-[0.99]",
                 (isOutOfStock ||
                   (variants.length > 0 &&
                     (!selectedSizeId || !selectedColorId))) &&
@@ -798,7 +798,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.98 }}
             className={cn(
-              "w-full h-12 rounded-none border-2 border-black dark:border-white hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black text-xs font-medium uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2 bg-transparent text-black dark:text-white",
+              "w-full h-12 rounded-none border-2 border-gray-400 dark:border-gray-500 hover:bg-gray-900 dark:hover:bg-gray-900 hover:border-gray-900 dark:hover:border-gray-900 hover:text-white hover:shadow-md hover:shadow-gray-400/20 text-xs font-medium uppercase tracking-wider transition-all duration-300 ease-in-out flex items-center justify-center gap-2 bg-transparent text-gray-600 dark:text-gray-300 hover:scale-[1.01] active:scale-[0.99]",
               (isOutOfStock ||
                 (variants.length > 0 &&
                   (!selectedSizeId || !selectedColorId))) &&

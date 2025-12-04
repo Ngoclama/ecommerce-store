@@ -84,7 +84,9 @@ export default function CheckoutPage() {
   // Handle province change
   const handleProvinceChange = (provinceCode: string) => {
     setSelectedProvinceCode(provinceCode);
-    const province = vietnamProvinces.find((p) => String(p.code) === provinceCode);
+    const province = vietnamProvinces.find(
+      (p) => String(p.code) === provinceCode
+    );
     if (province) {
       setShippingAddress({
         ...shippingAddress,
@@ -102,7 +104,9 @@ export default function CheckoutPage() {
   // Handle district change
   const handleDistrictChange = (districtCode: string) => {
     setSelectedDistrictCode(districtCode);
-    const district = availableDistricts.find((d) => String(d.code) === districtCode);
+    const district = availableDistricts.find(
+      (d) => String(d.code) === districtCode
+    );
     if (district) {
       setShippingAddress({
         ...shippingAddress,
@@ -1033,7 +1037,7 @@ export default function CheckoutPage() {
                       <Button
                         type="submit"
                         variant="default"
-                        className="w-full rounded-none text-xs font-light uppercase tracking-wider bg-white hover:bg-gray-900 h-11 mt-6"
+                        className="w-full rounded-none text-xs font-light uppercase tracking-wider  hover:bg-gray-900 h-11 mt-6"
                       >
                         Tiếp tục
                       </Button>
@@ -1381,7 +1385,7 @@ export default function CheckoutPage() {
                         onClick={handleContinueToStep3}
                         disabled={!paymentMethod}
                         variant="default"
-                        className="flex-1 rounded-none text-xs font-light uppercase tracking-wider bg-white hover:bg-gray-900 h-11"
+                        className="flex-1 rounded-none text-xs font-light uppercase tracking-wider  hover:bg-gray-900 h-11"
                       >
                         Tiếp tục
                       </Button>
@@ -1470,7 +1474,7 @@ export default function CheckoutPage() {
                         onClick={handleCheckout}
                         disabled={loading}
                         variant="default"
-                        className="flex-1 rounded-none text-xs font-light uppercase tracking-wider bg-white hover:bg-gray-900 h-11"
+                        className="flex-1 rounded-none text-xs font-light uppercase tracking-wider  hover:bg-gray-900 h-11"
                       >
                         {loading ? (
                           <>

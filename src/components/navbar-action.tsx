@@ -367,7 +367,7 @@ export const NavbarActions: React.FC = () => {
                           Thêm sản phẩm vào giỏ hàng để tiếp tục mua sắm
                         </p>
                         <Link href="/" onClick={() => setIsOpen(false)}>
-                          <Button className="bg-black text-white hover:bg-gray-800 rounded-none px-6 py-2.5 text-sm font-light uppercase tracking-wider transition-colors duration-200">
+                          <Button className="bg-gray-400 text-white hover:bg-gray-900 hover:shadow-lg hover:shadow-gray-400/30 rounded-none px-6 py-2.5 text-sm font-light uppercase tracking-wider transition-all duration-300 ease-in-out hover:scale-[1.02] active:scale-[0.98]">
                             Khám phá sản phẩm
                           </Button>
                         </Link>
@@ -574,7 +574,7 @@ export const NavbarActions: React.FC = () => {
                       </div>
                       <Button
                         onClick={handleCheckout}
-                        className="w-full rounded-none py-3.5 text-sm font-light uppercase tracking-wider bg-black text-white hover:bg-gray-800 transition-colors duration-200"
+                        className="w-full rounded-none py-3.5 text-sm font-light uppercase tracking-wider bg-gray-400 text-white hover:bg-gray-900 hover:shadow-lg hover:shadow-gray-400/30 transition-all duration-300 ease-in-out hover:scale-[1.01] active:scale-[0.99]"
                       >
                         Thanh toán
                       </Button>

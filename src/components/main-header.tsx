@@ -205,6 +205,16 @@ export default function MainHeader({
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-black dark:bg-white group-hover/nav:w-full transition-all duration-300 ease-out will-change-[width]"></span>
               </Link>
 
+              {/* Blog */}
+              <Link
+                href="/blog"
+                prefetch={true}
+                className="relative text-sm font-light uppercase tracking-wider text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-400 transition-colors pb-1 group/nav inline-flex items-center leading-none h-6"
+              >
+                Blog
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-black dark:bg-white group-hover/nav:w-full transition-all duration-300 ease-out will-change-[width]"></span>
+              </Link>
+
               {/* Bộ sưu tập - Dropdown từ billboards */}
               {billboards.length > 0 && (
                 <div className="relative group inline-flex items-center h-6">

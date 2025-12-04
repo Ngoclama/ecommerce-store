@@ -97,3 +97,24 @@ export interface Coupon {
   expiresAt?: string | Date | null;
   createdAt?: string | Date;
 }
+
+export interface BlogPost {
+  id: string;
+  title: string;
+  slug: string;
+  content: string;
+  excerpt?: string;
+  featuredImage?: string;
+  metaTitle?: string;
+  metaDescription?: string;
+  tags?: string[];
+  publishedAt?: string | Date;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+  category?: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+  categoryId?: string;
+}

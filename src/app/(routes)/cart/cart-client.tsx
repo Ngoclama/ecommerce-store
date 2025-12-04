@@ -124,7 +124,7 @@ const CartClient: React.FC<CartClientProps> = ({ coupons = [] }) => {
           <div className="pt-4">
             <Button
               asChild
-              className="bg-black text-white hover:bg-gray-800 rounded-none px-8 py-3 text-sm font-light uppercase tracking-wider transition-colors duration-200"
+              className="bg-gray-400 text-white hover:bg-gray-900 hover:shadow-lg hover:shadow-gray-400/30 rounded-none px-8 py-3 text-sm font-light uppercase tracking-wider transition-all duration-300 ease-in-out hover:scale-[1.01] active:scale-[0.99]"
             >
               <Link href="/">
                 <Sparkles className="w-4 h-4 mr-2 inline" />

@@ -11,12 +11,14 @@ import axios from "axios";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import Image from "next/image";
+import ReviewMediaUpload from "./review-media-upload";
 
 interface Review {
   id: string;
   rating: number;
   content: string | null;
   imageUrls: string[];
+  videoUrls?: string[];
   createdAt: string;
   user: {
     id: string;
@@ -43,6 +45,8 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
   const [showForm, setShowForm] = useState(false);
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [videoUrls, setVideoUrls] = useState<string[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -152,7 +156,8 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
           productId,
           rating,
           content: comment.trim(),
-          imageUrls: [],
+          imageUrls: imageUrls,
+          videoUrls: videoUrls,
         },
         {
           headers: {
@@ -168,6 +173,8 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
         setShowForm(false);
         setRating(0);
         setComment("");
+        setImageUrls([]);
+        setVideoUrls([]);
         
         // Refresh reviews
         const reviewsResponse = await fetch(
@@ -260,7 +267,7 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
                     className={cn(
                       "w-10 h-10 rounded-none transition-all border",
                       i < rating
-                        ? "bg-black dark:bg-white text-white dark:text-black border-black dark:border-white"
+                        ? "bg-gray-400 dark:bg-gray-500 text-white border-gray-400 dark:border-gray-500"
                         : "bg-white dark:bg-gray-800 text-gray-400 border-gray-300 dark:border-gray-700 hover:border-black dark:hover:border-white"
                     )}
                   >
@@ -280,6 +287,18 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
                 className="min-h-[120px] rounded-none border-gray-300 dark:border-gray-700 text-sm font-light bg-white dark:bg-gray-800 text-black dark:text-white"
               />
             </div>
+            <div>
+              <label className="block text-xs font-light text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                Hình ảnh / Video (tùy chọn)
+              </label>
+              <ReviewMediaUpload
+                images={imageUrls}
+                videos={videoUrls}
+                onImagesChange={setImageUrls}
+                onVideosChange={setVideoUrls}
+                disabled={submitting}
+              />
+            </div>
             <div className="flex gap-3">
               <Button
                 variant="outline"
@@ -287,6 +306,8 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
                   setShowForm(false);
                   setRating(0);
                   setComment("");
+                  setImageUrls([]);
+                  setVideoUrls([]);
                 }}
                 disabled={submitting}
                 className="rounded-none text-xs font-light uppercase tracking-wider border-gray-300 dark:border-gray-700"
@@ -297,7 +318,7 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
                 onClick={handleSubmitReview}
                 disabled={rating === 0 || !comment.trim() || submitting}
                 variant="default"
-                className="rounded-none text-xs font-light uppercase tracking-wider bg-black dark:bg-white text-white dark:text-black hover:bg-gray-900 dark:hover:bg-gray-100"
+                className="rounded-none text-xs font-light uppercase tracking-wider bg-gray-400 dark:bg-gray-500 text-white hover:bg-gray-900 dark:hover:bg-gray-900 hover:shadow-lg hover:shadow-gray-400/30 transition-all duration-300 ease-in-out hover:scale-[1.01] active:scale-[0.99]"
               >
                 {submitting ? "Đang gửi..." : "Gửi đánh giá"}
               </Button>
@@ -368,11 +389,11 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
                       {review.content}
                     </p>
                   )}
-                  {review.imageUrls && review.imageUrls.length > 0 && (
+                  {(review.imageUrls?.length > 0 || (review.videoUrls && review.videoUrls.length > 0)) && (
                     <div className="flex gap-2 mb-3 flex-wrap">
-                      {review.imageUrls.map((url, idx) => (
+                      {review.imageUrls?.map((url, idx) => (
                         <div
-                          key={idx}
+                          key={`img-${idx}`}
                           className="relative w-20 h-20 rounded-md overflow-hidden border border-gray-200 dark:border-gray-700"
                         >
                           <Image
@@ -381,6 +402,19 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
                             fill
                             sizes="80px"
                             className="object-cover"
+                          />
+                        </div>
+                      ))}
+                      {review.videoUrls?.map((url, idx) => (
+                        <div
+                          key={`vid-${idx}`}
+                          className="relative w-20 h-20 rounded-md overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800"
+                        >
+                          <video
+                            src={url}
+                            className="w-full h-full object-cover"
+                            controls
+                            muted
                           />
                         </div>
                       ))}

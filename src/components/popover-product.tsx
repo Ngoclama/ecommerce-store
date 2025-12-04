@@ -51,7 +51,7 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
   const [currentImage, setCurrentImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [isInWishlist, setIsInWishlist] = useState(false);
-      const [selectedSizeId, setSelectedSizeId] = useState<string | null>(null);
+  const [selectedSizeId, setSelectedSizeId] = useState<string | null>(null);
   const [selectedColorId, setSelectedColorId] = useState<string | null>(null);
   const [selectedMaterialId, setSelectedMaterialId] = useState<string | null>(
     null
@@ -593,7 +593,7 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
                               key={size.id}
                               value={size.id}
                               aria-label={size.name}
-                              className="rounded-none border-gray-300 data-[state=on]:bg-black data-[state=on]:text-white data-[state=on]:border-black"
+                              className="rounded-none border-gray-300 data-[state=on]:bg-gray-800 data-[state=on]:text-white data-[state=on]:border-gray-400"
                             >
                               {size.value}
                             </ToggleGroupItem>
@@ -621,7 +621,7 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
                               key={color.id}
                               value={color.id}
                               aria-label={color.name}
-                              className="rounded-none border-gray-300 data-[state=on]:bg-black data-[state=on]:text-white data-[state=on]:border-black"
+                              className="rounded-none border-gray-300 data-[state=on]:bg-gray-800 data-[state=on]:text-white data-[state=on]:border-gray-400"
                             >
                               <div className="flex items-center gap-2">
                                 <div
@@ -655,7 +655,7 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
                               key={material.id}
                               value={material.id}
                               aria-label={material.name}
-                              className="rounded-none border-gray-300 data-[state=on]:bg-black data-[state=on]:text-white data-[state=on]:border-black"
+                              className="rounded-none border-gray-300 data-[state=on]:bg-gray-400 data-[state=on]:text-white data-[state=on]:border-gray-400"
                             >
                               {material.name}
                             </ToggleGroupItem>
@@ -710,7 +710,7 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
                   <Button
                     onClick={handleAddToCart}
                     disabled={isOutOfStock || isAddingToCart}
-                    className="w-full h-12 rounded-none bg-black text-white hover:bg-gray-800 font-light uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full h-12 rounded-none bg-gray-400 text-white hover:bg-gray-900 hover:shadow-lg hover:shadow-gray-400/30 font-light uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 ease-in-out hover:scale-[1.01] active:scale-[0.99]"
                   >
                     {isAddingToCart ? (
                       "Đang thêm..."

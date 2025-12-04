@@ -262,7 +262,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
               <motion.span
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                className="px-3 py-1.5 bg-black text-white text-sm font-light uppercase tracking-wide rounded-none"
+                className="px-3 py-1.5 bg-gray-400 text-white text-sm font-light uppercase tracking-wide rounded-none"
               >
                 -{discountPercent}%
               </motion.span>
@@ -326,7 +326,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
               onClick={handleQuickView}
               variant="outline"
               size="default"
-              className="w-full h-9 rounded-none border-gray-300 dark:border-gray-600 hover:border-black dark:hover:border-white text-black dark:text-white font-light uppercase tracking-wide text-[10px] leading-tight transition-all duration-300 hover:bg-gray-50 dark:hover:bg-gray-700 bg-white dark:bg-gray-800 overflow-hidden flex items-center justify-center gap-1.5 px-2"
+              className="w-full h-9 rounded-none border-gray-300 dark:border-gray-600 hover:border-black dark:hover:border-white text-black dark:text-white font-light uppercase tracking-wide text-[10px] leading-tight transition-all duration-300  dark:hover:bg-gray-700  dark:bg-gray-800 overflow-hidden flex items-center justify-center gap-1.5 px-2"
             >
               <Eye className="w-3.5 h-3.5 shrink-0" />
               <span className="truncate flex-1 min-w-0 text-center">
@@ -344,7 +344,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 size="default"
                 disabled={isOutOfStock}
                 className={cn(
-                  "w-full h-9 rounded-none border-gray-300 dark:border-gray-600 hover:border-black dark:hover:border-white text-black dark:text-white font-light uppercase tracking-wide text-[10px] leading-tight transition-all duration-300 hover:bg-gray-50 dark:hover:bg-gray-700 bg-white dark:bg-gray-800 overflow-hidden flex items-center justify-center gap-1.5 px-2",
+                  "w-full h-9 rounded-none border-gray-300 dark:border-gray-600 hover:border-black dark:hover:border-white text-black dark:text-white font-light uppercase tracking-wide text-[10px] leading-tight transition-all duration-300  dark:bg-gray-800 overflow-hidden flex items-center justify-center gap-1.5 px-2",
                   isOutOfStock && "opacity-40 cursor-not-allowed"
                 )}
               >
@@ -360,7 +360,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
               size="default"
               disabled={isOutOfStock}
               className={cn(
-                "w-full h-9 rounded-none bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 font-light uppercase tracking-wide text-[10px] leading-tight transition-all duration-300 overflow-hidden flex items-center justify-center gap-1.5 px-2",
+                "w-full h-9 rounded-none bg-gray-400 dark:bg-gray-500 text-white hover:bg-gray-900 dark:hover:bg-gray-900 hover:shadow-lg hover:shadow-gray-400/30 font-light uppercase tracking-wide text-[10px] leading-tight transition-all duration-300 ease-in-out overflow-hidden flex items-center justify-center gap-1.5 px-2 hover:scale-[1.01] active:scale-[0.99]",
                 isOutOfStock && "opacity-40 cursor-not-allowed"
               )}
             >

@@ -374,7 +374,7 @@ export default function AboutPage() {
               <div className="flex items-center justify-center gap-4">
                 <Link
                   href="/contact"
-                  className="border border-black dark:border-white px-8 py-3 text-sm font-light uppercase tracking-wider text-black dark:text-white hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black transition-colors"
+                  className="border border-gray-400 dark:border-gray-500 px-8 py-3 text-sm font-light uppercase tracking-wider text-gray-600 dark:text-gray-300 hover:bg-gray-900 dark:hover:bg-gray-900 hover:border-gray-900 dark:hover:border-gray-900 hover:text-white hover:shadow-md hover:shadow-gray-400/20 transition-all duration-300 ease-in-out hover:scale-[1.01] active:scale-[0.99]"
                 >
                   Liên hệ ngay
                 </Link>

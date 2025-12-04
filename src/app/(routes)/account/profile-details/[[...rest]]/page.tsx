@@ -66,7 +66,7 @@ export default function ProfileDetailsPage() {
                   pageHeaderSubtitle:
                     "text-gray-600 dark:text-gray-400 font-light",
                   formButtonPrimary:
-                    "bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 rounded-none uppercase tracking-wide font-light",
+                    "bg-gray-400 dark:bg-gray-500 text-white hover:bg-gray-900 dark:hover:bg-gray-900 hover:shadow-lg hover:shadow-gray-400/30 rounded-none uppercase tracking-wide font-light transition-all duration-300 ease-in-out hover:scale-[1.01] active:scale-[0.99]",
                   formButtonReset:
                     "text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-400 font-light",
                   formFieldLabel: "text-black dark:text-white font-light",
@@ -133,7 +133,7 @@ export default function ProfileDetailsPage() {
                     "text-black dark:text-white font-light uppercase tracking-wide",
                   profileSectionContent: "text-gray-600 dark:text-gray-400",
                   profileSectionPrimaryButton:
-                    "bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 rounded-none uppercase tracking-wide font-light",
+                    "bg-gray-400 dark:bg-gray-500 text-white hover:bg-gray-900 dark:hover:bg-gray-900 hover:shadow-lg hover:shadow-gray-400/30 rounded-none uppercase tracking-wide font-light transition-all duration-300 ease-in-out hover:scale-[1.01] active:scale-[0.99]",
                   profileSectionDangerButton:
                     "bg-red-600 dark:bg-red-500 text-white hover:bg-red-700 dark:hover:bg-red-600 rounded-none uppercase tracking-wide font-light",
                 },

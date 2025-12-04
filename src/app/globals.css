@@ -164,6 +164,54 @@
   scrollbar-width: none;
 }
 
+/* Blog Content Styles */
+@layer base {
+  .blog-content {
+    color: rgb(17 24 39);
+  }
+  .dark .blog-content {
+    color: rgb(243 244 246);
+  }
+  .blog-content h2,
+  .blog-content h3,
+  .blog-content h4 {
+    font-weight: 300;
+    letter-spacing: 0.05em;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+  }
+  .blog-content p {
+    margin-bottom: 1.5rem;
+    line-height: 1.75;
+  }
+  .blog-content img {
+    max-width: 100%;
+    height: auto;
+    margin: 2rem 0;
+  }
+  .blog-content ul,
+  .blog-content ol {
+    margin: 1.5rem 0;
+    padding-left: 2rem;
+  }
+  .blog-content li {
+    margin-bottom: 0.5rem;
+  }
+  .blog-content a {
+    color: rgb(107 114 128);
+    text-decoration: underline;
+  }
+  .blog-content a:hover {
+    color: rgb(17 24 39);
+  }
+  .dark .blog-content a {
+    color: rgb(156 163 175);
+  }
+  .dark .blog-content a:hover {
+    color: rgb(243 244 246);
+  }
+}
+
 /* Hide Clerk navigation tabs (Sign in / Sign Up) */
 @layer utilities {
   [data-clerk-element="navbar"],

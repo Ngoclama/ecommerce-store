@@ -254,7 +254,7 @@ const WishlistPage = () => {
                   </div>
                   <div className="pt-4">
                     <Link href="/">
-                      <Button className="bg-black text-white hover:bg-gray-900 rounded-none px-8 py-3 text-sm font-light uppercase tracking-wider transition-all duration-300">
+                      <Button className="bg-gray-400 text-white hover:bg-gray-900 hover:shadow-lg hover:shadow-gray-400/30 rounded-none px-8 py-3 text-sm font-light uppercase tracking-wider transition-all duration-300 ease-in-out hover:scale-[1.01] active:scale-[0.99]">
                         <Sparkles className="w-4 h-4 mr-2" />
                         Khám phá sản phẩm
                       </Button>

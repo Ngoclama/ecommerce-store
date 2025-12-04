@@ -103,7 +103,7 @@ const Pagination: React.FC<PaginationProps> = ({ pagination, basePath }) => {
               onClick={() => goToPage(pageNumber)}
               className={
                 pageNumber === page
-                  ? "bg-black dark:bg-white text-white dark:text-black border-black dark:border-white hover:bg-black dark:hover:bg-white"
+                  ? "bg-gray-400 dark:bg-gray-500 text-white border-gray-400 dark:border-gray-500 hover:bg-gray-900 dark:hover:bg-gray-900 hover:shadow-md hover:shadow-gray-400/20 transition-all duration-300 ease-in-out"
                   : "border-gray-300 dark:border-gray-700 text-black dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800"
               }
             >
