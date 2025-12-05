@@ -14,7 +14,7 @@ const PriceFilter = () => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
-  
+
   const minPrice = searchParams.get("minPrice") || "";
   const maxPrice = searchParams.get("maxPrice") || "";
 
@@ -23,16 +23,19 @@ const PriceFilter = () => {
   const [isActive, setIsActive] = useState(!!(minPrice || maxPrice));
 
   useEffect(() => {
-    setLocalMinPrice(minPrice);
-    setLocalMaxPrice(maxPrice);
-    setIsActive(!!(minPrice || maxPrice));
+    // Use requestAnimationFrame to defer setState
+    requestAnimationFrame(() => {
+      setLocalMinPrice(minPrice);
+      setLocalMaxPrice(maxPrice);
+      setIsActive(!!(minPrice || maxPrice));
+    });
   }, [minPrice, maxPrice]);
 
   // Optimized filter update without page reload
   const updatePriceFilter = useCallback(
     (min: string, max: string) => {
       const current = qs.parse(searchParams.toString());
-      
+
       const query: Record<string, string | undefined> = {
         ...current,
         minPrice: min || undefined,
@@ -162,57 +165,65 @@ const PriceFilter = () => {
           </div>
         </div>
 
-      <div className="flex gap-2">
-        <motion.div className="flex-1" whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
-          <Button
-            onClick={handleApply}
-            disabled={isPending}
-            className={cn(
-              "w-full rounded-sm bg-gray-400 text-white hover:bg-gray-900 font-light text-xs uppercase tracking-wide h-11 transition-all duration-300 flex items-center justify-center gap-2",
-              "hover:shadow-lg hover:shadow-gray-400/30",
-              isPending && "opacity-50 cursor-not-allowed"
-            )}
+        <div className="flex gap-2">
+          <motion.div
+            className="flex-1"
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
           >
-            {isPending ? (
-              <>
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                >
-                  <Sparkles className="w-4 h-4" />
-                </motion.div>
-                <span>Đang cập nhật...</span>
-              </>
-            ) : (
-              <>
-                <Check className="w-4 h-4" />
-                <span>Áp dụng</span>
-              </>
-            )}
-          </Button>
-        </motion.div>
-        <AnimatePresence>
-          {isActive && (
-            <motion.div
-              initial={{ opacity: 0, width: 0 }}
-              animate={{ opacity: 1, width: "auto" }}
-              exit={{ opacity: 0, width: 0 }}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+            <Button
+              onClick={handleApply}
+              disabled={isPending}
+              className={cn(
+                "w-full rounded-sm bg-gray-400 text-white hover:bg-gray-900 font-light text-xs uppercase tracking-wide h-11 transition-all duration-300 flex items-center justify-center gap-2",
+                "hover:shadow-lg hover:shadow-gray-400/30",
+                isPending && "opacity-50 cursor-not-allowed"
+              )}
             >
-              <Button
-                onClick={handleClear}
-                variant="outline"
-                disabled={isPending}
-                className="rounded-sm border-2 border-gray-300 dark:border-gray-600 hover:border-black dark:hover:border-white hover:bg-gray-50 dark:hover:bg-gray-800 font-light text-xs uppercase tracking-wide h-11 px-4 transition-all duration-300"
+              {isPending ? (
+                <>
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{
+                      duration: 1,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
+                  >
+                    <Sparkles className="w-4 h-4" />
+                  </motion.div>
+                  <span>Đang cập nhật...</span>
+                </>
+              ) : (
+                <>
+                  <Check className="w-4 h-4" />
+                  <span>Áp dụng</span>
+                </>
+              )}
+            </Button>
+          </motion.div>
+          <AnimatePresence>
+            {isActive && (
+              <motion.div
+                initial={{ opacity: 0, width: 0 }}
+                animate={{ opacity: 1, width: "auto" }}
+                exit={{ opacity: 0, width: 0 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
               >
-                <X className="w-4 h-4 mr-1" />
-                Xóa
-              </Button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+                <Button
+                  onClick={handleClear}
+                  variant="outline"
+                  disabled={isPending}
+                  className="rounded-sm border-2 border-gray-300 dark:border-gray-600 hover:border-black dark:hover:border-white hover:bg-gray-50 dark:hover:bg-gray-800 font-light text-xs uppercase tracking-wide h-11 px-4 transition-all duration-300"
+                >
+                  <X className="w-4 h-4 mr-1" />
+                  Xóa
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
         {/* Quick Price Ranges */}
         <div className="pt-4 border-t border-gray-200 dark:border-gray-700 mt-4">

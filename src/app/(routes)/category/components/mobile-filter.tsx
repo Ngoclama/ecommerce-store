@@ -20,9 +20,12 @@ const MobileFilters: React.FC<MobileFiltersProps> = ({ sizes, colors }) => {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const searchParams = useSearchParams();
-  
+
   useEffect(() => {
-    setMounted(true);
+    // Use requestAnimationFrame to defer setState
+    requestAnimationFrame(() => {
+      setMounted(true);
+    });
   }, []);
 
   const onOpen = () => setOpen(true);
@@ -71,7 +74,7 @@ const MobileFilters: React.FC<MobileFiltersProps> = ({ sizes, colors }) => {
           )}
         </Button>
       </motion.div>
-      
+
       <AnimatePresence>
         {open && (
           <Dialog
@@ -88,7 +91,7 @@ const MobileFilters: React.FC<MobileFiltersProps> = ({ sizes, colors }) => {
               className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70"
               onClick={onClose}
             />
-            
+
             {/* Dialog Panel */}
             <div className="fixed inset-0 z-40 flex pointer-events-none">
               <Dialog.Panel
@@ -96,7 +99,9 @@ const MobileFilters: React.FC<MobileFiltersProps> = ({ sizes, colors }) => {
                 initial={{ x: "100%" }}
                 animate={{ x: 0 }}
                 exit={{ x: "100%" }}
-                transition={{ type: "spring", damping: 25, stiffness: 200 } as any}
+                transition={
+                  { type: "spring", damping: 25, stiffness: 200 } as any
+                }
                 className="relative flex flex-col w-full h-full max-w-sm ml-auto overflow-y-auto bg-white dark:bg-gray-900 border-l-2 border-gray-200 dark:border-gray-700 shadow-2xl pointer-events-auto"
               >
                 {/* Header */}
@@ -119,8 +124,16 @@ const MobileFilters: React.FC<MobileFiltersProps> = ({ sizes, colors }) => {
                 <div className="flex-1 px-6 py-4 space-y-6">
                   <SortFilter />
                   <PriceFilter />
-                  <FilterComponent valueKey="sizeId" name="Kích thước" data={sizes} />
-                  <FilterComponent valueKey="colorId" name="Màu sắc" data={colors} />
+                  <FilterComponent
+                    valueKey="sizeId"
+                    name="Kích thước"
+                    data={sizes}
+                  />
+                  <FilterComponent
+                    valueKey="colorId"
+                    name="Màu sắc"
+                    data={colors}
+                  />
                 </div>
 
                 {/* Footer Actions */}

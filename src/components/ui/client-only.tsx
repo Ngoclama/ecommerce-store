@@ -10,7 +10,10 @@ const ClientOnly: React.FC<ClientOnlyProps> = ({ children }) => {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    setIsMounted(true);
+    // Use requestAnimationFrame to defer setState
+    requestAnimationFrame(() => {
+      setIsMounted(true);
+    });
   }, []);
 
   if (!isMounted) {

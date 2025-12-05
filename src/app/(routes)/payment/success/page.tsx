@@ -4,7 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Container from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Sparkles, ArrowRight, Package, ShoppingBag, Heart } from "lucide-react";
+import {
+  CheckCircle2,
+  Sparkles,
+  ArrowRight,
+  Package,
+  ShoppingBag,
+  Heart,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import useCart from "@/hooks/use-cart";
@@ -16,52 +23,107 @@ export default function PaymentSuccessPage() {
   const cart = useCart();
   const hasProcessed = useRef(false);
   const [showConfetti, setShowConfetti] = useState(true);
-  const [confettiParticles, setConfettiParticles] = useState<Array<{
-    id: number;
-    x: number;
-    y: number;
-    color: string;
-    delay: number;
-    angle?: number;
-    speed?: number;
-  }>>([]);
+  const [confettiParticles, setConfettiParticles] = useState<
+    Array<{
+      id: number;
+      x: number;
+      y: number;
+      color: string;
+      delay: number;
+      angle?: number;
+      speed?: number;
+      duration?: number;
+      rotate?: number;
+      xOffset?: number;
+      width?: number;
+      height?: number;
+    }>
+  >([]);
 
   const orderId = searchParams?.get("orderId") || null;
   const paymentMethod = searchParams?.get("method") || "unknown";
+
+  // Lưu orderId vào sessionStorage để có thể dùng ở orders page
+  useEffect(() => {
+    if (orderId) {
+      sessionStorage.setItem("last_paid_order_id", orderId);
+      // Clear sau 1 giờ
+      setTimeout(() => {
+        sessionStorage.removeItem("last_paid_order_id");
+      }, 3600000);
+    }
+  }, [orderId]);
 
   // Generate confetti particles with fireworks effect
   useEffect(() => {
     if (!showConfetti) return;
 
     const colors = [
-      "#FFD700", "#FF6B6B", "#4ECDC4", "#45B7D1", "#FFA07A",
-      "#98D8C8", "#F7DC6F", "#BB8FCE", "#85C1E2", "#F8B739",
-      "#FF1493", "#00CED1", "#FF6347", "#32CD32", "#FF69B4"
+      "#FFD700",
+      "#FF6B6B",
+      "#4ECDC4",
+      "#45B7D1",
+      "#FFA07A",
+      "#98D8C8",
+      "#F7DC6F",
+      "#BB8FCE",
+      "#85C1E2",
+      "#F8B739",
+      "#FF1493",
+      "#00CED1",
+      "#FF6347",
+      "#32CD32",
+      "#FF69B4",
     ];
 
     // Create multiple bursts of confetti
     const createBurst = (centerX: number, centerY: number, delay: number) => {
-      return Array.from({ length: 30 }, (_, i) => ({
-        id: Math.random() * 1000000,
-        x: centerX,
-        y: centerY,
-        color: colors[Math.floor(Math.random() * colors.length)],
-        delay: delay + Math.random() * 0.5,
-        angle: (Math.PI * 2 * i) / 30,
-        speed: 2 + Math.random() * 3,
-      }));
+      return Array.from({ length: 30 }, (_, i) => {
+        const randomId = Math.random() * 1000000;
+        const randomColorIndex = Math.floor(Math.random() * colors.length);
+        const randomDelayOffset = Math.random() * 0.5;
+        const randomSpeed = 2 + Math.random() * 3;
+        const randomDuration = 1.5 + Math.random() * 0.5;
+
+        return {
+          id: randomId,
+          x: centerX,
+          y: centerY,
+          color: colors[randomColorIndex],
+          delay: delay + randomDelayOffset,
+          angle: (Math.PI * 2 * i) / 30,
+          speed: randomSpeed,
+          duration: randomDuration,
+        };
+      });
     };
 
-    // Main confetti fall
-    const mainParticles = Array.from({ length: 200 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: -10,
-      color: colors[Math.floor(Math.random() * colors.length)],
-      delay: Math.random() * 2,
-      angle: 0,
-      speed: 0,
-    }));
+    // Main confetti fall - generate all random values here
+    const mainParticles = Array.from({ length: 200 }, (_, i) => {
+      const randomX = Math.random() * 100;
+      const randomColorIndex = Math.floor(Math.random() * colors.length);
+      const randomDelay = Math.random() * 2;
+      const randomRotate = Math.random() * 360;
+      const randomXOffset = (Math.random() - 0.5) * 30;
+      const randomDuration = 3 + Math.random() * 2;
+      const randomWidth = Math.random() * 8 + 4;
+      const randomHeight = Math.random() * 8 + 4;
+
+      return {
+        id: i,
+        x: randomX,
+        y: -10,
+        color: colors[randomColorIndex],
+        delay: randomDelay,
+        angle: 0,
+        speed: 0,
+        rotate: randomRotate,
+        xOffset: randomXOffset,
+        duration: randomDuration,
+        width: randomWidth,
+        height: randomHeight,
+      };
+    });
 
     // Fireworks bursts
     const bursts = [
@@ -116,13 +178,22 @@ export default function PaymentSuccessPage() {
           <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
             {confettiParticles.map((particle, index) => {
               // Check if it's a burst particle (has angle and speed)
-              const isBurst = 'angle' in particle && particle.angle !== undefined && 'speed' in particle;
-              
-              if (isBurst && particle.angle !== undefined && particle.speed !== undefined) {
+              const isBurst =
+                "angle" in particle &&
+                particle.angle !== undefined &&
+                "speed" in particle;
+
+              if (
+                isBurst &&
+                particle.angle !== undefined &&
+                particle.speed !== undefined
+              ) {
                 // Fireworks burst effect
-                const endX = particle.x + Math.cos(particle.angle) * particle.speed * 20;
-                const endY = particle.y + Math.sin(particle.angle) * particle.speed * 20;
-                
+                const endX =
+                  particle.x + Math.cos(particle.angle) * particle.speed * 20;
+                const endY =
+                  particle.y + Math.sin(particle.angle) * particle.speed * 20;
+
                 return (
                   <motion.div
                     key={particle.id}
@@ -141,7 +212,7 @@ export default function PaymentSuccessPage() {
                       opacity: [1, 1, 0],
                     }}
                     transition={{
-                      duration: 1.5 + Math.random() * 0.5,
+                      duration: 1.5 + (particle.id % 100) * 0.005,
                       delay: particle.delay,
                       ease: "easeOut",
                     }}
@@ -153,7 +224,7 @@ export default function PaymentSuccessPage() {
                   />
                 );
               }
-              
+
               // Regular confetti fall
               return (
                 <motion.div
@@ -166,19 +237,19 @@ export default function PaymentSuccessPage() {
                   }}
                   animate={{
                     y: "110vh",
-                    rotate: 720 + Math.random() * 360,
+                    rotate: 720 + (particle.rotate || 0),
                     scale: [1, 1.3, 0.9, 1],
-                    x: `${particle.x + (Math.random() - 0.5) * 30}vw`,
+                    x: `${particle.x + (particle.xOffset || 0)}vw`,
                   }}
                   transition={{
-                    duration: 3 + Math.random() * 2,
+                    duration: particle.duration || 3,
                     delay: particle.delay,
                     ease: "easeOut",
                   }}
                   className="absolute rounded-full"
                   style={{
-                    width: Math.random() * 8 + 4,
-                    height: Math.random() * 8 + 4,
+                    width: particle.width || 6,
+                    height: particle.height || 6,
                     backgroundColor: particle.color,
                     boxShadow: `0 0 10px ${particle.color}, 0 0 20px ${particle.color}`,
                   }}
@@ -243,7 +314,11 @@ export default function PaymentSuccessPage() {
             >
               <motion.div
                 animate={{ rotate: [0, 10, -10, 0] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
               >
                 <Sparkles className="w-5 h-5 text-white dark:text-neutral-900" />
               </motion.div>
@@ -287,7 +362,10 @@ export default function PaymentSuccessPage() {
                 className="mt-6"
               >
                 <p className="text-sm text-neutral-500 dark:text-neutral-500 font-light">
-                  Mã đơn hàng: <span className="font-medium text-neutral-900 dark:text-neutral-100">{orderId.slice(-8).toUpperCase()}</span>
+                  Mã đơn hàng:{" "}
+                  <span className="font-medium text-neutral-900 dark:text-neutral-100">
+                    {orderId.slice(-8).toUpperCase()}
+                  </span>
                 </p>
               </motion.div>
             )}
@@ -341,7 +419,9 @@ export default function PaymentSuccessPage() {
                   {paymentMethod === "momo" && "MoMo"}
                   {paymentMethod === "stripe" && "Stripe"}
                   {paymentMethod === "cod" && "COD"}
-                  {!["vnpay", "momo", "stripe", "cod"].includes(paymentMethod) && "Thanh toán trực tuyến"}
+                  {!["vnpay", "momo", "stripe", "cod"].includes(
+                    paymentMethod
+                  ) && "Thanh toán trực tuyến"}
                 </span>
               </motion.div>
             </div>
@@ -354,15 +434,18 @@ export default function PaymentSuccessPage() {
             transition={{ duration: 0.6, delay: 1.3 }}
             className="flex flex-col sm:flex-row gap-4 justify-center"
           >
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button
                 asChild
                 className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 text-white dark:text-neutral-900 hover:from-neutral-800 hover:to-neutral-700 dark:hover:from-neutral-200 dark:hover:to-neutral-300 border-2 border-neutral-900 dark:border-neutral-100 rounded-sm text-sm font-light uppercase tracking-[0.15em] transition-all duration-300 hover:shadow-xl w-full sm:w-auto"
               >
-                <Link href="/account/orders">
+                <Link
+                  href={
+                    orderId
+                      ? `/account/orders/${orderId}?fromPayment=true&method=${paymentMethod}`
+                      : `/account/orders?fromPayment=true&method=${paymentMethod}`
+                  }
+                >
                   <Package className="w-4 h-4" />
                   Xem đơn hàng
                   <ArrowRight className="w-4 h-4" />
@@ -370,10 +453,7 @@ export default function PaymentSuccessPage() {
               </Button>
             </motion.div>
 
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button
                 asChild
                 variant="outline"
@@ -406,4 +486,3 @@ export default function PaymentSuccessPage() {
     </div>
   );
 }
-

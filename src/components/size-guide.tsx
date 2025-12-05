@@ -1,15 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Ruler,
-  Info,
-  TrendingUp,
-  ChevronRight,
-  Sparkles,
-  Crown,
-  Gem,
-} from "lucide-react";
+import { Ruler, Info, TrendingUp, ChevronRight } from "lucide-react";
 import { Button } from "./ui/button";
 import {
   Dialog,
@@ -21,7 +13,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 interface SizeGuideProps {
   category?: string;

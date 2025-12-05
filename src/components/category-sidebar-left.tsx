@@ -32,11 +32,14 @@ export default function CategorySidebarLeft({
 
   // Load from localStorage after mount (client-side only)
   useEffect(() => {
-    setMounted(true);
-    const saved = localStorage.getItem("sidebarOpen");
-    if (saved === "true") {
-      setIsOpen(true);
-    }
+    // Use requestAnimationFrame to defer setState
+    requestAnimationFrame(() => {
+      setMounted(true);
+      const saved = localStorage.getItem("sidebarOpen");
+      if (saved === "true") {
+        setIsOpen(true);
+      }
+    });
   }, []);
 
   // Store state in localStorage for persistence and dispatch event

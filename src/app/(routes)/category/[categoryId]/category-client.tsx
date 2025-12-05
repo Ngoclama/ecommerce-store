@@ -12,8 +12,15 @@ import NoResult from "@/components/ui/result";
 import { useMemo, useState } from "react";
 import useCart from "@/hooks/use-cart";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, SlidersHorizontal, Grid3x3, List, ChevronRight } from "lucide-react";
+import {
+  X,
+  SlidersHorizontal,
+  Grid3x3,
+  List,
+  ChevronRight,
+} from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import qs from "query-string";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -118,7 +125,7 @@ const CategoryClient: React.FC<CategoryClientProps> = ({
   // Get active filters for display
   const activeFilters = useMemo(() => {
     const filters: Array<{ key: string; label: string; value: string }> = [];
-    
+
     const colorId = urlSearchParams.get("colorId");
     const sizeId = urlSearchParams.get("sizeId");
     const minPrice = urlSearchParams.get("minPrice");
@@ -127,11 +134,13 @@ const CategoryClient: React.FC<CategoryClientProps> = ({
 
     if (colorId) {
       const color = colors.find((c) => c.id === colorId);
-      if (color) filters.push({ key: "colorId", label: "Màu", value: color.name });
+      if (color)
+        filters.push({ key: "colorId", label: "Màu", value: color.name });
     }
     if (sizeId) {
       const size = sizes.find((s) => s.id === sizeId);
-      if (size) filters.push({ key: "sizeId", label: "Size", value: size.name });
+      if (size)
+        filters.push({ key: "sizeId", label: "Size", value: size.name });
     }
     if (minPrice || maxPrice) {
       const min = minPrice ? parseInt(minPrice).toLocaleString("vi-VN") : "0";
@@ -146,7 +155,11 @@ const CategoryClient: React.FC<CategoryClientProps> = ({
         "name-asc": "Tên: A → Z",
         "name-desc": "Tên: Z → A",
       };
-      filters.push({ key: "sort", label: "Sắp xếp", value: sortLabels[sort] || sort });
+      filters.push({
+        key: "sort",
+        label: "Sắp xếp",
+        value: sortLabels[sort] || sort,
+      });
     }
 
     return filters;
@@ -155,7 +168,7 @@ const CategoryClient: React.FC<CategoryClientProps> = ({
   // Remove filter function
   const removeFilter = (key: string) => {
     const current = qs.parse(urlSearchParams.toString());
-    
+
     if (key === "price") {
       delete current.minPrice;
       delete current.maxPrice;
@@ -181,7 +194,6 @@ const CategoryClient: React.FC<CategoryClientProps> = ({
 
   return (
     <div className="bg-white dark:bg-gray-900 min-h-screen relative overflow-hidden">
-
       {/* Billboard Section with enhanced effects */}
       {category?.billboard && (
         <motion.div
@@ -205,15 +217,23 @@ const CategoryClient: React.FC<CategoryClientProps> = ({
           >
             {/* Breadcrumb */}
             <nav className="flex items-center gap-2 text-xs font-light text-gray-500 dark:text-gray-400 mb-4 uppercase tracking-wide">
-              <a href="/" className="hover:text-black dark:hover:text-white transition-colors">
+              <Link
+                href="/"
+                className="hover:text-black dark:hover:text-white transition-colors"
+              >
                 Trang chủ
-              </a>
+              </Link>
               <ChevronRight className="w-3 h-3" />
-              <a href="/categories" className="hover:text-black dark:hover:text-white transition-colors">
+              <Link
+                href="/categories"
+                className="hover:text-black dark:hover:text-white transition-colors"
+              >
                 Danh mục
-              </a>
+              </Link>
               <ChevronRight className="w-3 h-3" />
-              <span className="text-black dark:text-white">{category?.name || "Sản phẩm"}</span>
+              <span className="text-black dark:text-white">
+                {category?.name || "Sản phẩm"}
+              </span>
             </nav>
 
             {/* Title and Count */}
@@ -275,7 +295,9 @@ const CategoryClient: React.FC<CategoryClientProps> = ({
                     <span className="relative z-10 text-gray-500 dark:text-gray-400 font-medium">
                       {filter.label}:
                     </span>
-                    <span className="relative z-10 font-medium">{filter.value}</span>
+                    <span className="relative z-10 font-medium">
+                      {filter.value}
+                    </span>
                     <motion.div
                       whileHover={{ rotate: 90 }}
                       transition={{ duration: 0.2 }}

@@ -20,6 +20,18 @@ const BillboardPageClient: React.FC<BillboardPageClientProps> = ({
   categories,
 }) => {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  
+  // Generate random values for particles (once on mount)
+  const particles = React.useMemo(
+    () =>
+      Array.from({ length: 15 }).map(() => ({
+        left: Math.random() * 100,
+        top: Math.random() * 100,
+        duration: 3 + Math.random() * 2,
+        delay: Math.random() * 3,
+      })),
+    []
+  );
 
   return (
     <div className="bg-white dark:bg-gray-900 min-h-screen">
@@ -117,13 +129,13 @@ const BillboardPageClient: React.FC<BillboardPageClientProps> = ({
 
         {/* Decorative Elements */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {Array.from({ length: 15 }).map((_, i) => (
+          {particles.map((particle, i) => (
             <motion.div
               key={i}
               className="absolute w-1 h-1 bg-white/30 rounded-full"
               style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
+                left: `${particle.left}%`,
+                top: `${particle.top}%`,
               }}
               animate={{
                 opacity: [0, 1, 0],
@@ -131,9 +143,9 @@ const BillboardPageClient: React.FC<BillboardPageClientProps> = ({
                 y: [0, -50],
               }}
               transition={{
-                duration: 3 + Math.random() * 2,
+                duration: particle.duration,
                 repeat: Infinity,
-                delay: Math.random() * 3,
+                delay: particle.delay,
                 ease: "easeOut",
               }}
             />

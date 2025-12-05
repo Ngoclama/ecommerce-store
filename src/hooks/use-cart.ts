@@ -219,28 +219,36 @@ const useCart = create(
                 "Failed to update wishlist"
             );
           }
-        } catch (error: any) {
+        } catch (error: unknown) {
+          console.error("[CART_WISHLIST_ERROR]", error);
           set({ wishlistItems: previousWishlist });
 
           console.error("[WISHLIST_TOGGLE_ERROR]", error);
+          const httpError = error as {
+            response?: { status?: number; data?: { message?: string } };
+          };
 
-          if (error.response?.status === 401) {
+          if (httpError.response?.status === 401) {
             toast.error("Vui lòng đăng nhập để thêm vào danh sách yêu thích.");
           } else if (
-            error.response?.status === 404 &&
-            error.response?.data?.message?.includes("User not found")
+            httpError.response?.status === 404 &&
+            httpError.response?.data?.message?.includes("User not found")
           ) {
             toast.error(
               "Tài khoản chưa được kích hoạt. Vui lòng liên hệ admin."
             );
-          } else if (error.response?.data?.message) {
-            toast.error(error.response.data.message);
-          } else if (error.message) {
-            toast.error(error.message);
+          } else if (httpError.response?.data?.message) {
+            toast.error(httpError.response.data.message);
           } else {
-            toast.error(
-              "Không thể cập nhật danh sách yêu thích. Vui lòng thử lại."
-            );
+            const errorMessage =
+              error instanceof Error ? error.message : "Unknown error";
+            if (errorMessage && errorMessage !== "Unknown error") {
+              toast.error(errorMessage);
+            } else {
+              toast.error(
+                "Không thể cập nhật danh sách yêu thích. Vui lòng thử lại."
+              );
+            }
           }
         }
       },

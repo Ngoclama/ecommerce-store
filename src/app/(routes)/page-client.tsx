@@ -40,6 +40,17 @@ const HomePageClient: React.FC<HomePageClientProps> = ({
   latestProducts,
   topSellers,
 }) => {
+  // Generate random values for particles (once on mount)
+  const particles = React.useMemo(
+    () =>
+      Array.from({ length: 20 }).map(() => ({
+        left: Math.random() * 100,
+        top: Math.random() * 100,
+        duration: 4 + Math.random() * 2,
+        delay: Math.random() * 4,
+      })),
+    []
+  );
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -91,13 +102,13 @@ const HomePageClient: React.FC<HomePageClientProps> = ({
 
         {/* Decorative Elements */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {Array.from({ length: 20 }).map((_, i) => (
+          {particles.map((particle, i) => (
             <motion.div
               key={i}
               className="absolute w-px h-px bg-neutral-300 dark:bg-neutral-700 rounded-full"
               style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
+                left: `${particle.left}%`,
+                top: `${particle.top}%`,
               }}
               animate={{
                 opacity: [0, 0.5, 0],
@@ -105,9 +116,9 @@ const HomePageClient: React.FC<HomePageClientProps> = ({
                 y: [0, -100],
               }}
               transition={{
-                duration: 4 + Math.random() * 2,
+                duration: particle.duration,
                 repeat: Infinity,
-                delay: Math.random() * 4,
+                delay: particle.delay,
                 ease: "easeOut",
               }}
             />
@@ -293,9 +304,7 @@ const LuxuryTrustSection = () => {
                   key={index}
                   initial={{ opacity: 0, y: 30 }}
                   animate={
-                    isInView
-                      ? { opacity: 1, y: 0 }
-                      : { opacity: 0, y: 30 }
+                    isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }
                   }
                   transition={{
                     duration: 0.6,
@@ -382,7 +391,11 @@ const LuxurySection: React.FC<LuxurySectionProps> = ({
             </motion.div>
             <motion.div
               initial={{ opacity: 0, width: 0 }}
-              animate={isInView ? { opacity: 1, width: "100%" } : { opacity: 0, width: 0 }}
+              animate={
+                isInView
+                  ? { opacity: 1, width: "100%" }
+                  : { opacity: 0, width: 0 }
+              }
               transition={{ duration: 1, delay: delay + 0.2 }}
               className="h-px bg-gradient-to-r from-neutral-900 via-neutral-400 to-transparent dark:from-neutral-100 dark:via-neutral-600"
             />
@@ -408,7 +421,11 @@ const LuxurySection: React.FC<LuxurySectionProps> = ({
               <span>Xem tất cả</span>
               <motion.div
                 animate={{ x: [0, 4, 0] }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                transition={{
+                  duration: 1.5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
               >
                 <ArrowRight className="w-4 h-4" />
               </motion.div>
@@ -459,8 +476,7 @@ const LuxuryWhyChooseUs = () => {
     },
     {
       title: "Thanh toán an toàn",
-      description:
-        "Hệ thống thanh toán bảo mật, đảm bảo an toàn thông tin",
+      description: "Hệ thống thanh toán bảo mật, đảm bảo an toàn thông tin",
     },
   ];
 
@@ -494,7 +510,11 @@ const LuxuryWhyChooseUs = () => {
           </motion.h2>
           <motion.div
             initial={{ opacity: 0, width: 0 }}
-            animate={isInView ? { opacity: 1, width: "120px" } : { opacity: 0, width: 0 }}
+            animate={
+              isInView
+                ? { opacity: 1, width: "120px" }
+                : { opacity: 0, width: 0 }
+            }
             transition={{ duration: 1, delay: 0.4 }}
             className="h-px bg-gradient-to-r from-transparent via-neutral-400 to-transparent dark:via-neutral-600 mx-auto"
           />
@@ -553,7 +573,9 @@ const LuxuryNewsletter = () => {
       <div className="max-w-4xl mx-auto">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
-          animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.95 }}
+          animate={
+            isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.95 }
+          }
           transition={{ duration: 0.8 }}
           className="relative bg-gradient-to-br from-neutral-50 to-white dark:from-neutral-950 dark:to-gray-900 border-2 border-neutral-200 dark:border-neutral-800 rounded-sm p-12 md:p-16 lg:p-20 text-center overflow-hidden"
         >
@@ -576,7 +598,11 @@ const LuxuryNewsletter = () => {
             >
               <motion.div
                 animate={{ rotate: [0, 10, -10, 0] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
                 className="inline-block"
               >
                 <Sparkles className="w-12 h-12 md:w-16 md:h-16 text-neutral-400 dark:text-neutral-600" />
@@ -594,7 +620,11 @@ const LuxuryNewsletter = () => {
 
             <motion.div
               initial={{ opacity: 0, width: 0 }}
-              animate={isInView ? { opacity: 1, width: "120px" } : { opacity: 0, width: 0 }}
+              animate={
+                isInView
+                  ? { opacity: 1, width: "120px" }
+                  : { opacity: 0, width: 0 }
+              }
               transition={{ duration: 1, delay: 0.4 }}
               className="h-px bg-gradient-to-r from-transparent via-neutral-400 to-transparent dark:via-neutral-600 mx-auto mb-8"
             />

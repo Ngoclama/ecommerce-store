@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
+import Link from "next/link";
 import useCart from "@/hooks/use-cart";
 import useAuth from "@/hooks/use-auth";
 import {
@@ -358,7 +359,9 @@ export default function CheckoutPage() {
 
         if (response.data.success) {
           cart.removeAll();
-          router.push(`/payment/success?orderId=${response.data.orderId || ""}&method=cod`);
+          router.push(
+            `/payment/success?orderId=${response.data.orderId || ""}&method=cod`
+          );
         } else {
           toast.error(response.data.message || "Có lỗi xảy ra khi đặt hàng");
         }
@@ -701,7 +704,7 @@ export default function CheckoutPage() {
                 asChild
                 className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 text-white dark:text-neutral-900 hover:from-neutral-800 hover:to-neutral-700 dark:hover:from-neutral-200 dark:hover:to-neutral-300 border-2 border-neutral-900 dark:border-neutral-100 rounded-sm text-sm font-light uppercase tracking-[0.15em] transition-all duration-300 hover:scale-105 hover:shadow-xl"
               >
-                <a href="/">Tiếp tục mua sắm</a>
+                <Link href="/">Tiếp tục mua sắm</Link>
               </Button>
             </motion.div>
           </motion.div>
@@ -839,7 +842,8 @@ export default function CheckoutPage() {
                             }}
                             className={cn(
                               "rounded-sm border-2 border-neutral-200 dark:border-neutral-800 focus:border-neutral-900 dark:focus:border-neutral-100 h-12 font-light bg-white dark:bg-gray-900 transition-all duration-300",
-                              errors.fullName && "border-red-500 dark:border-red-500"
+                              errors.fullName &&
+                                "border-red-500 dark:border-red-500"
                             )}
                           />
                           {errors.fullName && (
@@ -871,7 +875,8 @@ export default function CheckoutPage() {
                             }}
                             className={cn(
                               "rounded-sm border-2 border-neutral-200 dark:border-neutral-800 focus:border-neutral-900 dark:focus:border-neutral-100 h-12 font-light bg-white dark:bg-gray-900 transition-all duration-300",
-                              errors.phone && "border-red-500 dark:border-red-500"
+                              errors.phone &&
+                                "border-red-500 dark:border-red-500"
                             )}
                           />
                           {errors.phone && (
@@ -903,7 +908,8 @@ export default function CheckoutPage() {
                             }}
                             className={cn(
                               "rounded-sm border-2 border-neutral-200 dark:border-neutral-800 focus:border-neutral-900 dark:focus:border-neutral-100 h-12 font-light bg-white dark:bg-gray-900 transition-all duration-300",
-                              errors.email && "border-red-500 dark:border-red-500"
+                              errors.email &&
+                                "border-red-500 dark:border-red-500"
                             )}
                           />
                           {errors.email && (
@@ -935,7 +941,8 @@ export default function CheckoutPage() {
                           }}
                           className={cn(
                             "rounded-sm border-2 border-neutral-200 dark:border-neutral-800 focus:border-neutral-900 dark:focus:border-neutral-100 h-12 font-light bg-white dark:bg-gray-900 transition-all duration-300",
-                            errors.address && "border-red-500 dark:border-red-500"
+                            errors.address &&
+                              "border-red-500 dark:border-red-500"
                           )}
                         />
                         {errors.address && (
@@ -966,7 +973,8 @@ export default function CheckoutPage() {
                             <SelectTrigger
                               className={cn(
                                 "rounded-sm border-2 border-neutral-200 dark:border-neutral-800 focus:border-neutral-900 dark:focus:border-neutral-100 h-12 font-light bg-white dark:bg-gray-900 transition-all duration-300",
-                                errors.province && "border-red-500 dark:border-red-500"
+                                errors.province &&
+                                  "border-red-500 dark:border-red-500"
                               )}
                             >
                               <SelectValue placeholder="Chọn tỉnh/thành phố" />
@@ -1011,7 +1019,8 @@ export default function CheckoutPage() {
                             <SelectTrigger
                               className={cn(
                                 "rounded-sm border-2 border-neutral-200 dark:border-neutral-800 focus:border-neutral-900 dark:focus:border-neutral-100 h-12 font-light bg-white dark:bg-gray-900 transition-all duration-300",
-                                errors.district && "border-red-500 dark:border-red-500",
+                                errors.district &&
+                                  "border-red-500 dark:border-red-500",
                                 !selectedProvinceCode &&
                                   "opacity-50 cursor-not-allowed"
                               )}
@@ -1058,7 +1067,8 @@ export default function CheckoutPage() {
                             <SelectTrigger
                               className={cn(
                                 "rounded-sm border-2 border-neutral-200 dark:border-neutral-800 focus:border-neutral-900 dark:focus:border-neutral-100 h-12 font-light bg-white dark:bg-gray-900 transition-all duration-300",
-                                errors.ward && "border-red-500 dark:border-red-500",
+                                errors.ward &&
+                                  "border-red-500 dark:border-red-500",
                                 !selectedDistrictCode &&
                                   "opacity-50 cursor-not-allowed"
                               )}
@@ -1300,8 +1310,15 @@ export default function CheckoutPage() {
                           )}
                           onClick={() => setPaymentMethod("cod")}
                         >
-                          <RadioGroupItem value="cod" id="cod" className="shrink-0" />
-                          <Label htmlFor="cod" className="flex-1 cursor-pointer">
+                          <RadioGroupItem
+                            value="cod"
+                            id="cod"
+                            className="shrink-0"
+                          />
+                          <Label
+                            htmlFor="cod"
+                            className="flex-1 cursor-pointer"
+                          >
                             <div className="flex items-center gap-4">
                               <div className="p-2 rounded-sm bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
                                 <Wallet className="w-5 h-5 md:w-6 md:h-6 text-neutral-900 dark:text-neutral-100" />
@@ -1330,8 +1347,15 @@ export default function CheckoutPage() {
                           )}
                           onClick={() => setPaymentMethod("stripe")}
                         >
-                          <RadioGroupItem value="stripe" id="stripe" className="shrink-0" />
-                          <Label htmlFor="stripe" className="flex-1 cursor-pointer">
+                          <RadioGroupItem
+                            value="stripe"
+                            id="stripe"
+                            className="shrink-0"
+                          />
+                          <Label
+                            htmlFor="stripe"
+                            className="flex-1 cursor-pointer"
+                          >
                             <div className="flex items-center gap-4">
                               <div className="p-2 rounded-sm bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
                                 <Building2 className="w-5 h-5 md:w-6 md:h-6 text-neutral-900 dark:text-neutral-100" />
@@ -1360,8 +1384,15 @@ export default function CheckoutPage() {
                           )}
                           onClick={() => setPaymentMethod("momo")}
                         >
-                          <RadioGroupItem value="momo" id="momo" className="shrink-0" />
-                          <Label htmlFor="momo" className="flex-1 cursor-pointer">
+                          <RadioGroupItem
+                            value="momo"
+                            id="momo"
+                            className="shrink-0"
+                          />
+                          <Label
+                            htmlFor="momo"
+                            className="flex-1 cursor-pointer"
+                          >
                             <div className="flex items-center gap-4">
                               <div className="p-2 rounded-sm bg-pink-100 dark:bg-pink-900/30 border border-pink-200 dark:border-pink-800">
                                 <Smartphone className="w-5 h-5 md:w-6 md:h-6 text-pink-600 dark:text-pink-400" />
@@ -1390,8 +1421,15 @@ export default function CheckoutPage() {
                           )}
                           onClick={() => setPaymentMethod("vnpay")}
                         >
-                          <RadioGroupItem value="vnpay" id="vnpay" className="shrink-0" />
-                          <Label htmlFor="vnpay" className="flex-1 cursor-pointer">
+                          <RadioGroupItem
+                            value="vnpay"
+                            id="vnpay"
+                            className="shrink-0"
+                          />
+                          <Label
+                            htmlFor="vnpay"
+                            className="flex-1 cursor-pointer"
+                          >
                             <div className="flex items-center gap-4">
                               <div className="p-2 rounded-sm bg-blue-100 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800">
                                 <Building2 className="w-5 h-5 md:w-6 md:h-6 text-blue-600 dark:text-blue-400" />
@@ -1401,7 +1439,8 @@ export default function CheckoutPage() {
                                   VNPay
                                 </p>
                                 <p className="text-xs md:text-sm text-neutral-600 dark:text-neutral-400 font-light mt-1">
-                                  Thanh toán qua cổng VNPay (ATM/Visa/MasterCard)
+                                  Thanh toán qua cổng VNPay
+                                  (ATM/Visa/MasterCard)
                                 </p>
                               </div>
                             </div>
@@ -1409,11 +1448,17 @@ export default function CheckoutPage() {
                         </motion.div>
 
                         {/* QR Code - Luxury Style */}
-                        <motion.div
-                          className="flex items-center gap-4 p-6 md:p-8 border-2 border-neutral-200 dark:border-neutral-800 rounded-sm cursor-not-allowed opacity-60 bg-neutral-50 dark:bg-neutral-900"
-                        >
-                          <RadioGroupItem value="qr" id="qr" disabled className="shrink-0" />
-                          <Label htmlFor="qr" className="flex-1 cursor-not-allowed">
+                        <motion.div className="flex items-center gap-4 p-6 md:p-8 border-2 border-neutral-200 dark:border-neutral-800 rounded-sm cursor-not-allowed opacity-60 bg-neutral-50 dark:bg-neutral-900">
+                          <RadioGroupItem
+                            value="qr"
+                            id="qr"
+                            disabled
+                            className="shrink-0"
+                          />
+                          <Label
+                            htmlFor="qr"
+                            className="flex-1 cursor-not-allowed"
+                          >
                             <div className="flex items-center gap-4">
                               <div className="p-2 rounded-sm bg-neutral-200 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700">
                                 <QrCode className="w-5 h-5 md:w-6 md:h-6 text-neutral-400 dark:text-neutral-600" />
@@ -1725,7 +1770,9 @@ export default function CheckoutPage() {
 
                 <div className="space-y-4 mt-6">
                   <div className="flex justify-between text-neutral-600 dark:text-neutral-400 text-xs md:text-sm font-light">
-                    <span className="uppercase tracking-[0.15em]">Tạm tính:</span>
+                    <span className="uppercase tracking-[0.15em]">
+                      Tạm tính:
+                    </span>
                     <span>
                       <Currency value={subtotal} />
                     </span>
@@ -1736,7 +1783,9 @@ export default function CheckoutPage() {
                       animate={{ opacity: 1 }}
                       className="flex justify-between text-green-600 dark:text-green-400 text-xs md:text-sm font-light"
                     >
-                      <span className="uppercase tracking-[0.15em]">Giảm giá ({appliedCoupon.code}):</span>
+                      <span className="uppercase tracking-[0.15em]">
+                        Giảm giá ({appliedCoupon.code}):
+                      </span>
                       <span>
                         -<Currency value={discount} />
                       </span>
@@ -1749,7 +1798,9 @@ export default function CheckoutPage() {
                     </span>
                     <span>
                       {shippingFee === 0 ? (
-                        <span className="text-green-600 dark:text-green-400 font-light">Miễn phí</span>
+                        <span className="text-green-600 dark:text-green-400 font-light">
+                          Miễn phí
+                        </span>
                       ) : (
                         <Currency value={shippingFee} />
                       )}
@@ -1757,7 +1808,9 @@ export default function CheckoutPage() {
                   </div>
                   <div className="h-px bg-gradient-to-r from-transparent via-neutral-900 to-transparent dark:via-neutral-100 my-4" />
                   <div className="flex justify-between text-base md:text-lg font-light text-neutral-900 dark:text-neutral-100">
-                    <span className="uppercase tracking-[0.15em]">Tổng cộng:</span>
+                    <span className="uppercase tracking-[0.15em]">
+                      Tổng cộng:
+                    </span>
                     <span>
                       <Currency value={finalTotal} />
                     </span>

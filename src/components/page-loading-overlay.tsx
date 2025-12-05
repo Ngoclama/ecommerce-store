@@ -88,8 +88,11 @@ export function PageLoadingOverlay() {
   useEffect(() => {
     // Only show loading if pathname actually changed
     if (prevPathnameRef.current !== pathname) {
-      setIsLoading(true);
-      setPageName(getPageName(pathname));
+      // Use requestAnimationFrame to defer setState
+      requestAnimationFrame(() => {
+        setIsLoading(true);
+        setPageName(getPageName(pathname));
+      });
       prevPathnameRef.current = pathname;
 
       // Clear any existing timeout

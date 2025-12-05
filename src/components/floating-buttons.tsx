@@ -12,7 +12,10 @@ function useThemeSafe() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    // Use requestAnimationFrame to defer setState
+    requestAnimationFrame(() => {
+      setMounted(true);
+    });
     // Lấy theme từ localStorage hoặc system preference
     const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
     const initialTheme = savedTheme || "light";

@@ -25,7 +25,10 @@ const CartClient: React.FC<CartClientProps> = ({ coupons = [] }) => {
 
   // Read from localStorage immediately on mount for instant display
   useEffect(() => {
-    setMounted(true);
+    // Use requestAnimationFrame to defer setState
+    requestAnimationFrame(() => {
+      setMounted(true);
+    });
 
     // Load from localStorage immediately
     try {
@@ -34,7 +37,9 @@ const CartClient: React.FC<CartClientProps> = ({ coupons = [] }) => {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed?.state?.items && Array.isArray(parsed.state.items)) {
-          setHydratedItems(parsed.state.items);
+          requestAnimationFrame(() => {
+            setHydratedItems(parsed.state.items);
+          });
         }
       }
     } catch (error) {
@@ -51,7 +56,9 @@ const CartClient: React.FC<CartClientProps> = ({ coupons = [] }) => {
         if (saved) {
           const parsed = JSON.parse(saved);
           if (parsed?.state?.items && Array.isArray(parsed.state.items)) {
-            setHydratedItems(parsed.state.items);
+            requestAnimationFrame(() => {
+              setHydratedItems(parsed.state.items);
+            });
           }
         }
       } catch (error) {
@@ -63,7 +70,9 @@ const CartClient: React.FC<CartClientProps> = ({ coupons = [] }) => {
   // Sync with Zustand when it hydrates (cart.items changes)
   useEffect(() => {
     if (cart.items.length > 0) {
-      setHydratedItems(cart.items);
+      requestAnimationFrame(() => {
+        setHydratedItems(cart.items);
+      });
     }
   }, [cart.items]);
 

@@ -16,32 +16,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("light");
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-    // Lấy theme từ localStorage, mặc định là light mode
-    const savedTheme = localStorage.getItem("theme") as Theme | null;
-    const initialTheme = savedTheme || "light";
-    setThemeState(initialTheme);
-    applyTheme(initialTheme);
-    
-    // Lắng nghe thay đổi theme từ các component khác
-    const handleThemeChange = () => {
-      const newTheme = localStorage.getItem("theme") as Theme | null;
-      if (newTheme) {
-        setThemeState(newTheme);
-        applyTheme(newTheme);
-      }
-    };
-    
-    window.addEventListener("theme-change", handleThemeChange);
-    window.addEventListener("storage", handleThemeChange);
-    
-    return () => {
-      window.removeEventListener("theme-change", handleThemeChange);
-      window.removeEventListener("storage", handleThemeChange);
-    };
-  }, []);
-
   const applyTheme = (newTheme: Theme) => {
     const root = document.documentElement;
     if (newTheme === "dark") {
@@ -50,6 +24,38 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       root.classList.remove("dark");
     }
   };
+
+  useEffect(() => {
+    // Use requestAnimationFrame to defer setState
+    requestAnimationFrame(() => {
+      setMounted(true);
+    });
+    // Lấy theme từ localStorage, mặc định là light mode
+    const savedTheme = localStorage.getItem("theme") as Theme | null;
+    const initialTheme = savedTheme || "light";
+    // Use requestAnimationFrame to defer setState
+    requestAnimationFrame(() => {
+      setThemeState(initialTheme);
+    });
+    applyTheme(initialTheme);
+
+    // Lắng nghe thay đổi theme từ các component khác
+    const handleThemeChange = () => {
+      const newTheme = localStorage.getItem("theme") as Theme | null;
+      if (newTheme) {
+        setThemeState(newTheme);
+        applyTheme(newTheme);
+      }
+    };
+
+    window.addEventListener("theme-change", handleThemeChange);
+    window.addEventListener("storage", handleThemeChange);
+
+    return () => {
+      window.removeEventListener("theme-change", handleThemeChange);
+      window.removeEventListener("storage", handleThemeChange);
+    };
+  }, []);
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
@@ -80,4 +86,3 @@ export function useTheme() {
   }
   return context;
 }
-

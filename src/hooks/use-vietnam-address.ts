@@ -39,7 +39,7 @@ export const useVietnamAddress = () => {
       if (!response.ok) throw new Error("Failed to fetch provinces");
       const data = await response.json();
       // API returns array of provinces with code and name
-      const formattedProvinces = data.map((item: any) => ({
+      const formattedProvinces = data.map((item: Record<string, unknown>) => ({
         code: item.code || item.codeName || String(item.code),
         name: item.name || item.name_with_type || "",
       }));
@@ -72,11 +72,13 @@ export const useVietnamAddress = () => {
       if (!response.ok) throw new Error("Failed to fetch districts");
       const data = await response.json();
       // API returns districts in data.districts array
-      const districtsList = (data.districts || []).map((item: any) => ({
-        code: item.code || item.codeName || String(item.code),
-        name: item.name || item.name_with_type || "",
-        province_code: provinceCode,
-      }));
+      const districtsList = (data.districts || []).map(
+        (item: Record<string, unknown>) => ({
+          code: item.code || item.codeName || String(item.code),
+          name: item.name || item.name_with_type || "",
+          province_code: provinceCode,
+        })
+      );
       if (process.env.NODE_ENV === "development") {
         console.log(
           "[useVietnamAddress] Districts loaded:",
@@ -108,11 +110,13 @@ export const useVietnamAddress = () => {
       if (!response.ok) throw new Error("Failed to fetch wards");
       const data = await response.json();
       // API returns wards in data.wards array
-      const wardsList = (data.wards || []).map((item: any) => ({
-        code: item.code || item.codeName || String(item.code),
-        name: item.name || item.name_with_type || "",
-        district_code: districtCode,
-      }));
+      const wardsList = (data.wards || []).map(
+        (item: Record<string, unknown>) => ({
+          code: item.code || item.codeName || String(item.code),
+          name: item.name || item.name_with_type || "",
+          district_code: districtCode,
+        })
+      );
       if (process.env.NODE_ENV === "development") {
         console.log("[useVietnamAddress] Wards loaded:", wardsList.length);
       }

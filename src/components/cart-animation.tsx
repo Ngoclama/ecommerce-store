@@ -25,7 +25,10 @@ export const CartAnimation: React.FC<CartAnimationProps> = ({
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    // Use requestAnimationFrame to defer setState
+    requestAnimationFrame(() => {
+      setMounted(true);
+    });
   }, []);
 
   useEffect(() => {

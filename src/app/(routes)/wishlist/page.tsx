@@ -29,9 +29,12 @@ import ProductCard from "@/components/ui/product-card";
 import { useWishlist as useWishlistHook } from "@/hooks/use-wishlist";
 
 const WishlistPage = () => {
-  const { wishlistItems, setWishlist, isItemInWishlist: isItemInWishlistCart } = useCart();
-  const { getAllWishlistItems, isSignedIn, toggleWishlist } =
-    useWishlistHook();
+  const {
+    wishlistItems,
+    setWishlist,
+    isItemInWishlist: isItemInWishlistCart,
+  } = useCart();
+  const { getAllWishlistItems, isSignedIn, toggleWishlist } = useWishlistHook();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -101,7 +104,7 @@ const WishlistPage = () => {
         );
 
         // Sort products
-        let sortedProducts = [...wishlistProducts];
+        const sortedProducts = [...wishlistProducts];
         switch (sortBy) {
           case "name":
             sortedProducts.sort((a, b) => a.name.localeCompare(b.name));
@@ -182,7 +185,7 @@ const WishlistPage = () => {
   return (
     <div className="bg-gradient-to-br from-neutral-50 via-white to-neutral-50 dark:from-neutral-950 dark:via-gray-900 dark:to-neutral-950 min-h-screen">
       <Container>
-        <div >
+        <div>
           {/* Luxury Header Section */}
           <motion.div
             ref={headerRef}

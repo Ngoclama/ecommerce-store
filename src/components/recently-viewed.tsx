@@ -104,11 +104,14 @@ const RecentlyViewed: React.FC<RecentlyViewedProps> = ({
         (p: Product) => p.id === currentProductId
       );
 
-      if (currentProduct) {
-        setViewedProducts([currentProduct, ...filtered].slice(0, 8));
-      } else {
-        setViewedProducts(viewed.slice(0, 8));
-      }
+      // Use requestAnimationFrame to defer setState
+      requestAnimationFrame(() => {
+        if (currentProduct) {
+          setViewedProducts([currentProduct, ...filtered].slice(0, 8));
+        } else {
+          setViewedProducts(viewed.slice(0, 8));
+        }
+      });
     } else {
       const stored = localStorage.getItem("recentlyViewed");
       setViewedProducts(stored ? JSON.parse(stored).slice(0, 8) : []);

@@ -18,7 +18,10 @@ const SearchBar: React.FC<SearchBarProps> = ({ className }) => {
   const [search, setSearch] = useState(searchParams.get("q") || "");
 
   useEffect(() => {
-    setSearch(searchParams.get("q") || "");
+    // Use requestAnimationFrame to defer setState
+    requestAnimationFrame(() => {
+      setSearch(searchParams.get("q") || "");
+    });
   }, [searchParams]);
 
   const handleSubmit = (e: React.FormEvent) => {

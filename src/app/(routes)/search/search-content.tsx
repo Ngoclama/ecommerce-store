@@ -143,7 +143,7 @@ export default function SearchContent({
                   </span>{" "}
                   kết quả cho{" "}
                   <span className="font-medium text-gray-900 dark:text-white">
-                    "{query}"
+                    &quot;{query}&quot;
                   </span>
                 </>
               )}

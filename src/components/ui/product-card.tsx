@@ -29,7 +29,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const [imageError, setImageError] = useState(false);
   const [quickViewOpen, setQuickViewOpen] = useState(false);
   const [imageIndex, setImageIndex] = useState(0);
-  const [isHovered, setIsHovered] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
   const cart = useCart();
   const { triggerAnimation } = useCartAnimation();
@@ -188,14 +187,12 @@ const ProductCard: React.FC<ProductCardProps> = ({
   };
 
   const handleImageHover = () => {
-    setIsHovered(true);
     if (hasMultipleImages) {
       setImageIndex(1);
     }
   };
 
   const handleImageLeave = () => {
-    setIsHovered(false);
     setImageIndex(0);
   };
 

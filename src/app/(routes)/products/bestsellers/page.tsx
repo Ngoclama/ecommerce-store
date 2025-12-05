@@ -20,53 +20,51 @@ const BestSellersPage = async ({
 
   let products: any[] = [];
   let pagination: any = null;
+  let hasError = false;
 
-  try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    if (!apiUrl) {
-      console.error("[BESTSELLERS] NEXT_PUBLIC_API_URL is not configured");
-      return (
-        <div className="bg-white dark:bg-gray-900 min-h-screen">
-          <Container>
-            <div className="px-4 py-16 sm:px-6 lg:px-8">
-              <NoResult />
-            </div>
-          </Container>
-        </div>
-      );
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!apiUrl) {
+    console.error("[BESTSELLERS] NEXT_PUBLIC_API_URL is not configured");
+    hasError = true;
+  } else {
+    try {
+      const baseUrl = apiUrl.replace(/\/$/, "");
+      const url = `${baseUrl}/api/products?sort=bestseller&page=${page}&limit=${limit}`;
+
+      const res = await fetch(url, {
+        cache: "no-store",
+      });
+
+      if (!res.ok) {
+        console.error("Failed to fetch bestsellers:", res.status, res.statusText);
+        hasError = true;
+      } else {
+        const data = await res.json();
+        if (data.products && data.pagination) {
+          products = data.products;
+          pagination = data.pagination;
+        } else if (Array.isArray(data)) {
+          products = data;
+        } else {
+          products = [];
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching bestsellers:", error);
+      hasError = true;
     }
+  }
 
-    const baseUrl = apiUrl.replace(/\/$/, "");
-    const url = `${baseUrl}/api/products?sort=bestseller&page=${page}&limit=${limit}`;
-
-    const res = await fetch(url, {
-      cache: "no-store",
-    });
-
-    if (!res.ok) {
-      console.error("Failed to fetch bestsellers:", res.status, res.statusText);
-      return (
-        <div className="bg-white dark:bg-gray-900 min-h-screen">
-          <Container>
-            <div className="px-4 py-16 sm:px-6 lg:px-8">
-              <NoResult />
-            </div>
-          </Container>
-        </div>
-      );
-    }
-
-    const data = await res.json();
-    if (data.products && data.pagination) {
-      products = data.products;
-      pagination = data.pagination;
-    } else if (Array.isArray(data)) {
-      products = data;
-    } else {
-      products = [];
-    }
-  } catch (error) {
-    console.error("Error fetching bestsellers:", error);
+  if (hasError) {
+    return (
+      <div className="bg-white dark:bg-gray-900 min-h-screen">
+        <Container>
+          <div className="px-4 py-16 sm:px-6 lg:px-8">
+            <NoResult />
+          </div>
+        </Container>
+      </div>
+    );
   }
 
   return (

@@ -2,11 +2,9 @@
 
 import { useState, useRef, useEffect } from "react";
 import {
-  Settings,
   Moon,
   Sun,
   MessageCircle,
-  X,
   Phone,
   MessageSquare,
   ArrowUp,
@@ -21,11 +19,17 @@ function useThemeSafe() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    // Use requestAnimationFrame to defer setState
+    requestAnimationFrame(() => {
+      setMounted(true);
+    });
     // Lấy theme từ localStorage, mặc định là light mode
     const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
     const initialTheme = savedTheme || "light";
-    setTheme(initialTheme);
+    // Use requestAnimationFrame to defer setState
+    requestAnimationFrame(() => {
+      setTheme(initialTheme);
+    });
 
     // Apply theme to document ngay lập tức
     const root = document.documentElement;

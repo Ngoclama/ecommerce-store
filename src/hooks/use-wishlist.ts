@@ -90,7 +90,7 @@ export const useWishlist = () => {
 
           return serverIsLiked as boolean;
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("[WISHLIST_TOGGLE_ERROR]", error);
 
         // ROLLBACK: Hoàn tác optimistic update nếu API thất bại
@@ -100,7 +100,8 @@ export const useWishlist = () => {
           addToWishlist(productId);
         }
 
-        if (error.response?.status === 401) {
+        const httpError = error as { response?: { status?: number } };
+        if (httpError.response?.status === 401) {
           toast.error("Vui lòng đăng nhập để thêm vào danh sách yêu thích.");
         } else {
           toast.error(
@@ -157,9 +158,10 @@ export const useWishlist = () => {
           return response.data.data.includes(productId) || false;
         }
         return false;
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Nếu 401, có thể user chưa đăng nhập hoặc session expired
-        if (error.response?.status === 401) {
+        const httpError = error as { response?: { status?: number } };
+        if (httpError.response?.status === 401) {
           if (process.env.NODE_ENV === "development") {
             console.warn(
               "[WISHLIST_CHECK] Unauthorized - user may not be signed in or session expired"
@@ -223,9 +225,12 @@ export const useWishlist = () => {
         return response.data.data;
       }
       return [];
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Nếu 401, có thể user chưa đăng nhập hoặc session expired
-      if (error.response?.status === 401) {
+      const httpError = error as {
+        response?: { status?: number; data?: unknown };
+      };
+      if (httpError.response?.status === 401) {
         if (process.env.NODE_ENV === "development") {
           console.warn(
             "[WISHLIST_GET_ALL] Unauthorized - user may not be signed in or session expired"
@@ -234,7 +239,7 @@ export const useWishlist = () => {
         return [];
       }
       // Nếu 404, có thể API URL không đúng hoặc route không tồn tại
-      if (error.response?.status === 404) {
+      if (httpError.response?.status === 404) {
         console.error("[WISHLIST_GET_ALL] 404 Not Found");
         console.error(
           "[WISHLIST_GET_ALL] API URL:",
@@ -250,7 +255,7 @@ export const useWishlist = () => {
       if (process.env.NODE_ENV === "development") {
         console.error(
           "[WISHLIST_GET_ALL] Error response:",
-          error.response?.data
+          httpError.response?.data
         );
         console.error(
           "[WISHLIST_GET_ALL] API URL:",

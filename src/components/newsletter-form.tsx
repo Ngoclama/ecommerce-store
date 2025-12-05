@@ -8,7 +8,10 @@ export default function NewsletterForm() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    // Use requestAnimationFrame to defer setState
+    requestAnimationFrame(() => {
+      setMounted(true);
+    });
   }, []);
 
   if (!mounted) {
