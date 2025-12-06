@@ -715,7 +715,7 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
                   <Button
                     onClick={handleAddToCart}
                     disabled={isOutOfStock || isAddingToCart}
-                    className="w-full h-12 rounded-none bg-gray-400 text-white hover:bg-gray-900 hover:shadow-lg hover:shadow-gray-400/30 font-light uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 ease-in-out hover:scale-[1.01] active:scale-[0.99]"
+                    className="w-full h-12 rounded-none bg-gray-400 text-white hover:bg-gray-900 hover:shadow-lg hover:shadow-gray-400/30 font-light uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed transition-[background-color,box-shadow,transform] duration-200 ease-out will-change-[transform] hover:scale-[1.01] active:scale-[0.99]"
                   >
                     {isAddingToCart ? (
                       "Đang thêm..."

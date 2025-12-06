@@ -110,11 +110,12 @@ export function PageLoadingOverlay() {
         clearTimeout(loadingTimeoutRef.current);
       }
 
-      // Minimum loading time for smooth UX (400ms)
-      // Maximum loading time to prevent infinite loading (10s)
-      const minLoadingTime = 400;
-      const maxLoadingTime = 10000; // 10 seconds max
+      // Minimum loading time for smooth UX (300ms)
+      // Maximum loading time to prevent infinite loading (5s)
+      const minLoadingTime = 300;
+      const maxLoadingTime = 5000; // 5 seconds max
 
+      // Hide loading after minimum time
       loadingTimeoutRef.current = setTimeout(() => {
         setIsLoading(false);
       }, minLoadingTime);
@@ -125,12 +126,34 @@ export function PageLoadingOverlay() {
         setIsLoading(false);
       }, maxLoadingTime);
 
+      // Also hide loading when page is fully loaded
+      const handleLoad = () => {
+        if (loadingTimeoutRef.current) {
+          clearTimeout(loadingTimeoutRef.current);
+        }
+        setIsLoading(false);
+      };
+
+      // Check if page is already loaded
+      if (document.readyState === "complete") {
+        handleLoad();
+      } else {
+        window.addEventListener("load", handleLoad, { once: true });
+      }
+
       return () => {
         if (loadingTimeoutRef.current) {
           clearTimeout(loadingTimeoutRef.current);
         }
         clearTimeout(maxTimeout);
+        window.removeEventListener("load", handleLoad);
       };
+    } else {
+      // If pathname hasn't changed, ensure loading is hidden
+      // This handles the case when page is already loaded
+      if (document.readyState === "complete") {
+        setIsLoading(false);
+      }
     }
   }, [pathname]);
 

@@ -514,24 +514,36 @@ export default function OrdersPage() {
 
     try {
       setCancellingOrderId(orderId);
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-      if (!apiUrl) {
-        toast.error("Không thể kết nối đến server");
-        return;
-      }
 
-      const response = await fetch(
-        `${apiUrl.replace(/\/$/, "")}/api/orders/${orderId}/cancel`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-        }
-      );
+      // Use store API route (proxy to admin) instead of calling admin directly
+      const response = await fetch(`/api/orders/${orderId}/cancel`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
 
       if (!response.ok) {
+        // Handle 401 - Session expired
+        if (response.status === 401) {
+          const errorData = await response.json().catch(() => ({}));
+          const errorMessage = errorData.message || "Chưa xác thực";
+
+          if (isSignedIn) {
+            // User is signed in but got 401 - session expired
+            toast.info("Đơn hàng đã hủy. Vui lòng tải lại trang để thay đổi.");
+            // Reload page to refresh session
+            setTimeout(() => {
+              window.location.reload();
+            }, 1500);
+          } else {
+            toast.error("Vui lòng đăng nhập để hủy đơn hàng");
+            router.push("/sign-in");
+          }
+          return;
+        }
+
         // Try to parse JSON error response
         let errorMessage = "Không thể hủy đơn hàng";
         try {
@@ -556,8 +568,19 @@ export default function OrdersPage() {
       // Parse success response
       const data = await response.json();
       toast.success(data.message || "Đã hủy đơn hàng thành công");
-      // Refresh orders
-      fetchOrders(true);
+
+      // Clear cache and reload orders
+      try {
+        sessionStorage.removeItem("orders");
+        sessionStorage.removeItem("orders_time");
+      } catch (e) {
+        console.warn("[CANCEL_ORDER] Failed to clear cache", e);
+      }
+
+      // Reload orders after a short delay to show success message
+      setTimeout(() => {
+        fetchOrders(true);
+      }, 500);
     } catch (error: any) {
       console.error("[CANCEL_ORDER_ERROR]", error);
       toast.error(

@@ -62,16 +62,39 @@ const HomePageClient: React.FC<HomePageClientProps> = ({
     console.log("[HOMEPAGE_CLIENT] Should render billboards:", shouldRender);
   }, [billboards]);
 
-  // Prevent infinite loop: only refresh if coming from another page
+  // Track if component has mounted
+  const hasMountedRef = useRef(false);
   const prevPathnameRef = useRef<string | null>(null);
+  const isInitialLoadRef = useRef(true);
 
   useEffect(() => {
+    // On initial mount, ensure content is visible
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      // Force a re-render to ensure content displays
+      setMountedKey((prev) => prev + 1);
+      
+      // Detect if this is a page reload (F5 or refresh)
+      try {
+        const navigationType = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming;
+        if (navigationType?.type === "reload") {
+          // Page was reloaded, force refresh to get fresh billboards
+          console.log("[HOMEPAGE_CLIENT] Page reload detected, refreshing data");
+          router.refresh();
+        }
+      } catch (e) {
+        // Performance API not available, skip
+        console.warn("[HOMEPAGE_CLIENT] Could not detect navigation type", e);
+      }
+    }
+
     // Only refresh if we're navigating TO home page FROM another page
     // Not if we're already on home page
     if (
       pathname === "/" &&
       prevPathnameRef.current !== "/" &&
-      prevPathnameRef.current !== null
+      prevPathnameRef.current !== null &&
+      !isInitialLoadRef.current
     ) {
       // User navigated to home page from another page
       // Increment key to force re-render of animations
@@ -79,8 +102,14 @@ const HomePageClient: React.FC<HomePageClientProps> = ({
       // Refresh router to ensure fresh data on client-side navigation
       router.refresh();
     }
+    
     // Update previous pathname
     prevPathnameRef.current = pathname;
+    
+    // Mark initial load as complete after first render
+    if (isInitialLoadRef.current) {
+      isInitialLoadRef.current = false;
+    }
   }, [pathname, router]);
 
   // Generate random values for particles (once on mount)

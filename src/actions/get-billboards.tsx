@@ -25,12 +25,15 @@ const getBillboards = async (): Promise<Billboard[]> => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout (reduced from 10s)
 
-    // Use cache with revalidation for better performance
+    // Force no cache to ensure fresh data on reload
     const res = await fetch(URL, {
-      next: { revalidate: 60 }, // Cache for 60 seconds
+      cache: "no-store", // No cache, always fetch fresh data
       signal: controller.signal,
       headers: {
         "Content-Type": "application/json",
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
+        Expires: "0",
       },
     });
 

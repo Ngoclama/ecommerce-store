@@ -211,11 +211,15 @@ const BillboardCarousel: React.FC<BillboardCarouselProps> = ({
                   className="pt-4"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <motion.div 
+                    whileHover={{ scale: 1.05 }} 
+                    whileTap={{ scale: 0.95 }}
+                    className="will-change-transform"
+                  >
                     <Button
                       size="lg"
                       onClick={handleBillboardClick}
-                      className="bg-white/95 dark:bg-white/95 text-neutral-900 dark:text-neutral-900 border-2 border-white/50 hover:bg-white dark:hover:bg-white hover:border-white rounded-sm px-10 py-4 text-xs font-light uppercase tracking-[0.2em] transition-all duration-300 shadow-lg hover:shadow-xl backdrop-blur-sm"
+                      className="bg-white/95 dark:bg-white/95 text-neutral-900 dark:text-neutral-900 border-2 border-white/50 hover:bg-white dark:hover:bg-white hover:border-white rounded-sm px-10 py-4 text-xs font-light uppercase tracking-[0.2em] transition-[background-color,border-color,box-shadow] duration-200 shadow-lg hover:shadow-xl backdrop-blur-sm"
                     >
                       Khám phá ngay
                     </Button>
@@ -260,7 +264,7 @@ const BillboardCarousel: React.FC<BillboardCarouselProps> = ({
                 whileHover={{ scale: 1.2 }}
                 whileTap={{ scale: 0.9 }}
                 className={cn(
-                  "h-1 transition-all duration-500 rounded-full",
+                  "h-1 transition-[width,background-color] duration-300 rounded-full will-change-transform",
                   index === currentIndex
                     ? "w-10 bg-white dark:bg-white"
                     : "w-8 bg-white/40 dark:bg-white/40 hover:bg-white/60 dark:hover:bg-white/60"

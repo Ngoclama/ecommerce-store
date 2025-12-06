@@ -3,11 +3,10 @@ import getProduct from "@/actions/get-products";
 import getCategories from "@/actions/get-categories";
 import HomePageClient from "./page-client";
 
-// Optimize caching: revalidate every 60 seconds for better performance
-// Billboard data doesn't change frequently, so we can cache it
-export const revalidate = 60; // Revalidate every 60 seconds
+// Force dynamic rendering to prevent caching issues
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
+export const revalidate = 0; // No revalidation, always fetch fresh data
 
 const HomePage = async () => {
   try {

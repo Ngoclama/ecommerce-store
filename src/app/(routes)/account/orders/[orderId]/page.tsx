@@ -404,13 +404,9 @@ export default function OrderDetailPage() {
 
     try {
       setCancelling(true);
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-      if (!apiUrl) {
-        toast.error("Không thể kết nối đến server");
-        return;
-      }
 
-      const response = await fetch(`${apiUrl.replace(/\/$/, "")}/api/orders/${order.id}/cancel`, {
+      // Use store API route (proxy to admin) instead of calling admin directly
+      const response = await fetch(`/api/orders/${order.id}/cancel`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -419,6 +415,25 @@ export default function OrderDetailPage() {
       });
 
       if (!response.ok) {
+        // Handle 401 - Session expired
+        if (response.status === 401) {
+          const errorData = await response.json().catch(() => ({}));
+          const errorMessage = errorData.message || "Chưa xác thực";
+          
+          if (isSignedIn) {
+            // User is signed in but got 401 - session expired
+            toast.info("Đơn hàng đã hủy. Vui lòng tải lại trang để thay đổi.");
+            // Reload page to refresh session
+            setTimeout(() => {
+              window.location.reload();
+            }, 1500);
+          } else {
+            toast.error("Vui lòng đăng nhập để hủy đơn hàng");
+            router.push("/sign-in");
+          }
+          return;
+        }
+
         // Try to parse JSON error response
         let errorMessage = "Không thể hủy đơn hàng";
         try {
@@ -440,9 +455,19 @@ export default function OrderDetailPage() {
       // Parse success response
       const data = await response.json();
       toast.success(data.message || "Đã hủy đơn hàng thành công");
-      // Refresh order
-      router.refresh();
-      router.push("/account/orders");
+      
+      // Clear cache for this order
+      try {
+        sessionStorage.removeItem(`order_${order.id}`);
+        sessionStorage.removeItem(`order_${order.id}_time`);
+      } catch (e) {
+        console.warn("[CANCEL_ORDER] Failed to clear cache", e);
+      }
+      
+      // Reload page after a short delay to show success message
+      setTimeout(() => {
+        window.location.href = "/account/orders";
+      }, 1000);
     } catch (error: any) {
       console.error("[CANCEL_ORDER_ERROR]", error);
       toast.error(error.message || "Không thể hủy đơn hàng. Vui lòng thử lại sau.");

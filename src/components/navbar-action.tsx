@@ -43,6 +43,48 @@ export const NavbarActions: React.FC = () => {
     wishlistItemsRef.current = wishlistItems;
   }, [wishlistItems]);
 
+  // Track userId to detect account changes
+  const { userId } = useAuth();
+  const prevUserIdRef = useRef<string | null>(null);
+  const hasClearedOnUserChangeRef = useRef(false);
+
+  // Clear cart and wishlist when user changes
+  useEffect(() => {
+    const currentUserId = userId || null;
+    const prevUserId = prevUserIdRef.current;
+
+    // If user changed (logged in different account or logged out)
+    if (prevUserId !== null && prevUserId !== currentUserId) {
+      console.log("[USER_CHANGE] User changed, clearing cart and wishlist", {
+        prevUserId,
+        currentUserId,
+      });
+
+      // Clear cart
+      cart.removeAll();
+      
+      // Clear wishlist
+      setWishlist([]);
+      
+      // Clear localStorage for cart/wishlist
+      try {
+        localStorage.removeItem("ecommerce-cart-wishlist-storage");
+        console.log("[USER_CHANGE] Cleared localStorage");
+      } catch (e) {
+        console.warn("[USER_CHANGE] Failed to clear localStorage", e);
+      }
+
+      // Mark that we've cleared data for this user change
+      hasClearedOnUserChangeRef.current = true;
+    } else if (prevUserId === null && currentUserId !== null) {
+      // First time login (not a user change, but initial login)
+      hasClearedOnUserChangeRef.current = false;
+    }
+
+    // Update previous userId
+    prevUserIdRef.current = currentUserId;
+  }, [userId, cart, setWishlist]);
+
   useEffect(() => {
     let isMounted = true;
 
@@ -60,19 +102,56 @@ export const NavbarActions: React.FC = () => {
 
       setIsSyncing(true);
       try {
-        // Lấy wishlist từ localStorage trước khi sync
+        // Lấy wishlist từ server (fresh data cho user hiện tại)
+        // QUAN TRỌNG: Luôn dùng server data làm source of truth
+        const serverWishlistItems = await getAllWishlistItems();
+
+        if (!isMounted) return;
+
+        // Nếu đã clear data do đổi user, CHỈ dùng server data (không sync local)
+        if (hasClearedOnUserChangeRef.current) {
+          console.log("[WISHLIST_SYNC] User changed detected, using only server data");
+          const uniqueWishlistItems = Array.from(new Set(serverWishlistItems));
+          const newCount = uniqueWishlistItems.length;
+          const wishlistKey = uniqueWishlistItems.sort().join(",");
+
+          if (lastSyncRef.current !== wishlistKey) {
+            setSyncedWishlistCount(newCount);
+            lastSyncRef.current = wishlistKey;
+
+            const currentWishlistKey = wishlistItemsRef.current.sort().join(",");
+
+            if (wishlistKey !== currentWishlistKey) {
+              if (uniqueWishlistItems.length > 0) {
+                setWishlist(uniqueWishlistItems);
+              } else {
+                setWishlist([]);
+              }
+            }
+          }
+          // Reset flag after first sync
+          hasClearedOnUserChangeRef.current = false;
+          return;
+        }
+
+        // Chỉ sync local items lên server nếu:
+        // 1. Chưa đổi user (first login)
+        // 2. Local có items mà server chưa có
         const localWishlistItems = wishlistItemsRef.current;
-        
-        // Sync wishlist từ localStorage lên server (nếu có)
-        if (localWishlistItems.length > 0) {
+        const itemsToSync = localWishlistItems.filter(
+          (id) => !serverWishlistItems.includes(id)
+        );
+
+        // Sync các items chưa có trong server (chỉ khi first login, không phải đổi user)
+        if (itemsToSync.length > 0) {
+          console.log("[WISHLIST_SYNC] Syncing local items to server:", itemsToSync.length);
           try {
             const token = await getToken();
             if (token) {
               const apiUrl = process.env.NEXT_PUBLIC_API_URL;
               if (apiUrl) {
                 const baseUrl = apiUrl.replace(/\/$/, "");
-                // Sync từng item từ localStorage lên server
-                for (const productId of localWishlistItems) {
+                for (const productId of itemsToSync) {
                   try {
                     await axios.post(
                       `${baseUrl}/api/wishlist`,
@@ -89,29 +168,40 @@ export const NavbarActions: React.FC = () => {
                       }
                     );
                   } catch (syncError) {
-                    // Ignore errors for individual items
                     console.warn(`[WISHLIST_SYNC] Failed to sync product ${productId}:`, syncError);
                   }
                 }
+                // Re-fetch after syncing
+                const updatedServerWishlist = await getAllWishlistItems();
+                const finalWishlistItems = Array.from(new Set(updatedServerWishlist));
+                
+                const newCount = finalWishlistItems.length;
+                const wishlistKey = finalWishlistItems.sort().join(",");
+
+                if (lastSyncRef.current !== wishlistKey) {
+                  setSyncedWishlistCount(newCount);
+                  lastSyncRef.current = wishlistKey;
+
+                  const currentWishlistKey = wishlistItemsRef.current.sort().join(",");
+
+                  if (wishlistKey !== currentWishlistKey) {
+                    if (finalWishlistItems.length > 0) {
+                      setWishlist(finalWishlistItems);
+                    } else {
+                      setWishlist([]);
+                    }
+                  }
+                }
+                return; // Exit early after syncing
               }
             }
           } catch (syncError) {
-            console.warn("[WISHLIST_SYNC] Error syncing local wishlist to server:", syncError);
+            console.warn("[WISHLIST_SYNC] Error syncing items to server:", syncError);
           }
         }
 
-        // Lấy wishlist từ server
-        const serverWishlistItems = await getAllWishlistItems();
-
-        if (!isMounted) return;
-
-        // Merge local và server wishlist (ưu tiên server)
-        const mergedWishlist = Array.from(
-          new Set([...serverWishlistItems, ...localWishlistItems])
-        );
-        
-        // Remove duplicates from merged list
-        const uniqueWishlistItems = Array.from(new Set(mergedWishlist));
+        // Use server wishlist as source of truth (no local merge to prevent data leakage)
+        const uniqueWishlistItems = Array.from(new Set(serverWishlistItems));
         const newCount = uniqueWishlistItems.length;
         const wishlistKey = uniqueWishlistItems.sort().join(",");
 
@@ -253,7 +343,7 @@ export const NavbarActions: React.FC = () => {
         <motion.div
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="relative"
+          className="relative will-change-transform"
         >
           {isSignedIn ? (
             <div className="group relative flex items-center justify-center">
@@ -291,7 +381,7 @@ export const NavbarActions: React.FC = () => {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => router.push("/wishlist")}
-        className="relative p-2 text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-400 transition-colors duration-200 group flex items-center justify-center"
+        className="relative p-2 text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-400 transition-colors duration-200 will-change-transform group flex items-center justify-center"
         aria-label="Danh sách yêu thích"
       >
         <Heart className="w-5 h-5" />
@@ -312,7 +402,7 @@ export const NavbarActions: React.FC = () => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => router.push("/account/orders")}
-          className="relative p-2 text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-400 transition-colors duration-200 group flex items-center justify-center"
+          className="relative p-2 text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-400 transition-colors duration-200 will-change-transform group flex items-center justify-center"
           aria-label="Đơn hàng của tôi"
         >
           <Package className="w-5 h-5" />
@@ -330,7 +420,7 @@ export const NavbarActions: React.FC = () => {
           setIsOpen((prev) => !prev);
         }}
         type="button"
-        className="relative p-2 text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-400 transition-colors duration-200 group flex items-center justify-center"
+        className="relative p-2 text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-400 transition-colors duration-200 will-change-transform group flex items-center justify-center"
         aria-label="Giỏ hàng"
         data-cart-icon="true"
         id="cart-icon-button"
