@@ -51,17 +51,36 @@ const HomePageClient: React.FC<HomePageClientProps> = ({
       count: billboards?.length || 0,
       billboards: billboards,
       isArray: Array.isArray(billboards),
+      firstBillboard: billboards?.[0],
+      hasImageUrl: !!billboards?.[0]?.imageUrl,
+      imageUrl: billboards?.[0]?.imageUrl,
     });
+
+    // Check if billboards should render
+    const shouldRender =
+      billboards && Array.isArray(billboards) && billboards.length > 0;
+    console.log("[HOMEPAGE_CLIENT] Should render billboards:", shouldRender);
   }, [billboards]);
 
-  // Force refresh data when navigating to home page
+  // Prevent infinite loop: only refresh if coming from another page
+  const prevPathnameRef = useRef<string | null>(null);
+
   useEffect(() => {
-    if (pathname === "/") {
+    // Only refresh if we're navigating TO home page FROM another page
+    // Not if we're already on home page
+    if (
+      pathname === "/" &&
+      prevPathnameRef.current !== "/" &&
+      prevPathnameRef.current !== null
+    ) {
+      // User navigated to home page from another page
       // Increment key to force re-render of animations
       setMountedKey((prev) => prev + 1);
       // Refresh router to ensure fresh data on client-side navigation
       router.refresh();
     }
+    // Update previous pathname
+    prevPathnameRef.current = pathname;
   }, [pathname, router]);
 
   // Generate random values for particles (once on mount)
@@ -96,9 +115,14 @@ const HomePageClient: React.FC<HomePageClientProps> = ({
         style={{ opacity, scale }}
         className="relative w-full min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-neutral-50 via-white to-neutral-50 dark:from-neutral-950 dark:via-gray-900 dark:to-neutral-950"
       >
-        {billboards && Array.isArray(billboards) && billboards.length > 0 ? (
+        {billboards &&
+        Array.isArray(billboards) &&
+        billboards.length > 0 &&
+        billboards.some((b) => b?.imageUrl) ? (
           <div className="w-full h-full">
-            <BillboardCarousel billboards={billboards} />
+            <BillboardCarousel
+              billboards={billboards.filter((b) => b?.imageUrl)}
+            />
           </div>
         ) : (
           <motion.div

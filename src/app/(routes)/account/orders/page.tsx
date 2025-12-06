@@ -13,6 +13,10 @@ import {
   XCircle,
   Eye,
   Calendar,
+  X,
+  Star,
+  ExternalLink,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -144,15 +148,16 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<string | null>(null);
+  const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
   const headerRef = useRef(null);
   const isHeaderInView = useInView(headerRef, { once: true, amount: 0.3 });
 
   // Debounce search query for better performance
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
-  // Fetch orders with caching
+  // Fetch orders with improved retry logic and error handling
   const fetchOrders = useCallback(
-    async (forceRefresh = false) => {
+    async (forceRefresh = false, retryCount = 0) => {
       if (!isSignedIn) {
         setLoading(false);
         return;
@@ -161,20 +166,21 @@ export default function OrdersPage() {
       try {
         setLoading(true);
 
-        // Check cache first (simple in-memory cache)
+        // Check cache first (skip if force refresh)
         const cacheKey = "orders_cache";
-        const cachedData = sessionStorage.getItem(cacheKey);
-        const cacheTime = sessionStorage.getItem(`${cacheKey}_time`);
+        const cachedData = !forceRefresh ? sessionStorage.getItem(cacheKey) : null;
+        const cacheTime = !forceRefresh ? sessionStorage.getItem(`${cacheKey}_time`) : null;
 
-        // Skip cache if force refresh (e.g., after payment)
-        if (!forceRefresh && cachedData && cacheTime) {
+        if (cachedData && cacheTime) {
           const age = Date.now() - parseInt(cacheTime);
-          if (age < 30000) {
+          if (age < 60000) {
+            // 60 seconds cache (increased from 30s for better performance)
             const parsedData = JSON.parse(cachedData);
             setOrders(parsedData);
             setLoading(false);
-            // Still fetch in background to update cache
-            fetch("/api/orders")
+            
+            // Fetch in background to update
+            fetch("/api/orders", { cache: "no-store" })
               .then((res) => {
                 if (res.ok) {
                   return res.json();
@@ -188,21 +194,14 @@ export default function OrdersPage() {
                 if (Array.isArray(ordersData)) {
                   setOrders(ordersData);
                   try {
-                    sessionStorage.setItem(
-                      cacheKey,
-                      JSON.stringify(ordersData)
-                    );
-                    sessionStorage.setItem(
-                      `${cacheKey}_time`,
-                      Date.now().toString()
-                    );
+                    sessionStorage.setItem(cacheKey, JSON.stringify(ordersData));
+                    sessionStorage.setItem(`${cacheKey}_time`, Date.now().toString());
                   } catch (e) {
-                    // Silent fail for storage
+                    // Silent fail
                   }
                 }
               })
               .catch((err) => {
-                // Silent fail for background update, but log in dev
                 if (process.env.NODE_ENV === "development") {
                   console.warn("[ORDERS_BACKGROUND_UPDATE_ERROR]", err);
                 }
@@ -217,88 +216,104 @@ export default function OrdersPage() {
           sessionStorage.removeItem(`${cacheKey}_time`);
         }
 
-        // Use optimized fetch with retry and better error handling
-        try {
-          const ordersData = await fetchWithRetry<
-            Order[] | { data?: Order[]; orders?: Order[] }
-          >("/api/orders", {
-            method: "GET",
-            cache: "no-store" as RequestCache,
-            timeout: 15000, // 15 seconds timeout
-            retries: 1, // Retry once on failure
-          });
+        console.log(`[ORDERS_FETCH] Fetching orders (attempt ${retryCount + 1})...`);
 
-          // Handle both array response and object with data property
-          const finalOrdersData: Order[] = Array.isArray(ordersData)
-            ? ordersData
-            : (ordersData as any)?.data || (ordersData as any)?.orders || [];
+        // Fetch with retry logic - reduced timeout for faster response
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout (reduced from 30s)
 
-          if (!Array.isArray(finalOrdersData)) {
-            console.warn("[ORDERS_FETCH] Invalid data format:", ordersData);
-            setOrders([]);
-            toast.error("Định dạng dữ liệu đơn hàng không hợp lệ.");
-            return;
+        const response = await fetch("/api/orders", {
+          method: "GET",
+          cache: "no-store",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          // Handle 503 - retry
+          if (response.status === 503 && retryCount < 3) {
+            console.log(`[ORDERS_FETCH] 503 Service Unavailable, retrying (${retryCount + 1}/3)...`);
+            await new Promise((resolve) => setTimeout(resolve, 2000 * (retryCount + 1)));
+            return fetchOrders(forceRefresh, retryCount + 1);
           }
 
-          setOrders(finalOrdersData);
+          const errorData = await response.json().catch(() => ({}));
+          const errorMessage = errorData?.message || `HTTP ${response.status}: ${response.statusText}`;
 
-          // Cache the data
-          try {
-            sessionStorage.setItem(cacheKey, JSON.stringify(finalOrdersData));
-            sessionStorage.setItem(`${cacheKey}_time`, Date.now().toString());
-          } catch (storageError) {
-            console.warn("[ORDERS_FETCH] Failed to cache data", storageError);
-          }
-        } catch (fetchError: any) {
-          // Handle fetch errors
-          const errorMessage =
-            fetchError?.message ||
-            "Không thể tải danh sách đơn hàng. Vui lòng thử lại sau.";
-
-          console.error("[ORDERS_FETCH_ERROR]", {
-            error: fetchError,
-            message: fetchError?.message,
-            name: fetchError?.name,
-          });
-
-          // Try to get more details from error
-          if (
-            errorMessage.includes("401") ||
-            errorMessage.includes("Unauthenticated")
-          ) {
+          if (response.status === 401) {
             toast.error("Vui lòng đăng nhập để xem đơn hàng");
             router.push("/sign-in");
             return;
-          } else if (
-            errorMessage.includes("503") ||
-            errorMessage.includes("timeout")
-          ) {
-            const apiUrl =
-              process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-            toast.error(
-              `Không thể kết nối đến admin server tại ${apiUrl}. Vui lòng đảm bảo admin server đang chạy.`
-            );
-          } else if (errorMessage.includes("500")) {
-            toast.error("Lỗi server. Vui lòng thử lại sau.");
-          } else {
-            toast.error(errorMessage);
           }
 
+          throw new Error(errorMessage);
+        }
+
+        const data = await response.json();
+        
+        // Handle both array and object response
+        const ordersData: Order[] = Array.isArray(data)
+          ? data
+          : data?.data || data?.orders || [];
+
+        console.log(`[ORDERS_FETCH] Successfully fetched ${ordersData.length} orders`);
+
+        if (!Array.isArray(ordersData)) {
+          console.warn("[ORDERS_FETCH] Invalid data format:", data);
           setOrders([]);
+          toast.error("Định dạng dữ liệu đơn hàng không hợp lệ.");
           return;
+        }
+
+        setOrders(ordersData);
+
+        // Cache the data
+        try {
+          sessionStorage.setItem(cacheKey, JSON.stringify(ordersData));
+          sessionStorage.setItem(`${cacheKey}_time`, Date.now().toString());
+        } catch (storageError) {
+          console.warn("[ORDERS_FETCH] Failed to cache data", storageError);
         }
       } catch (error: any) {
         console.error("[ORDERS_FETCH_ERROR]", {
           error,
           message: error?.message,
-          stack: error?.stack,
           name: error?.name,
+          retryCount,
         });
 
+        // Retry on network errors
+        if (
+          retryCount < 3 &&
+          (error?.name === "AbortError" ||
+            error?.message?.includes("503") ||
+            error?.message?.includes("timeout") ||
+            error?.message?.includes("ECONNREFUSED") ||
+            error?.message?.includes("fetch failed"))
+        ) {
+          console.log(`[ORDERS_FETCH] Network error, retrying (${retryCount + 1}/3)...`);
+          await new Promise((resolve) => setTimeout(resolve, 2000 * (retryCount + 1)));
+          return fetchOrders(forceRefresh, retryCount + 1);
+        }
+
+        // Show error message
         const errorMessage =
           error?.message ||
           "Không thể tải danh sách đơn hàng. Vui lòng thử lại sau.";
-        toast.error(errorMessage);
+
+        if (errorMessage.includes("401") || errorMessage.includes("Unauthenticated")) {
+          toast.error("Vui lòng đăng nhập để xem đơn hàng");
+          router.push("/sign-in");
+        } else if (errorMessage.includes("503") || errorMessage.includes("timeout")) {
+          toast.error("Không thể kết nối đến server. Vui lòng thử lại sau.");
+        } else {
+          toast.error(errorMessage);
+        }
+
         setOrders([]);
       } finally {
         setLoading(false);
@@ -439,6 +454,54 @@ export default function OrdersPage() {
     });
   }, [orders, debouncedSearchQuery, filterStatus]);
 
+  // Cancel order function
+  const handleCancelOrder = async (orderId: string) => {
+    if (!confirm("Bạn có chắc chắn muốn hủy đơn hàng này?")) {
+      return;
+    }
+
+    try {
+      setCancellingOrderId(orderId);
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      if (!apiUrl) {
+        toast.error("Không thể kết nối đến server");
+        return;
+      }
+
+      const response = await fetch(`${apiUrl.replace(/\/$/, "")}/api/orders/${orderId}/cancel`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Không thể hủy đơn hàng");
+      }
+
+      toast.success("Đã hủy đơn hàng thành công");
+      // Refresh orders
+      fetchOrders(true);
+    } catch (error: any) {
+      console.error("[CANCEL_ORDER_ERROR]", error);
+      toast.error(error.message || "Không thể hủy đơn hàng. Vui lòng thử lại sau.");
+    } finally {
+      setCancellingOrderId(null);
+    }
+  };
+
+  // Check if order can be cancelled
+  const canCancelOrder = (order: Order) => {
+    return order.status === "PENDING" || order.status === "PROCESSING";
+  };
+
+  // Check if order can be reviewed
+  const canReviewOrder = (order: Order) => {
+    return order.status === "DELIVERED";
+  };
+
   return (
     <div className="bg-gradient-to-br from-neutral-50 via-white to-neutral-50 dark:from-neutral-950 dark:via-gray-900 dark:to-neutral-950 min-h-screen py-12 md:py-16 lg:py-20">
       <Container>
@@ -510,6 +573,36 @@ export default function OrdersPage() {
             >
               Xem và theo dõi đơn hàng của bạn
             </motion.p>
+
+            {/* Refresh Button */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={
+                isHeaderInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }
+              }
+              transition={{ duration: 0.8, delay: 0.6 }}
+              className="mt-4"
+            >
+              <Button
+                onClick={() => fetchOrders(true)}
+                disabled={loading}
+                variant="outline"
+                size="sm"
+                className="rounded-sm border-2 border-neutral-200 dark:border-neutral-800 hover:border-neutral-900 dark:hover:border-neutral-100 px-4 py-2 text-xs font-light uppercase tracking-[0.15em] transition-all duration-300"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />
+                    Đang tải...
+                  </>
+                ) : (
+                  <>
+                    <Package className="w-3.5 h-3.5 mr-2" />
+                    Làm mới
+                  </>
+                )}
+              </Button>
+            </motion.div>
           </motion.div>
 
           {/* Search and Filter - Luxury Style */}
@@ -843,42 +936,103 @@ export default function OrdersPage() {
                       </div>
 
                       {/* Order Footer */}
-                      <div className="mt-6 pt-6 border-t border-neutral-200 dark:border-neutral-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                        <div className="flex-1 space-y-1 text-sm text-neutral-600 dark:text-neutral-400">
-                          {order.paymentMethod && (
-                            <div>
-                              <span className="uppercase tracking-wide">
-                                Phương thức thanh toán:{" "}
-                              </span>
-                              <span className="text-neutral-900 dark:text-neutral-100 font-medium">
-                                {order.paymentMethod}
-                              </span>
-                            </div>
+                      <div className="mt-6 pt-6 border-t border-neutral-200 dark:border-neutral-800">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+                          <div className="flex-1 space-y-1 text-sm text-neutral-600 dark:text-neutral-400">
+                            {order.paymentMethod && (
+                              <div>
+                                <span className="uppercase tracking-wide">
+                                  Phương thức thanh toán:{" "}
+                                </span>
+                                <span className="text-neutral-900 dark:text-neutral-100 font-medium">
+                                  {order.paymentMethod}
+                                </span>
+                              </div>
+                            )}
+                            {order.shippingMethod && (
+                              <div>
+                                <span className="uppercase tracking-wide">
+                                  Phương thức giao hàng:{" "}
+                                </span>
+                                <span className="text-neutral-900 dark:text-neutral-100 font-medium">
+                                  {order.shippingMethod}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                          <Button
+                            asChild
+                            variant="outline"
+                            className="rounded-sm border-2 border-neutral-200 dark:border-neutral-800 hover:border-neutral-900 dark:hover:border-neutral-100 px-6 py-2.5 font-light uppercase tracking-[0.15em] transition-all duration-300 group/btn"
+                          >
+                            <Link
+                              href={`/account/orders/${order.id}`}
+                              className="flex items-center gap-2"
+                            >
+                              <Eye className="w-4 h-4 transition-transform duration-300 group-hover/btn:translate-x-1" />
+                              Xem chi tiết
+                            </Link>
+                          </Button>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex flex-wrap items-center gap-3">
+                          {/* Cancel Order Button */}
+                          {canCancelOrder(order) && (
+                            <Button
+                              variant="outline"
+                              onClick={() => handleCancelOrder(order.id)}
+                              disabled={cancellingOrderId === order.id}
+                              className="rounded-sm border-2 border-red-200 dark:border-red-800 hover:border-red-600 dark:hover:border-red-400 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 px-4 py-2 text-xs font-light uppercase tracking-[0.15em] transition-all duration-300 disabled:opacity-50"
+                            >
+                              {cancellingOrderId === order.id ? (
+                                <>
+                                  <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />
+                                  Đang hủy...
+                                </>
+                              ) : (
+                                <>
+                                  <X className="w-3.5 h-3.5 mr-2" />
+                                  Hủy đơn hàng
+                                </>
+                              )}
+                            </Button>
                           )}
-                          {order.shippingMethod && (
-                            <div>
-                              <span className="uppercase tracking-wide">
-                                Phương thức giao hàng:{" "}
-                              </span>
-                              <span className="text-neutral-900 dark:text-neutral-100 font-medium">
-                                {order.shippingMethod}
-                              </span>
-                            </div>
+
+                          {/* Track Order Button */}
+                          {order.trackingNumber && order.status !== "DELIVERED" && order.status !== "CANCELLED" && (
+                            <Button
+                              variant="outline"
+                              asChild
+                              className="rounded-sm border-2 border-blue-200 dark:border-blue-800 hover:border-blue-600 dark:hover:border-blue-400 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/20 px-4 py-2 text-xs font-light uppercase tracking-[0.15em] transition-all duration-300"
+                            >
+                              <Link
+                                href={`/account/orders/${order.id}#tracking`}
+                                className="flex items-center gap-2"
+                              >
+                                <Truck className="w-3.5 h-3.5" />
+                                Theo dõi đơn hàng
+                              </Link>
+                            </Button>
+                          )}
+
+                          {/* Review Products Button */}
+                          {canReviewOrder(order) && (
+                            <Button
+                              variant="outline"
+                              asChild
+                              className="rounded-sm border-2 border-green-200 dark:border-green-800 hover:border-green-600 dark:hover:border-green-400 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/20 px-4 py-2 text-xs font-light uppercase tracking-[0.15em] transition-all duration-300"
+                            >
+                              <Link
+                                href={`/account/orders/${order.id}#review`}
+                                className="flex items-center gap-2"
+                              >
+                                <Star className="w-3.5 h-3.5" />
+                                Đánh giá sản phẩm
+                              </Link>
+                            </Button>
                           )}
                         </div>
-                        <Button
-                          asChild
-                          variant="outline"
-                          className="rounded-sm border-2 border-neutral-200 dark:border-neutral-800 hover:border-neutral-900 dark:hover:border-neutral-100 px-6 py-2.5 font-light uppercase tracking-[0.15em] transition-all duration-300 group/btn"
-                        >
-                          <Link
-                            href={`/account/orders/${order.id}`}
-                            className="flex items-center gap-2"
-                          >
-                            <Eye className="w-4 h-4 transition-transform duration-300 group-hover/btn:translate-x-1" />
-                            Xem chi tiết
-                          </Link>
-                        </Button>
                       </div>
                     </div>
                   </motion.div>

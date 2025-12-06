@@ -49,21 +49,34 @@ export default function CheckoutPage() {
   const cart = useCart();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { requireAuth } = useAuth();
+  const { requireAuth, user } = useAuth();
   const [step, setStep] = useState(1);
   const [shippingMethod, setShippingMethod] = useState("standard");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(null);
   const [loading, setLoading] = useState(false);
 
+  // Get email from Clerk user
+  const userEmail = user?.emailAddresses?.[0]?.emailAddress || "";
+
   const [shippingAddress, setShippingAddress] = useState({
     fullName: "",
     phone: "",
-    email: "",
+    email: userEmail, // Auto-fill from Clerk
     address: "",
     province: "",
     district: "",
     ward: "",
   });
+
+  // Update email when user changes
+  useEffect(() => {
+    if (userEmail) {
+      setShippingAddress((prev) => ({
+        ...prev,
+        email: userEmail,
+      }));
+    }
+  }, [userEmail]);
 
   // State for cascading address selection
   const [selectedProvinceCode, setSelectedProvinceCode] = useState("");
@@ -331,7 +344,7 @@ export default function CheckoutPage() {
             shippingAddress: {
               fullName: shippingAddress.fullName,
               phone: shippingAddress.phone,
-              email: shippingAddress.email || undefined,
+              email: userEmail || shippingAddress.email || undefined, // Prioritize Clerk email
               address: shippingAddress.address,
               province: shippingAddress.province,
               district: shippingAddress.district,
@@ -401,7 +414,7 @@ export default function CheckoutPage() {
             shippingAddress: {
               fullName: shippingAddress.fullName,
               phone: shippingAddress.phone,
-              email: shippingAddress.email || undefined,
+              email: userEmail || shippingAddress.email || undefined, // Prioritize Clerk email
               address: shippingAddress.address,
               province: shippingAddress.province,
               district: shippingAddress.district,
@@ -479,7 +492,7 @@ export default function CheckoutPage() {
             shippingAddress: {
               fullName: shippingAddress.fullName,
               phone: shippingAddress.phone,
-              email: shippingAddress.email || undefined,
+              email: userEmail || shippingAddress.email || undefined, // Prioritize Clerk email
               address: shippingAddress.address,
               province: shippingAddress.province,
               district: shippingAddress.district,
@@ -555,7 +568,7 @@ export default function CheckoutPage() {
             shippingAddress: {
               fullName: shippingAddress.fullName,
               phone: shippingAddress.phone,
-              email: shippingAddress.email || undefined,
+              email: userEmail || shippingAddress.email || undefined, // Prioritize Clerk email
               address: shippingAddress.address,
               province: shippingAddress.province,
               district: shippingAddress.district,
@@ -885,39 +898,19 @@ export default function CheckoutPage() {
                             </p>
                           )}
                         </div>
-                        <div className="space-y-2">
-                          <Label
-                            htmlFor="email"
-                            className="text-xs font-light uppercase tracking-wide"
-                          >
-                            Email
-                          </Label>
-                          <Input
-                            id="email"
-                            type="email"
-                            placeholder="example@email.com"
-                            value={shippingAddress.email}
-                            onChange={(e) => {
-                              setShippingAddress({
-                                ...shippingAddress,
-                                email: e.target.value,
-                              });
-                              if (errors.email) {
-                                setErrors({ ...errors, email: "" });
-                              }
-                            }}
-                            className={cn(
-                              "rounded-sm border-2 border-neutral-200 dark:border-neutral-800 focus:border-neutral-900 dark:focus:border-neutral-100 h-12 font-light bg-white dark:bg-gray-900 transition-all duration-300",
-                              errors.email &&
-                                "border-red-500 dark:border-red-500"
-                            )}
-                          />
-                          {errors.email && (
-                            <p className="text-xs text-red-500 font-light">
-                              {errors.email}
-                            </p>
-                          )}
-                        </div>
+                        {/* Email is automatically taken from Clerk user account */}
+                        {userEmail && (
+                          <div className="space-y-2">
+                            <Label className="text-xs font-light uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
+                              Email (từ tài khoản)
+                            </Label>
+                            <Input
+                              disabled
+                              value={userEmail}
+                              className="rounded-sm border-2 border-neutral-200 dark:border-neutral-800 h-12 font-light bg-neutral-50 dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 cursor-not-allowed"
+                            />
+                          </div>
+                        )}
                       </div>
                       <div className="space-y-2">
                         <Label

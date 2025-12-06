@@ -1,6 +1,6 @@
 "use client";
 
-import { X, Plus, Minus, Heart, User, Trash2, ShoppingBag } from "lucide-react";
+import { X, Plus, Minus, Heart, User, Trash2, ShoppingBag, Package } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -16,6 +16,7 @@ import { CartItem } from "@/types";
 import { UserButton, useAuth } from "@clerk/nextjs";
 import { useWishlist } from "@/hooks/use-wishlist";
 import { SearchDropdown } from "./search-dropdown";
+import axios from "axios";
 
 export const NavbarActions: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -23,7 +24,7 @@ export const NavbarActions: React.FC = () => {
   const cart = useCart();
   const router = useRouter();
   const { wishlistItems, setWishlist } = cart;
-  const { isSignedIn } = useAuth();
+  const { isSignedIn, getToken } = useAuth();
   const { getAllWishlistItems } = useWishlist();
   const [syncedWishlistCount, setSyncedWishlistCount] = useState(0);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -47,11 +48,10 @@ export const NavbarActions: React.FC = () => {
 
     const syncWishlist = async () => {
       if (!isSignedIn) {
+        // Khi chưa đăng nhập, hiển thị wishlist từ localStorage
         if (isMounted) {
-          setSyncedWishlistCount(0);
-          if (wishlistItemsRef.current.length > 0) {
-            setWishlist([]);
-          }
+          const localWishlistCount = wishlistItemsRef.current.length;
+          setSyncedWishlistCount(localWishlistCount);
         }
         return;
       }
@@ -60,12 +60,58 @@ export const NavbarActions: React.FC = () => {
 
       setIsSyncing(true);
       try {
+        // Lấy wishlist từ localStorage trước khi sync
+        const localWishlistItems = wishlistItemsRef.current;
+        
+        // Sync wishlist từ localStorage lên server (nếu có)
+        if (localWishlistItems.length > 0) {
+          try {
+            const token = await getToken();
+            if (token) {
+              const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+              if (apiUrl) {
+                const baseUrl = apiUrl.replace(/\/$/, "");
+                // Sync từng item từ localStorage lên server
+                for (const productId of localWishlistItems) {
+                  try {
+                    await axios.post(
+                      `${baseUrl}/api/wishlist`,
+                      {
+                        productId: productId,
+                        action: "add",
+                      },
+                      {
+                        withCredentials: true,
+                        headers: {
+                          Authorization: `Bearer ${token}`,
+                          "Content-Type": "application/json",
+                        },
+                      }
+                    );
+                  } catch (syncError) {
+                    // Ignore errors for individual items
+                    console.warn(`[WISHLIST_SYNC] Failed to sync product ${productId}:`, syncError);
+                  }
+                }
+              }
+            }
+          } catch (syncError) {
+            console.warn("[WISHLIST_SYNC] Error syncing local wishlist to server:", syncError);
+          }
+        }
+
+        // Lấy wishlist từ server
         const serverWishlistItems = await getAllWishlistItems();
 
         if (!isMounted) return;
 
-        // Remove duplicates from server response
-        const uniqueWishlistItems = Array.from(new Set(serverWishlistItems));
+        // Merge local và server wishlist (ưu tiên server)
+        const mergedWishlist = Array.from(
+          new Set([...serverWishlistItems, ...localWishlistItems])
+        );
+        
+        // Remove duplicates from merged list
+        const uniqueWishlistItems = Array.from(new Set(mergedWishlist));
         const newCount = uniqueWishlistItems.length;
         const wishlistKey = uniqueWishlistItems.sort().join(",");
 
@@ -115,6 +161,7 @@ export const NavbarActions: React.FC = () => {
         syncIntervalRef.current = null;
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSignedIn, getAllWishlistItems, setWishlist]);
 
   const handleCheckout = () => {
@@ -123,7 +170,8 @@ export const NavbarActions: React.FC = () => {
     }
     setIsNavigating(true);
     setIsOpen(false);
-    router.push("/cart");
+    // Chuyển thẳng đến checkout, không qua cart page
+    router.push("/checkout");
   };
 
   const totalPrice = cart.items.reduce(
@@ -153,11 +201,9 @@ export const NavbarActions: React.FC = () => {
     toast.success("Đã xóa sản phẩm khỏi giỏ hàng");
   };
 
-  const wishlistCount = isSignedIn
-    ? isSyncing
-      ? syncedWishlistCount
-      : syncedWishlistCount
-    : wishlistItems.length;
+  // Optimistic update: Luôn sử dụng wishlistItems.length để hiển thị ngay lập tức
+  // wishlistItems được cập nhật optimistic khi user bấm yêu thích và được sync từ server
+  const wishlistCount = wishlistItems.length;
 
   // Calculate popover position (prevent overflow on both sides)
   const [popoverPosition, setPopoverPosition] = useState({
@@ -260,6 +306,19 @@ export const NavbarActions: React.FC = () => {
         )}
       </motion.button>
 
+      {/* Orders Icon - Only show if signed in */}
+      {isSignedIn && (
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => router.push("/account/orders")}
+          className="relative p-2 text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-400 transition-colors duration-200 group flex items-center justify-center"
+          aria-label="Đơn hàng của tôi"
+        >
+          <Package className="w-5 h-5" />
+        </motion.button>
+      )}
+
       {/* Cart Icon */}
       <motion.button
         ref={cartButtonRef}
@@ -268,7 +327,7 @@ export const NavbarActions: React.FC = () => {
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          setIsOpen(true);
+          setIsOpen((prev) => !prev);
         }}
         type="button"
         className="relative p-2 text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-400 transition-colors duration-200 group flex items-center justify-center"

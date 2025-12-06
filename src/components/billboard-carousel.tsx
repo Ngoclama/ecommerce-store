@@ -21,18 +21,40 @@ const BillboardCarousel: React.FC<BillboardCarouselProps> = ({
   const [categories, setCategories] = useState<Category[]>([]);
   const router = useRouter();
 
-  // Fetch categories to match with billboards
+  // Debug logging
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const cats = await getCategories();
-        setCategories(cats);
-      } catch (error) {
-        console.error("Error fetching categories:", error);
-      }
-    };
-    fetchCategories();
-  }, []);
+    console.log("[BILLBOARD_CAROUSEL] Received billboards:", {
+      count: billboards?.length || 0,
+      billboards: billboards,
+      firstBillboard: billboards?.[0],
+      hasImageUrl: !!billboards?.[0]?.imageUrl,
+    });
+  }, [billboards]);
+
+  // Fetch categories to match with billboards (lazy load, not blocking render)
+  useEffect(() => {
+    // Only fetch categories if we have billboards with categoryId
+    const needsCategories = billboards.some((b) => b.categoryId);
+    if (!needsCategories) return;
+
+    // Defer category fetch to not block initial render
+    const timeoutId = setTimeout(() => {
+      const fetchCategories = async () => {
+        try {
+          const cats = await getCategories();
+          setCategories(cats);
+        } catch (error) {
+          // Silent fail - categories are not critical for billboard display
+          if (process.env.NODE_ENV === "development") {
+            console.error("[BILLBOARD_CAROUSEL] Error fetching categories:", error);
+          }
+        }
+      };
+      fetchCategories();
+    }, 100); // Small delay to not block initial render
+
+    return () => clearTimeout(timeoutId);
+  }, [billboards]);
 
   // Get category for current billboard
   const getCategoryForBillboard = (
@@ -55,6 +77,20 @@ const BillboardCarousel: React.FC<BillboardCarouselProps> = ({
       router.push(`/category/${category.id}`);
     }
   };
+
+  // Preload next billboard image for smoother transitions
+  useEffect(() => {
+    if (billboards.length <= 1) return;
+    
+    const nextIndex = (currentIndex + 1) % billboards.length;
+    const nextBillboard = billboards[nextIndex];
+    
+    if (nextBillboard?.imageUrl) {
+      // Preload next image
+      const img = new window.Image();
+      img.src = nextBillboard.imageUrl;
+    }
+  }, [currentIndex, billboards]);
 
   // Auto-play carousel
   useEffect(() => {
@@ -106,9 +142,15 @@ const BillboardCarousel: React.FC<BillboardCarouselProps> = ({
             transition={{ duration: 1.2, ease: [0.25, 0.1, 0.25, 1] }}
             className="absolute inset-0"
             style={{
-              background: currentBillboard?.imageUrl
-                ? `url(${currentBillboard.imageUrl}) center/cover`
-                : "linear-gradient(135deg, #fafafa 0%, #ffffff 50%, #fafafa 100%)",
+              backgroundImage: currentBillboard?.imageUrl
+                ? `url(${currentBillboard.imageUrl})`
+                : "none",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
+              backgroundColor: currentBillboard?.imageUrl
+                ? "transparent"
+                : "#fafafa",
             }}
           >
             {/* Luxury Gradient Overlay */}

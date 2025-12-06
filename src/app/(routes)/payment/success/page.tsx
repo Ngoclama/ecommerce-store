@@ -141,7 +141,11 @@ export default function PaymentSuccessPage() {
       setShowConfetti(false);
     }, 6000);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      // Clear particles on unmount to prevent memory leaks
+      setConfettiParticles([]);
+    };
   }, [showConfetti]);
 
   // Handle payment success

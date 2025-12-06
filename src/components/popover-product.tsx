@@ -342,6 +342,11 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
 
   if (!mounted || !isOpen) return null;
 
+  // Check if document.body exists (SSR safety)
+  if (typeof window === "undefined" || !document.body) {
+    return null;
+  }
+
   const hasMultipleImages = images.length > 1;
 
   return createPortal(

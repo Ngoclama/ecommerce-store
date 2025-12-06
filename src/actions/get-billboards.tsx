@@ -16,16 +16,18 @@ const getBillboards = async (): Promise<Billboard[]> => {
     const baseUrl = apiUrl.replace(/\/$/, "");
     const URL = `${baseUrl}/api/billboards`;
 
-    // Log URL for debugging
-    console.log("[BILLBOARDS] API URL:", apiUrl);
-    console.log("[BILLBOARDS] Fetching from:", URL);
+    // Log URL for debugging (only in development)
+    if (process.env.NODE_ENV === "development") {
+      console.log("[BILLBOARDS] Fetching from:", URL);
+    }
 
-    // Add timeout to prevent hanging
+    // Reduced timeout for faster failure and retry
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout (reduced from 10s)
 
+    // Use cache with revalidation for better performance
     const res = await fetch(URL, {
-      cache: "no-store",
+      next: { revalidate: 60 }, // Cache for 60 seconds
       signal: controller.signal,
       headers: {
         "Content-Type": "application/json",

@@ -101,14 +101,25 @@ export function PageLoadingOverlay() {
       }
 
       // Minimum loading time for smooth UX (400ms)
+      // Maximum loading time to prevent infinite loading (10s)
+      const minLoadingTime = 400;
+      const maxLoadingTime = 10000; // 10 seconds max
+
       loadingTimeoutRef.current = setTimeout(() => {
         setIsLoading(false);
-      }, 400);
+      }, minLoadingTime);
+
+      // Safety timeout: force hide loading after max time
+      const maxTimeout = setTimeout(() => {
+        console.warn("[PageLoadingOverlay] Loading timeout - forcing hide");
+        setIsLoading(false);
+      }, maxLoadingTime);
 
       return () => {
         if (loadingTimeoutRef.current) {
           clearTimeout(loadingTimeoutRef.current);
         }
+        clearTimeout(maxTimeout);
       };
     }
   }, [pathname]);

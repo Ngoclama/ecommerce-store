@@ -15,13 +15,7 @@ export const useWishlist = () => {
 
   const toggleWishlist = useCallback(
     async (productId: string) => {
-      // Kiểm tra authentication
-      if (!isSignedIn) {
-        toast.error("Vui lòng đăng nhập để thêm vào danh sách yêu thích.");
-        return;
-      }
-
-      // OPTIMISTIC UPDATE: Cập nhật UI ngay lập tức
+      // OPTIMISTIC UPDATE: Cập nhật UI ngay lập tức (hoạt động cho cả guest và authenticated)
       const isCurrentlyLiked = wishlistItems.includes(productId);
       const newIsLiked = !isCurrentlyLiked;
 
@@ -31,6 +25,11 @@ export const useWishlist = () => {
       } else {
         removeFromWishlist(productId);
         toast.success("Đã xóa khỏi danh sách yêu thích.");
+      }
+
+      // Nếu chưa đăng nhập, chỉ lưu vào localStorage (đã được handle bởi useCart persist)
+      if (!isSignedIn) {
+        return;
       }
 
       try {
@@ -116,7 +115,10 @@ export const useWishlist = () => {
 
   const isItemInWishlist = useCallback(
     async (productId: string): Promise<boolean> => {
-      if (!isSignedIn) return false;
+      // Nếu chưa đăng nhập, check từ localStorage (wishlistItems từ useCart)
+      if (!isSignedIn) {
+        return wishlistItems.includes(productId);
+      }
 
       try {
         const token = await getToken();

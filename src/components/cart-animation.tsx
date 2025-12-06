@@ -34,37 +34,54 @@ export const CartAnimation: React.FC<CartAnimationProps> = ({
   useEffect(() => {
     if (!fromElement || !toElement || !mounted) return;
 
+    let rafId1: number | null = null;
+    let rafId2: number | null = null;
+
     // Sử dụng requestAnimationFrame để đảm bảo DOM đã render xong
     const updatePositions = () => {
-      const fromRect = fromElement.getBoundingClientRect();
-      const toRect = toElement.getBoundingClientRect();
+      // Check if elements still exist (they might be removed during animation)
+      if (!fromElement || !toElement) return;
 
-      const startPos = {
-        x: fromRect.left + fromRect.width / 2,
-        y: fromRect.top + fromRect.height / 2,
-      };
-      const endPos = {
-        x: toRect.left + toRect.width / 2,
-        y: toRect.top + toRect.height / 2,
-      };
+      try {
+        const fromRect = fromElement.getBoundingClientRect();
+        const toRect = toElement.getBoundingClientRect();
 
-      if (process.env.NODE_ENV === "development") {
-        console.log("[CartAnimation] Positions calculated", {
-          startPos,
-          endPos,
+        const startPos = {
+          x: fromRect.left + fromRect.width / 2,
+          y: fromRect.top + fromRect.height / 2,
+        };
+        const endPos = {
+          x: toRect.left + toRect.width / 2,
+          y: toRect.top + toRect.height / 2,
+        };
+
+        if (process.env.NODE_ENV === "development") {
+          console.log("[CartAnimation] Positions calculated", {
+            startPos,
+            endPos,
+          });
+        }
+
+        setPositions({
+          start: startPos,
+          end: endPos,
         });
+      } catch (error) {
+        // Elements might have been removed from DOM
+        console.warn("[CartAnimation] Error calculating positions:", error);
       }
-
-      setPositions({
-        start: startPos,
-        end: endPos,
-      });
     };
 
     // Sử dụng requestAnimationFrame để đảm bảo layout đã được tính toán
-    requestAnimationFrame(() => {
-      requestAnimationFrame(updatePositions);
+    rafId1 = requestAnimationFrame(() => {
+      rafId2 = requestAnimationFrame(updatePositions);
     });
+
+    // Cleanup function
+    return () => {
+      if (rafId1 !== null) cancelAnimationFrame(rafId1);
+      if (rafId2 !== null) cancelAnimationFrame(rafId2);
+    };
   }, [fromElement, toElement, mounted]);
 
   if (!mounted || !fromElement || !toElement || !positions) {
@@ -76,6 +93,11 @@ export const CartAnimation: React.FC<CartAnimationProps> = ({
         hasPositions: !!positions,
       });
     }
+    return null;
+  }
+
+  // Check if document.body exists (SSR safety)
+  if (typeof window === "undefined" || !document.body) {
     return null;
   }
 
