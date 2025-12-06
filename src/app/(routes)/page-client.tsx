@@ -45,6 +45,15 @@ const HomePageClient: React.FC<HomePageClientProps> = ({
   const pathname = usePathname();
   const [mountedKey, setMountedKey] = React.useState(0);
 
+  // Log billboards for debugging
+  useEffect(() => {
+    console.log("[HOMEPAGE_CLIENT] Billboards received:", {
+      count: billboards?.length || 0,
+      billboards: billboards,
+      isArray: Array.isArray(billboards),
+    });
+  }, [billboards]);
+
   // Force refresh data when navigating to home page
   useEffect(() => {
     if (pathname === "/") {
@@ -87,7 +96,7 @@ const HomePageClient: React.FC<HomePageClientProps> = ({
         style={{ opacity, scale }}
         className="relative w-full min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-neutral-50 via-white to-neutral-50 dark:from-neutral-950 dark:via-gray-900 dark:to-neutral-950"
       >
-        {billboards && billboards.length > 0 ? (
+        {billboards && Array.isArray(billboards) && billboards.length > 0 ? (
           <div className="w-full h-full">
             <BillboardCarousel billboards={billboards} />
           </div>

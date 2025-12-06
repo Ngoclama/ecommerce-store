@@ -6,6 +6,9 @@ const getBillboards = async (): Promise<Billboard[]> => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     if (!apiUrl) {
       console.error("[BILLBOARDS] NEXT_PUBLIC_API_URL is not configured");
+      console.error(
+        "[BILLBOARDS] Please set NEXT_PUBLIC_API_URL in your .env.local file"
+      );
       return [];
     }
 
@@ -13,11 +16,9 @@ const getBillboards = async (): Promise<Billboard[]> => {
     const baseUrl = apiUrl.replace(/\/$/, "");
     const URL = `${baseUrl}/api/billboards`;
 
-    // Log URL in development for debugging
-    if (process.env.NODE_ENV === "development") {
-      console.log("[BILLBOARDS] API URL:", apiUrl);
-      console.log("[BILLBOARDS] Fetching from:", URL);
-    }
+    // Log URL for debugging
+    console.log("[BILLBOARDS] API URL:", apiUrl);
+    console.log("[BILLBOARDS] Fetching from:", URL);
 
     // Add timeout to prevent hanging
     const controller = new AbortController();
@@ -37,12 +38,32 @@ const getBillboards = async (): Promise<Billboard[]> => {
       console.error(
         `[BILLBOARDS] Failed to fetch: ${res.status} ${res.statusText}`
       );
+      console.error(`[BILLBOARDS] Response URL: ${res.url}`);
+      const text = await res.text();
+      console.error(`[BILLBOARDS] Response body:`, text.substring(0, 200));
       return [];
     }
 
     const data = await res.json();
+    console.log("[BILLBOARDS] Received data:", {
+      isArray: Array.isArray(data),
+      length: Array.isArray(data) ? data.length : data?.data?.length || 0,
+      firstItem: Array.isArray(data) ? data[0] : data?.data?.[0],
+    });
+
     // Handle both array response and { data: [...] } response
-    return Array.isArray(data) ? data : data.data || [];
+    const billboards = Array.isArray(data) ? data : data.data || [];
+    console.log(`[BILLBOARDS] Returning ${billboards.length} billboards`);
+
+    if (billboards.length > 0) {
+      console.log("[BILLBOARDS] First billboard:", {
+        id: billboards[0].id,
+        label: billboards[0].label,
+        hasImage: !!billboards[0].imageUrl,
+      });
+    }
+
+    return billboards;
   } catch (error: any) {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     if (error.name === "AbortError") {
@@ -69,6 +90,8 @@ const getBillboards = async (): Promise<Billboard[]> => {
       console.error("[BILLBOARDS] Error:", error.message);
     } else {
       console.error("[BILLBOARDS] Error fetching billboards:", error);
+      console.error("[BILLBOARDS] Error name:", error.name);
+      console.error("[BILLBOARDS] Error message:", error.message);
       console.error("[BILLBOARDS] API URL:", apiUrl || "NOT CONFIGURED");
     }
     return [];
