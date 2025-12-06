@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import BillboardCarousel from "@/components/billboard-carousel";
 import ProductList from "@/components/product-list";
@@ -22,6 +22,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
 import { Billboard, Category, Product } from "@/types";
 import { cn } from "@/lib/utils";
 
@@ -40,6 +41,20 @@ const HomePageClient: React.FC<HomePageClientProps> = ({
   latestProducts,
   topSellers,
 }) => {
+  const router = useRouter();
+  const pathname = usePathname();
+  const [mountedKey, setMountedKey] = React.useState(0);
+
+  // Force refresh data when navigating to home page
+  useEffect(() => {
+    if (pathname === "/") {
+      // Increment key to force re-render of animations
+      setMountedKey((prev) => prev + 1);
+      // Refresh router to ensure fresh data on client-side navigation
+      router.refresh();
+    }
+  }, [pathname, router]);
+
   // Generate random values for particles (once on mount)
   const particles = React.useMemo(
     () =>
@@ -61,9 +76,13 @@ const HomePageClient: React.FC<HomePageClientProps> = ({
   const scale = useTransform(scrollYProgress, [0, 0.5], [1, 1.1]);
 
   return (
-    <div className="bg-white dark:bg-gray-900 min-h-screen overflow-hidden">
+    <div
+      key={mountedKey}
+      className="bg-white dark:bg-gray-900 min-h-screen overflow-hidden"
+    >
       {/* Luxury Hero Section with Parallax */}
       <motion.section
+        key={`hero-${mountedKey}`}
         ref={heroRef}
         style={{ opacity, scale }}
         className="relative w-full min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-neutral-50 via-white to-neutral-50 dark:from-neutral-950 dark:via-gray-900 dark:to-neutral-950"
@@ -139,9 +158,10 @@ const HomePageClient: React.FC<HomePageClientProps> = ({
             delay={0.1}
           >
             <motion.div
+              key={`categories-${mountedKey}`}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
+              viewport={{ once: false, margin: "-100px" }}
               transition={{ duration: 0.8 }}
             >
               <CategoryList items={categories} />
@@ -171,9 +191,10 @@ const HomePageClient: React.FC<HomePageClientProps> = ({
               }
             >
               <motion.div
+                key={`featured-${mountedKey}`}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
+                viewport={{ once: false, margin: "-100px" }}
                 transition={{ duration: 0.8, delay: 0.2 }}
               >
                 <ProductList title="" items={featuredProducts.slice(0, 10)} />
@@ -203,9 +224,10 @@ const HomePageClient: React.FC<HomePageClientProps> = ({
               }
             >
               <motion.div
+                key={`latest-${mountedKey}`}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
+                viewport={{ once: false, margin: "-100px" }}
                 transition={{ duration: 0.8, delay: 0.2 }}
               >
                 <ProductList title="" items={latestProducts} />
@@ -224,9 +246,10 @@ const HomePageClient: React.FC<HomePageClientProps> = ({
             bgVariant="light"
           >
             <motion.div
+              key={`topsellers-${mountedKey}`}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
+              viewport={{ once: false, margin: "-100px" }}
               transition={{ duration: 0.8, delay: 0.2 }}
             >
               <ProductList title="" items={topSellers} />
@@ -247,7 +270,7 @@ const HomePageClient: React.FC<HomePageClientProps> = ({
 // Luxury Trust Section Component
 const LuxuryTrustSection = () => {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
+  const isInView = useInView(sectionRef, { once: false, margin: "-100px" });
 
   const features = [
     {
@@ -360,7 +383,7 @@ const LuxurySection: React.FC<LuxurySectionProps> = ({
   children,
 }) => {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
+  const isInView = useInView(sectionRef, { once: false, margin: "-100px" });
 
   return (
     <motion.section
@@ -457,7 +480,7 @@ const LuxurySection: React.FC<LuxurySectionProps> = ({
 // Luxury Why Choose Us Component
 const LuxuryWhyChooseUs = () => {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
+  const isInView = useInView(sectionRef, { once: false, margin: "-100px" });
 
   const benefits = [
     {
@@ -563,7 +586,7 @@ const LuxuryWhyChooseUs = () => {
 // Luxury Newsletter Component
 const LuxuryNewsletter = () => {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
+  const isInView = useInView(sectionRef, { once: false, margin: "-100px" });
 
   return (
     <motion.section

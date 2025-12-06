@@ -4,7 +4,10 @@ import getCategories from "@/actions/get-categories";
 import HomePageClient from "./page-client";
 
 // Always fetch fresh data to avoid F5 issues
+// Disable caching completely for home page to ensure data is always fresh
 export const revalidate = 0;
+export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 
 const HomePage = async () => {
   // Fetch data in parallel with timeout protection
@@ -20,18 +23,20 @@ const HomePage = async () => {
   const featuredProductsResult =
     results[1].status === "fulfilled" ? results[1].value : [];
   const categories = results[2].status === "fulfilled" ? results[2].value : [];
-  const newProductsResult = results[3].status === "fulfilled" ? results[3].value : [];
-  const bestSellersResult = results[4].status === "fulfilled" ? results[4].value : [];
+  const newProductsResult =
+    results[3].status === "fulfilled" ? results[3].value : [];
+  const bestSellersResult =
+    results[4].status === "fulfilled" ? results[4].value : [];
 
   // Handle different return types from getProducts
-  const featuredProducts = Array.isArray(featuredProductsResult) 
-    ? featuredProductsResult 
+  const featuredProducts = Array.isArray(featuredProductsResult)
+    ? featuredProductsResult
     : featuredProductsResult?.products || [];
-  const newProducts = Array.isArray(newProductsResult) 
-    ? newProductsResult 
+  const newProducts = Array.isArray(newProductsResult)
+    ? newProductsResult
     : newProductsResult?.products || [];
-  const bestSellers = Array.isArray(bestSellersResult) 
-    ? bestSellersResult 
+  const bestSellers = Array.isArray(bestSellersResult)
+    ? bestSellersResult
     : bestSellersResult?.products || [];
 
   // Get latest products
