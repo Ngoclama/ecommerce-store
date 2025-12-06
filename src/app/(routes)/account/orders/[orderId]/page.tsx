@@ -419,11 +419,27 @@ export default function OrderDetailPage() {
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Không thể hủy đơn hàng");
+        // Try to parse JSON error response
+        let errorMessage = "Không thể hủy đơn hàng";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorData.error || errorMessage;
+        } catch (parseError) {
+          // If response is not JSON, try to get text
+          try {
+            const text = await response.text();
+            errorMessage = text || errorMessage;
+          } catch (textError) {
+            // Fallback to default message
+            console.error("[CANCEL_ORDER] Failed to parse error response:", textError);
+          }
+        }
+        throw new Error(errorMessage);
       }
 
-      toast.success("Đã hủy đơn hàng thành công");
+      // Parse success response
+      const data = await response.json();
+      toast.success(data.message || "Đã hủy đơn hàng thành công");
       // Refresh order
       router.refresh();
       router.push("/account/orders");

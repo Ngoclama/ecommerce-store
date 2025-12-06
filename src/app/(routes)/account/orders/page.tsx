@@ -148,7 +148,9 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<string | null>(null);
-  const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
+  const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(
+    null
+  );
   const headerRef = useRef(null);
   const isHeaderInView = useInView(headerRef, { once: true, amount: 0.3 });
 
@@ -158,18 +160,20 @@ export default function OrdersPage() {
   // Fetch orders with improved retry logic and error handling
   const fetchOrders = useCallback(
     async (forceRefresh = false, retryCount = 0) => {
-      if (!isSignedIn) {
-        setLoading(false);
-        return;
-      }
+      // Don't check isSignedIn here - let the API handle authentication
+      // This prevents race conditions where isSignedIn might not be updated yet
 
       try {
         setLoading(true);
 
         // Check cache first (skip if force refresh)
         const cacheKey = "orders_cache";
-        const cachedData = !forceRefresh ? sessionStorage.getItem(cacheKey) : null;
-        const cacheTime = !forceRefresh ? sessionStorage.getItem(`${cacheKey}_time`) : null;
+        const cachedData = !forceRefresh
+          ? sessionStorage.getItem(cacheKey)
+          : null;
+        const cacheTime = !forceRefresh
+          ? sessionStorage.getItem(`${cacheKey}_time`)
+          : null;
 
         if (cachedData && cacheTime) {
           const age = Date.now() - parseInt(cacheTime);
@@ -178,7 +182,7 @@ export default function OrdersPage() {
             const parsedData = JSON.parse(cachedData);
             setOrders(parsedData);
             setLoading(false);
-            
+
             // Fetch in background to update
             fetch("/api/orders", { cache: "no-store" })
               .then((res) => {
@@ -194,8 +198,14 @@ export default function OrdersPage() {
                 if (Array.isArray(ordersData)) {
                   setOrders(ordersData);
                   try {
-                    sessionStorage.setItem(cacheKey, JSON.stringify(ordersData));
-                    sessionStorage.setItem(`${cacheKey}_time`, Date.now().toString());
+                    sessionStorage.setItem(
+                      cacheKey,
+                      JSON.stringify(ordersData)
+                    );
+                    sessionStorage.setItem(
+                      `${cacheKey}_time`,
+                      Date.now().toString()
+                    );
                   } catch (e) {
                     // Silent fail
                   }
@@ -216,7 +226,9 @@ export default function OrdersPage() {
           sessionStorage.removeItem(`${cacheKey}_time`);
         }
 
-        console.log(`[ORDERS_FETCH] Fetching orders (attempt ${retryCount + 1})...`);
+        console.log(
+          `[ORDERS_FETCH] Fetching orders (attempt ${retryCount + 1})...`
+        );
 
         // Fetch with retry logic - reduced timeout for faster response
         const controller = new AbortController();
@@ -236,17 +248,38 @@ export default function OrdersPage() {
         if (!response.ok) {
           // Handle 503 - retry
           if (response.status === 503 && retryCount < 3) {
-            console.log(`[ORDERS_FETCH] 503 Service Unavailable, retrying (${retryCount + 1}/3)...`);
-            await new Promise((resolve) => setTimeout(resolve, 2000 * (retryCount + 1)));
+            console.log(
+              `[ORDERS_FETCH] 503 Service Unavailable, retrying (${
+                retryCount + 1
+              }/3)...`
+            );
+            await new Promise((resolve) =>
+              setTimeout(resolve, 2000 * (retryCount + 1))
+            );
             return fetchOrders(forceRefresh, retryCount + 1);
           }
 
           const errorData = await response.json().catch(() => ({}));
-          const errorMessage = errorData?.message || `HTTP ${response.status}: ${response.statusText}`;
+          const errorMessage =
+            errorData?.message ||
+            `HTTP ${response.status}: ${response.statusText}`;
 
           if (response.status === 401) {
-            toast.error("Vui lòng đăng nhập để xem đơn hàng");
-            router.push("/sign-in");
+            // Only show toast and redirect if user is actually not signed in
+            // This prevents showing error when there's a temporary auth issue
+            if (!isSignedIn) {
+              toast.error("Vui lòng đăng nhập để xem đơn hàng");
+              router.push("/sign-in");
+            } else {
+              // User is signed in but got 401 - might be token issue
+              console.warn(
+                "[ORDERS_FETCH] 401 but user is signed in - possible token issue"
+              );
+              toast.error(
+                "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại."
+              );
+              // Don't redirect immediately, let user try again
+            }
             return;
           }
 
@@ -254,13 +287,15 @@ export default function OrdersPage() {
         }
 
         const data = await response.json();
-        
+
         // Handle both array and object response
         const ordersData: Order[] = Array.isArray(data)
           ? data
           : data?.data || data?.orders || [];
 
-        console.log(`[ORDERS_FETCH] Successfully fetched ${ordersData.length} orders`);
+        console.log(
+          `[ORDERS_FETCH] Successfully fetched ${ordersData.length} orders`
+        );
 
         if (!Array.isArray(ordersData)) {
           console.warn("[ORDERS_FETCH] Invalid data format:", data);
@@ -295,8 +330,12 @@ export default function OrdersPage() {
             error?.message?.includes("ECONNREFUSED") ||
             error?.message?.includes("fetch failed"))
         ) {
-          console.log(`[ORDERS_FETCH] Network error, retrying (${retryCount + 1}/3)...`);
-          await new Promise((resolve) => setTimeout(resolve, 2000 * (retryCount + 1)));
+          console.log(
+            `[ORDERS_FETCH] Network error, retrying (${retryCount + 1}/3)...`
+          );
+          await new Promise((resolve) =>
+            setTimeout(resolve, 2000 * (retryCount + 1))
+          );
           return fetchOrders(forceRefresh, retryCount + 1);
         }
 
@@ -305,10 +344,23 @@ export default function OrdersPage() {
           error?.message ||
           "Không thể tải danh sách đơn hàng. Vui lòng thử lại sau.";
 
-        if (errorMessage.includes("401") || errorMessage.includes("Unauthenticated")) {
-          toast.error("Vui lòng đăng nhập để xem đơn hàng");
-          router.push("/sign-in");
-        } else if (errorMessage.includes("503") || errorMessage.includes("timeout")) {
+        if (
+          errorMessage.includes("401") ||
+          errorMessage.includes("Unauthenticated")
+        ) {
+          // Only show toast and redirect if user is actually not signed in
+          if (!isSignedIn) {
+            toast.error("Vui lòng đăng nhập để xem đơn hàng");
+            router.push("/sign-in");
+          } else {
+            // User is signed in but got auth error - might be token issue
+            console.warn("[ORDERS_FETCH] Auth error but user is signed in");
+            toast.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+          }
+        } else if (
+          errorMessage.includes("503") ||
+          errorMessage.includes("timeout")
+        ) {
           toast.error("Không thể kết nối đến server. Vui lòng thử lại sau.");
         } else {
           toast.error(errorMessage);
@@ -468,25 +520,49 @@ export default function OrdersPage() {
         return;
       }
 
-      const response = await fetch(`${apiUrl.replace(/\/$/, "")}/api/orders/${orderId}/cancel`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-      });
+      const response = await fetch(
+        `${apiUrl.replace(/\/$/, "")}/api/orders/${orderId}/cancel`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Không thể hủy đơn hàng");
+        // Try to parse JSON error response
+        let errorMessage = "Không thể hủy đơn hàng";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorData.error || errorMessage;
+        } catch (parseError) {
+          // If response is not JSON, try to get text
+          try {
+            const text = await response.text();
+            errorMessage = text || errorMessage;
+          } catch (textError) {
+            // Fallback to default message
+            console.error(
+              "[CANCEL_ORDER] Failed to parse error response:",
+              textError
+            );
+          }
+        }
+        throw new Error(errorMessage);
       }
 
-      toast.success("Đã hủy đơn hàng thành công");
+      // Parse success response
+      const data = await response.json();
+      toast.success(data.message || "Đã hủy đơn hàng thành công");
       // Refresh orders
       fetchOrders(true);
     } catch (error: any) {
       console.error("[CANCEL_ORDER_ERROR]", error);
-      toast.error(error.message || "Không thể hủy đơn hàng. Vui lòng thử lại sau.");
+      toast.error(
+        error.message || "Không thể hủy đơn hàng. Vui lòng thử lại sau."
+      );
     } finally {
       setCancellingOrderId(null);
     }
@@ -960,19 +1036,13 @@ export default function OrdersPage() {
                               </div>
                             )}
                           </div>
-                          <Button
-                            asChild
-                            variant="outline"
-                            className="rounded-sm border-2 border-neutral-200 dark:border-neutral-800 hover:border-neutral-900 dark:hover:border-neutral-100 px-6 py-2.5 font-light uppercase tracking-[0.15em] transition-all duration-300 group/btn"
+                          <Link
+                            href={`/account/orders/${order.id}`}
+                            className="inline-flex items-center justify-center gap-2 rounded-sm border-2 border-neutral-200 dark:border-neutral-800 hover:border-neutral-900 dark:hover:border-neutral-100 px-6 py-2.5 font-light uppercase tracking-[0.15em] transition-all duration-300 group/btn text-neutral-900 dark:text-neutral-100 hover:bg-neutral-50 dark:hover:bg-neutral-900"
                           >
-                            <Link
-                              href={`/account/orders/${order.id}`}
-                              className="flex items-center gap-2"
-                            >
-                              <Eye className="w-4 h-4 transition-transform duration-300 group-hover/btn:translate-x-1" />
-                              Xem chi tiết
-                            </Link>
-                          </Button>
+                            <Eye className="w-4 h-4 transition-transform duration-300 group-hover/btn:translate-x-1" />
+                            Xem chi tiết
+                          </Link>
                         </div>
 
                         {/* Action Buttons */}
@@ -1000,21 +1070,23 @@ export default function OrdersPage() {
                           )}
 
                           {/* Track Order Button */}
-                          {order.trackingNumber && order.status !== "DELIVERED" && order.status !== "CANCELLED" && (
-                            <Button
-                              variant="outline"
-                              asChild
-                              className="rounded-sm border-2 border-blue-200 dark:border-blue-800 hover:border-blue-600 dark:hover:border-blue-400 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/20 px-4 py-2 text-xs font-light uppercase tracking-[0.15em] transition-all duration-300"
-                            >
-                              <Link
-                                href={`/account/orders/${order.id}#tracking`}
-                                className="flex items-center gap-2"
+                          {order.trackingNumber &&
+                            order.status !== "DELIVERED" &&
+                            order.status !== "CANCELLED" && (
+                              <Button
+                                variant="outline"
+                                asChild
+                                className="rounded-sm border-2 border-blue-200 dark:border-blue-800 hover:border-blue-600 dark:hover:border-blue-400 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/20 px-4 py-2 text-xs font-light uppercase tracking-[0.15em] transition-all duration-300"
                               >
-                                <Truck className="w-3.5 h-3.5" />
-                                Theo dõi đơn hàng
-                              </Link>
-                            </Button>
-                          )}
+                                <Link
+                                  href={`/account/orders/${order.id}#tracking`}
+                                  className="flex items-center gap-2"
+                                >
+                                  <Truck className="w-3.5 h-3.5" />
+                                  Theo dõi đơn hàng
+                                </Link>
+                              </Button>
+                            )}
 
                           {/* Review Products Button */}
                           {canReviewOrder(order) && (

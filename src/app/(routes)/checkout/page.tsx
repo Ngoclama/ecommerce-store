@@ -225,32 +225,14 @@ export default function CheckoutPage() {
     if (paymentCanceled) {
       hasProcessedPayment.current = true;
       const orderId = searchParams?.get("orderId");
+      const method = searchParams?.get("method") || "stripe";
       
-      // Delete order if payment was cancelled
+      // Redirect to payment failure page
       if (orderId) {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-        if (apiUrl) {
-          // Use [id] instead of [orderId] to match route structure
-          fetch(`${apiUrl.replace(/\/$/, "")}/api/orders/${orderId}/cancel-payment`, {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          })
-            .then((res) => res.json())
-            .then((data) => {
-              if (data.deleted) {
-                console.log("[CHECKOUT] Order deleted after payment cancellation:", orderId);
-              }
-            })
-            .catch((error) => {
-              console.error("[CHECKOUT] Error deleting order:", error);
-              // Don't show error to user, just log it
-            });
-        }
+        router.push(`/payment/failure?orderId=${orderId}&method=${method}&reason=cancelled`);
+      } else {
+        router.push(`/payment/failure?method=${method}&reason=cancelled`);
       }
-      
-      toast.error("Thanh toán đã bị hủy. Vui lòng thử lại.");
     }
   }, [paymentSuccess, paymentCanceled, momoPayment, cart, router]);
 
@@ -924,19 +906,7 @@ export default function CheckoutPage() {
                             </p>
                           )}
                         </div>
-                        {/* Email is automatically taken from Clerk user account */}
-                        {userEmail && (
-                          <div className="space-y-2">
-                            <Label className="text-xs font-light uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
-                              Email (từ tài khoản)
-                            </Label>
-                            <Input
-                              disabled
-                              value={userEmail}
-                              className="rounded-sm border-2 border-neutral-200 dark:border-neutral-800 h-12 font-light bg-neutral-50 dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 cursor-not-allowed"
-                            />
-                          </div>
-                        )}
+                        {/* Email is automatically taken from Clerk user account - Hidden from UI */}
                       </div>
                       <div className="space-y-2">
                         <Label

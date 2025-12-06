@@ -59,11 +59,20 @@ export function PageLoadingOverlay() {
       const link = target.closest("a");
 
       if (link && link.href) {
-        const url = new URL(link.href);
-        // Only show loading for internal navigation
-        if (url.origin === window.location.origin) {
-          setIsLoading(true);
-          setPageName(getPageName(url.pathname));
+        // Check if link is disabled or has preventDefault
+        if (link.hasAttribute("disabled") || link.getAttribute("aria-disabled") === "true") {
+          return;
+        }
+
+        try {
+          const url = new URL(link.href);
+          // Only show loading for internal navigation
+          if (url.origin === window.location.origin) {
+            setIsLoading(true);
+            setPageName(getPageName(url.pathname));
+          }
+        } catch (error) {
+          // Invalid URL, ignore
         }
       }
     };
@@ -73,11 +82,12 @@ export function PageLoadingOverlay() {
       setIsLoading(true);
     };
 
-    document.addEventListener("click", handleLinkClick);
+    // Use capture phase to catch clicks early, but don't prevent default
+    document.addEventListener("click", handleLinkClick, true);
     window.addEventListener("beforeunload", handleNavigationStart);
 
     return () => {
-      document.removeEventListener("click", handleLinkClick);
+      document.removeEventListener("click", handleLinkClick, true);
       window.removeEventListener("beforeunload", handleNavigationStart);
       if (loadingTimeoutRef.current) {
         clearTimeout(loadingTimeoutRef.current);
