@@ -224,6 +224,32 @@ export default function CheckoutPage() {
 
     if (paymentCanceled) {
       hasProcessedPayment.current = true;
+      const orderId = searchParams?.get("orderId");
+      
+      // Delete order if payment was cancelled
+      if (orderId) {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+        if (apiUrl) {
+          // Use [id] instead of [orderId] to match route structure
+          fetch(`${apiUrl.replace(/\/$/, "")}/api/orders/${orderId}/cancel-payment`, {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              if (data.deleted) {
+                console.log("[CHECKOUT] Order deleted after payment cancellation:", orderId);
+              }
+            })
+            .catch((error) => {
+              console.error("[CHECKOUT] Error deleting order:", error);
+              // Don't show error to user, just log it
+            });
+        }
+      }
+      
       toast.error("Thanh toán đã bị hủy. Vui lòng thử lại.");
     }
   }, [paymentSuccess, paymentCanceled, momoPayment, cart, router]);
