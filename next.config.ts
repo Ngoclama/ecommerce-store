@@ -23,6 +23,10 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "img.clerk.com" },
       { protocol: "https", hostname: "images.clerk.dev" },
       { protocol: "https", hostname: "**.googleusercontent.com" },
+      { protocol: "https", hostname: "file.hstatic.net" },
+      { protocol: "https", hostname: "**.hstatic.net" },
+      { protocol: "https", hostname: "sakurafashion.vn" },
+      { protocol: "http", hostname: "sakurafashion.vn" },
     ],
   },
 
