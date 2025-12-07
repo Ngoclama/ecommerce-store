@@ -10,17 +10,13 @@ export function useNavigationLoading() {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    // Clear any existing timeout
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
 
-    // Set loading state after navigation
-    // Use requestAnimationFrame to defer state update
     const rafId = requestAnimationFrame(() => {
       setIsLoading(true);
 
-      // Clear loading after a short delay
       timeoutRef.current = setTimeout(() => {
         setIsLoading(false);
       }, 100);

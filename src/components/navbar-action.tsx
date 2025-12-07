@@ -1,6 +1,15 @@
 "use client";
 
-import { X, Plus, Minus, Heart, User, Trash2, ShoppingBag, Package } from "lucide-react";
+import {
+  X,
+  Plus,
+  Minus,
+  Heart,
+  User,
+  Trash2,
+  ShoppingBag,
+  Package,
+} from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -48,12 +57,10 @@ export const NavbarActions: React.FC = () => {
   const prevUserIdRef = useRef<string | null>(null);
   const hasClearedOnUserChangeRef = useRef(false);
 
-  // Clear cart and wishlist when user changes
   useEffect(() => {
     const currentUserId = userId || null;
     const prevUserId = prevUserIdRef.current;
 
-    // If user changed (logged in different account or logged out)
     if (prevUserId !== null && prevUserId !== currentUserId) {
       console.log("[USER_CHANGE] User changed, clearing cart and wishlist", {
         prevUserId,
@@ -62,10 +69,9 @@ export const NavbarActions: React.FC = () => {
 
       // Clear cart
       cart.removeAll();
-      
-      // Clear wishlist
+
       setWishlist([]);
-      
+
       // Clear localStorage for cart/wishlist
       try {
         localStorage.removeItem("ecommerce-cart-wishlist-storage");
@@ -74,14 +80,11 @@ export const NavbarActions: React.FC = () => {
         console.warn("[USER_CHANGE] Failed to clear localStorage", e);
       }
 
-      // Mark that we've cleared data for this user change
       hasClearedOnUserChangeRef.current = true;
     } else if (prevUserId === null && currentUserId !== null) {
-      // First time login (not a user change, but initial login)
       hasClearedOnUserChangeRef.current = false;
     }
 
-    // Update previous userId
     prevUserIdRef.current = currentUserId;
   }, [userId, cart, setWishlist]);
 
@@ -110,7 +113,9 @@ export const NavbarActions: React.FC = () => {
 
         // Nếu đã clear data do đổi user, CHỈ dùng server data (không sync local)
         if (hasClearedOnUserChangeRef.current) {
-          console.log("[WISHLIST_SYNC] User changed detected, using only server data");
+          console.log(
+            "[WISHLIST_SYNC] User changed detected, using only server data"
+          );
           const uniqueWishlistItems = Array.from(new Set(serverWishlistItems));
           const newCount = uniqueWishlistItems.length;
           const wishlistKey = uniqueWishlistItems.sort().join(",");
@@ -119,7 +124,9 @@ export const NavbarActions: React.FC = () => {
             setSyncedWishlistCount(newCount);
             lastSyncRef.current = wishlistKey;
 
-            const currentWishlistKey = wishlistItemsRef.current.sort().join(",");
+            const currentWishlistKey = wishlistItemsRef.current
+              .sort()
+              .join(",");
 
             if (wishlistKey !== currentWishlistKey) {
               if (uniqueWishlistItems.length > 0) {
@@ -144,7 +151,10 @@ export const NavbarActions: React.FC = () => {
 
         // Sync các items chưa có trong server (chỉ khi first login, không phải đổi user)
         if (itemsToSync.length > 0) {
-          console.log("[WISHLIST_SYNC] Syncing local items to server:", itemsToSync.length);
+          console.log(
+            "[WISHLIST_SYNC] Syncing local items to server:",
+            itemsToSync.length
+          );
           try {
             const token = await getToken();
             if (token) {
@@ -168,13 +178,18 @@ export const NavbarActions: React.FC = () => {
                       }
                     );
                   } catch (syncError) {
-                    console.warn(`[WISHLIST_SYNC] Failed to sync product ${productId}:`, syncError);
+                    console.warn(
+                      `[WISHLIST_SYNC] Failed to sync product ${productId}:`,
+                      syncError
+                    );
                   }
                 }
                 // Re-fetch after syncing
                 const updatedServerWishlist = await getAllWishlistItems();
-                const finalWishlistItems = Array.from(new Set(updatedServerWishlist));
-                
+                const finalWishlistItems = Array.from(
+                  new Set(updatedServerWishlist)
+                );
+
                 const newCount = finalWishlistItems.length;
                 const wishlistKey = finalWishlistItems.sort().join(",");
 
@@ -182,7 +197,9 @@ export const NavbarActions: React.FC = () => {
                   setSyncedWishlistCount(newCount);
                   lastSyncRef.current = wishlistKey;
 
-                  const currentWishlistKey = wishlistItemsRef.current.sort().join(",");
+                  const currentWishlistKey = wishlistItemsRef.current
+                    .sort()
+                    .join(",");
 
                   if (wishlistKey !== currentWishlistKey) {
                     if (finalWishlistItems.length > 0) {
@@ -196,7 +213,10 @@ export const NavbarActions: React.FC = () => {
               }
             }
           } catch (syncError) {
-            console.warn("[WISHLIST_SYNC] Error syncing items to server:", syncError);
+            console.warn(
+              "[WISHLIST_SYNC] Error syncing items to server:",
+              syncError
+            );
           }
         }
 

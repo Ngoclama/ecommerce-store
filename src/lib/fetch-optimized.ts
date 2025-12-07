@@ -10,9 +10,9 @@ interface FetchOptions extends RequestInit {
   cacheTTL?: number;
 }
 
-const DEFAULT_TIMEOUT = 10000; // 10 seconds
+const DEFAULT_TIMEOUT = 10000;
 const DEFAULT_RETRIES = 2;
-const DEFAULT_RETRY_DELAY = 1000; // 1 second
+const DEFAULT_RETRY_DELAY = 1000;
 
 /**
  * Fetch with timeout
@@ -66,11 +66,9 @@ export async function fetchWithRetry<T>(
       const response = await fetchWithTimeout(url, fetchOptions);
 
       if (!response.ok) {
-        // Don't retry on client errors (4xx)
         if (response.status >= 400 && response.status < 500) {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
-        // Retry on server errors (5xx)
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
@@ -94,9 +92,7 @@ export async function fetchWithRetry<T>(
     } catch (error: unknown) {
       lastError = error instanceof Error ? error : new Error(String(error));
 
-      // Don't retry on last attempt
       if (attempt < retries) {
-        // Exponential backoff
         const delay = retryDelay * Math.pow(2, attempt);
         await new Promise((resolve) => setTimeout(resolve, delay));
         continue;
@@ -129,14 +125,11 @@ export function fetchDeduplicated<T>(
 ): Promise<T> {
   const cacheKey = `${url}_${JSON.stringify(options)}`;
 
-  // If there's already a pending request for this URL, return it
   if (pendingRequests.has(cacheKey)) {
     return pendingRequests.get(cacheKey)! as Promise<T>;
   }
 
-  // Create new request
   const promise = fetchWithRetry<T>(url, options).finally(() => {
-    // Remove from pending requests after completion
     pendingRequests.delete(cacheKey);
   });
 

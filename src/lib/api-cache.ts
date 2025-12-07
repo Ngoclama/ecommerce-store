@@ -4,13 +4,13 @@
  */
 
 interface CacheOptions {
-  ttl?: number; // Time to live in milliseconds
+  ttl?: number;
   key?: string;
-  revalidate?: number; // Revalidate after this time
+  revalidate?: number;
 }
 
 const CACHE_PREFIX = "api_cache_";
-const DEFAULT_TTL = 30000; // 30 seconds
+const DEFAULT_TTL = 30000;
 
 /**
  * Get cached data from sessionStorage
@@ -25,12 +25,10 @@ export function getCachedData<T>(key: string): T | null {
     const { data, timestamp, ttl } = JSON.parse(cached);
     const age = Date.now() - timestamp;
 
-    // Check if cache is still valid
     if (age < (ttl || DEFAULT_TTL)) {
       return data as T;
     }
 
-    // Cache expired, remove it
     sessionStorage.removeItem(`${CACHE_PREFIX}${key}`);
     return null;
   } catch (error) {
@@ -57,9 +55,7 @@ export function setCachedData<T>(
     };
     sessionStorage.setItem(`${CACHE_PREFIX}${key}`, JSON.stringify(cacheData));
   } catch (error) {
-    // Handle quota exceeded or other storage errors
     console.warn("[CACHE] Failed to set cached data:", error);
-    // Try to clear old cache entries
     clearOldCache();
   }
 }
@@ -81,12 +77,10 @@ function clearOldCache(): void {
           if (cached) {
             const { timestamp, ttl } = JSON.parse(cached);
             if (now - timestamp > (ttl || DEFAULT_TTL) * 2) {
-              // Cache is 2x TTL old, remove it
               sessionStorage.removeItem(key);
             }
           }
         } catch {
-          // Invalid cache entry, remove it
           sessionStorage.removeItem(key);
         }
       }
@@ -128,24 +122,19 @@ export async function cachedFetch<T>(
   const { ttl, key, revalidate, ...fetchOptions } = options;
   const cacheKey = key || url;
 
-  // Try to get from cache first
   const cached = getCachedData<T>(cacheKey);
   if (cached !== null) {
-    // If revalidate is set, fetch in background
     if (revalidate) {
       fetch(url, fetchOptions)
         .then((res) => res.json())
         .then((data) => {
           setCachedData(cacheKey, data, { ttl });
         })
-        .catch(() => {
-          // Silent fail for background refresh
-        });
+        .catch(() => {});
     }
     return cached;
   }
 
-  // Fetch from network
   const response = await fetch(url, fetchOptions);
   if (!response.ok) {
     throw new Error(`HTTP ${response.status}: ${response.statusText}`);

@@ -70,18 +70,17 @@ export interface Product {
   originalPrice?: number;
   badge?: string;
   inStock?: boolean;
-  inventory?: number; // For backward compatibility
-  createdAt?: string | Date; // For sorting
-  // Legacy fields for backward compatibility
+  inventory?: number;
+  createdAt?: string | Date;
   size?: Size;
   color?: Color;
 }
 
 export interface CartItem extends Product {
-  cartItemId: string; // Unique ID for cart item instance
+  cartItemId: string;
   quantity: number;
-  inventory: number; // Inventory snapshot for the cart item
-  selectedVariant?: ProductVariant; // Selected variant when adding to cart
+  inventory: number;
+  selectedVariant?: ProductVariant;
 }
 
 export interface Image {

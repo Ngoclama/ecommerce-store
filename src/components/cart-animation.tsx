@@ -39,7 +39,6 @@ export const CartAnimation: React.FC<CartAnimationProps> = ({
 
     // Sử dụng requestAnimationFrame để đảm bảo DOM đã render xong
     const updatePositions = () => {
-      // Check if elements still exist (they might be removed during animation)
       if (!fromElement || !toElement) return;
 
       try {
@@ -67,7 +66,6 @@ export const CartAnimation: React.FC<CartAnimationProps> = ({
           end: endPos,
         });
       } catch (error) {
-        // Elements might have been removed from DOM
         console.warn("[CartAnimation] Error calculating positions:", error);
       }
     };
@@ -77,7 +75,6 @@ export const CartAnimation: React.FC<CartAnimationProps> = ({
       rafId2 = requestAnimationFrame(updatePositions);
     });
 
-    // Cleanup function
     return () => {
       if (rafId1 !== null) cancelAnimationFrame(rafId1);
       if (rafId2 !== null) cancelAnimationFrame(rafId2);
@@ -139,7 +136,7 @@ export const CartAnimation: React.FC<CartAnimationProps> = ({
           }
         }}
         onAnimationComplete={onComplete}
-        className="fixed z-[9999] pointer-events-none"
+        className="fixed z-9999 pointer-events-none"
         style={{
           left: 0,
           top: 0,

@@ -26,14 +26,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    // Use requestAnimationFrame to defer setState
     requestAnimationFrame(() => {
       setMounted(true);
     });
-    // Lấy theme từ localStorage, mặc định là light mode
     const savedTheme = localStorage.getItem("theme") as Theme | null;
     const initialTheme = savedTheme || "light";
-    // Use requestAnimationFrame to defer setState
     requestAnimationFrame(() => {
       setThemeState(initialTheme);
     });

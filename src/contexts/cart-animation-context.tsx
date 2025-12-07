@@ -52,20 +52,21 @@ export const CartAnimationProvider: React.FC<{ children: React.ReactNode }> = ({
           const foundButton = buttons.find((btn) => {
             const svg = btn.querySelector("svg");
             if (!svg) return false;
-            
+
             // Check for cart-related aria-label (various languages)
-            const ariaLabel = btn.getAttribute("aria-label")?.toLowerCase() || "";
-            const hasCartAriaLabel = 
-              ariaLabel.includes("cart") || 
-              ariaLabel.includes("giỏ") || 
+            const ariaLabel =
+              btn.getAttribute("aria-label")?.toLowerCase() || "";
+            const hasCartAriaLabel =
+              ariaLabel.includes("cart") ||
+              ariaLabel.includes("giỏ") ||
               ariaLabel.includes("bag");
-            
+
             // Check for cart-related class
             const hasCartClass = btn.className.toLowerCase().includes("cart");
-            
+
             // Check if button is near cart count badge
             const hasCartBadge = btn.querySelector('span[class*="absolute"]');
-            
+
             return hasCartAriaLabel || hasCartClass || hasCartBadge;
           });
 
@@ -90,16 +91,19 @@ export const CartAnimationProvider: React.FC<{ children: React.ReactNode }> = ({
         const retryFindCartIcon = () => {
           retryCount++;
           cartIcon = findCartIcon();
-          
+
           if (cartIcon) {
             // Debug log
             if (process.env.NODE_ENV === "development") {
-              console.log("[CartAnimation] Triggering animation (after retry)", {
-                fromElement,
-                toElement: cartIcon,
-                imageUrl,
-                retryCount,
-              });
+              console.log(
+                "[CartAnimation] Triggering animation (after retry)",
+                {
+                  fromElement,
+                  toElement: cartIcon,
+                  imageUrl,
+                  retryCount,
+                }
+              );
             }
 
             setAnimationState({
@@ -116,7 +120,7 @@ export const CartAnimationProvider: React.FC<{ children: React.ReactNode }> = ({
               attempts: retryCount,
               selectors: [
                 'button[data-cart-icon="true"]',
-                '#cart-icon-button',
+                "#cart-icon-button",
                 'button[aria-label="Giỏ hàng"]',
               ],
             });
@@ -168,12 +172,9 @@ export const CartAnimationProvider: React.FC<{ children: React.ReactNode }> = ({
 
 export const useCartAnimation = () => {
   const context = useContext(CartAnimationContext);
-  // Return a no-op function if context is not available
-  // This allows components to work even without the provider
   if (!context) {
     return {
       triggerAnimation: () => {
-        // No-op: animation not available
         if (process.env.NODE_ENV === "development") {
           console.warn(
             "[CartAnimation] Provider not found, animation disabled"

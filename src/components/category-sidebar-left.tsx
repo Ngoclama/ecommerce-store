@@ -26,13 +26,10 @@ export default function CategorySidebarLeft({
     new Set()
   );
 
-  // Fix hydration: Always start with false, then load from localStorage in useEffect
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  // Load from localStorage after mount (client-side only)
   useEffect(() => {
-    // Use requestAnimationFrame to defer setState
     requestAnimationFrame(() => {
       setMounted(true);
       const saved = localStorage.getItem("sidebarOpen");
@@ -42,12 +39,10 @@ export default function CategorySidebarLeft({
     });
   }, []);
 
-  // Store state in localStorage for persistence and dispatch event
   useEffect(() => {
     if (!mounted) return;
 
     localStorage.setItem("sidebarOpen", String(isOpen));
-    // Dispatch event for layout to update margin
     window.dispatchEvent(
       new CustomEvent("sidebar-toggle", {
         detail: { isOpen },
@@ -55,10 +50,8 @@ export default function CategorySidebarLeft({
     );
   }, [isOpen, mounted]);
 
-  // Build category tree
   const categoryTree = categories.reduce((acc, category) => {
     if (!category.parentId) {
-      // Parent category
       if (!acc[category.id]) {
         acc[category.id] = {
           ...category,
@@ -66,7 +59,6 @@ export default function CategorySidebarLeft({
         };
       }
     } else {
-      // Child category
       if (!acc[category.parentId]) {
         acc[category.parentId] = {
           ...categories.find((c) => c.id === category.parentId)!,
@@ -96,8 +88,8 @@ export default function CategorySidebarLeft({
   if (!mounted) {
     return (
       <>
-        <div className="hidden lg:flex fixed left-0 top-[120px] w-8 h-14 bg-gradient-to-br from-white to-neutral-50 dark:from-gray-900 dark:to-neutral-950 border-2 border-r-0 border-neutral-200 dark:border-neutral-800 z-40 items-center justify-center rounded-r-sm" />
-        <div className="hidden lg:block fixed left-0 top-[120px] bottom-0 w-0 bg-gradient-to-br from-white via-neutral-50 to-white dark:from-gray-900 dark:via-neutral-950 dark:to-gray-900 border-r-2 border-neutral-200 dark:border-neutral-800 z-40" />
+        <div className="hidden lg:flex fixed left-0 top-[120px] w-8 h-14 bg-linear-to-br from-white to-neutral-50 dark:from-gray-900 dark:to-neutral-950 border-2 border-r-0 border-neutral-200 dark:border-neutral-800 z-40 items-center justify-center rounded-r-sm" />
+        <div className="hidden lg:block fixed left-0 top-[120px] bottom-0 w-0 bg-linear-to-br from-white via-neutral-50 to-white dark:from-gray-900 dark:via-neutral-950 dark:to-gray-900 border-r-2 border-neutral-200 dark:border-neutral-800 z-40" />
       </>
     );
   }
@@ -116,7 +108,7 @@ export default function CategorySidebarLeft({
           whileTap={{ scale: 0.95 }}
           transition={{ duration: 0.3 }}
           className={cn(
-            "hidden lg:flex fixed left-0 top-[120px] w-8 h-14 bg-gradient-to-br from-white to-neutral-50 dark:from-gray-900 dark:to-neutral-950 border-2 border-r-0 border-neutral-200 dark:border-neutral-800 z-40 items-center justify-center hover:border-neutral-400 dark:hover:border-neutral-600 transition-all duration-300 shadow-lg hover:shadow-xl rounded-r-sm",
+            "hidden lg:flex fixed left-0 top-[120px] w-8 h-14 bg-linear-to-br from-white to-neutral-50 dark:from-gray-900 dark:to-neutral-950 border-2 border-r-0 border-neutral-200 dark:border-neutral-800 z-40 items-center justify-center hover:border-neutral-400 dark:hover:border-neutral-600 transition-all duration-300 shadow-lg hover:shadow-xl rounded-r-sm",
             isOpen && "left-[280px]"
           )}
           aria-label={isOpen ? "Đóng menu" : "Mở menu"}
@@ -148,7 +140,7 @@ export default function CategorySidebarLeft({
               opacity: { duration: 0.2 },
             }}
             className={cn(
-              "hidden lg:block fixed left-0 top-[120px] bottom-0 bg-gradient-to-br from-white via-neutral-50 to-white dark:from-gray-900 dark:via-neutral-950 dark:to-gray-900 border-r-2 border-neutral-200 dark:border-neutral-800 overflow-hidden z-40 shadow-xl"
+              "hidden lg:block fixed left-0 top-[120px] bottom-0 bg-linear-to-br from-white via-neutral-50 to-white dark:from-gray-900 dark:via-neutral-950 dark:to-gray-900 border-r-2 border-neutral-200 dark:border-neutral-800 overflow-hidden z-40 shadow-xl"
             )}
           >
             <div className="h-full flex flex-col w-[280px]">
@@ -168,7 +160,7 @@ export default function CategorySidebarLeft({
                       repeat: Infinity,
                       ease: "easeInOut",
                     }}
-                    className="p-2 rounded-sm bg-gradient-to-br from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 border-2 border-neutral-900 dark:border-neutral-100"
+                    className="p-2 rounded-sm bg-linear-to-br from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 border-2 border-neutral-900 dark:border-neutral-100"
                   >
                     <Grid3x3 className="w-4 h-4 text-white dark:text-neutral-900" />
                   </motion.div>
@@ -181,7 +173,7 @@ export default function CategorySidebarLeft({
                   animate={{ width: "100%" }}
                   exit={{ width: 0 }}
                   transition={{ duration: 0.6, delay: 0.2 }}
-                  className="h-px bg-gradient-to-r from-neutral-900 via-neutral-400 to-transparent dark:from-neutral-100 dark:via-neutral-600"
+                  className="h-px bg-linear-to-r from-neutral-900 via-neutral-400 to-transparent dark:from-neutral-100 dark:via-neutral-600"
                 />
               </motion.div>
 
@@ -212,7 +204,7 @@ export default function CategorySidebarLeft({
                             className={cn(
                               "flex-1 px-4 py-3 text-xs font-light uppercase tracking-[0.15em] transition-all duration-300 rounded-sm border-2",
                               isActive
-                                ? "bg-gradient-to-r from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 text-white dark:text-neutral-900 border-neutral-900 dark:border-neutral-100 shadow-lg"
+                                ? "bg-linear-to-r from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 text-white dark:text-neutral-900 border-neutral-900 dark:border-neutral-100 shadow-lg"
                                 : "text-neutral-700 dark:text-neutral-300 border-transparent hover:border-neutral-300 dark:hover:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-900/50"
                             )}
                           >
@@ -276,7 +268,7 @@ export default function CategorySidebarLeft({
                                       className={cn(
                                         "block px-3 py-2 text-xs font-light uppercase tracking-[0.15em] transition-all duration-300 rounded-sm border-2",
                                         isChildActive
-                                          ? "bg-gradient-to-r from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 text-white dark:text-neutral-900 border-neutral-900 dark:border-neutral-100 shadow-md"
+                                          ? "bg-linear-to-r from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 text-white dark:text-neutral-900 border-neutral-900 dark:border-neutral-100 shadow-md"
                                           : "text-neutral-600 dark:text-neutral-400 border-transparent hover:border-neutral-300 dark:hover:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-900/50 hover:text-neutral-900 dark:hover:text-neutral-100"
                                       )}
                                     >

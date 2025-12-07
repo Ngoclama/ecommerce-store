@@ -51,7 +51,6 @@ function useThemeSafe() {
     setTheme(newTheme);
     localStorage.setItem("theme", newTheme);
 
-    // Apply theme to document
     const root = document.documentElement;
     if (newTheme === "dark") {
       root.classList.add("dark");
@@ -59,7 +58,6 @@ function useThemeSafe() {
       root.classList.remove("dark");
     }
 
-    // Dispatch custom event để ThemeProvider có thể lắng nghe
     window.dispatchEvent(new Event("theme-change"));
   };
 

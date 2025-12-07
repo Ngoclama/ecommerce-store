@@ -54,10 +54,8 @@ const Info: React.FC<InfoProps> = ({ data }) => {
   const addToCartButtonRef = useRef<HTMLButtonElement>(null);
   const buyNowButtonRef = useRef<HTMLButtonElement>(null);
 
-  // Check if product is in wishlist using cart's wishlistItems
   const isInWishlist = cart.wishlistItems.includes(data.id);
 
-  // Variant selection state
   const [selectedSizeId, setSelectedSizeId] = useState<string | null>(null);
   const [selectedColorId, setSelectedColorId] = useState<string | null>(null);
   const [selectedMaterialId, setSelectedMaterialId] = useState<string | null>(
@@ -67,7 +65,6 @@ const Info: React.FC<InfoProps> = ({ data }) => {
   // Get available variants
   const variants = data.variants || [];
 
-  // Get unique sizes, colors, materials from variants
   const availableSizes = useMemo(() => {
     const sizes = new Map<
       string,
@@ -104,7 +101,6 @@ const Info: React.FC<InfoProps> = ({ data }) => {
     return Array.from(materials.values());
   }, [variants]);
 
-  // Find selected variant
   const selectedVariant = useMemo(() => {
     if (!selectedSizeId || !selectedColorId) return null;
     return (
@@ -117,7 +113,6 @@ const Info: React.FC<InfoProps> = ({ data }) => {
     );
   }, [variants, selectedSizeId, selectedColorId, selectedMaterialId]);
 
-  // Auto-select first variant if available
   useEffect(() => {
     if (variants.length > 0 && !selectedSizeId && !selectedColorId) {
       const firstVariant = variants[0];
@@ -129,12 +124,10 @@ const Info: React.FC<InfoProps> = ({ data }) => {
     }
   }, [variants, selectedSizeId, selectedColorId]);
 
-  // Get current price and inventory
   const currentPrice = selectedVariant?.price || data.price;
   const currentInventory = selectedVariant?.inventory ?? data.inventory ?? 0;
   const isOutOfStock = currentInventory <= 0;
 
-  // Calculate discount
   const discountPercent =
     data.originalPrice && data.price && data.originalPrice > data.price
       ? Math.round(
@@ -142,7 +135,6 @@ const Info: React.FC<InfoProps> = ({ data }) => {
         )
       : 0;
 
-  // Update quantity when inventory changes
   useEffect(() => {
     if (quantity > currentInventory && currentInventory > 0) {
       setQuantity(currentInventory);
@@ -292,11 +284,9 @@ const Info: React.FC<InfoProps> = ({ data }) => {
     return new Intl.NumberFormat("vi-VN").format(value) + "₫";
   };
 
-  // Toggle wishlist
   const onToggleWishlist: MouseEventHandler<HTMLButtonElement> = (e) => {
     e.stopPropagation();
 
-    // Use async wishlist toggle from hook
     wishlist.toggleWishlist(data.id);
   };
 
@@ -400,7 +390,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
               {data.isFeatured && (
                 <Badge
                   variant="outline"
-                  className="border-slate-400 dark:border-slate-500 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900/50 dark:to-slate-800/50 text-slate-600 dark:text-slate-400 rounded-none text-xs font-light shadow-sm"
+                  className="border-slate-400 dark:border-slate-500 bg-linear-to-r from-slate-50 to-slate-100 dark:from-slate-900/50 dark:to-slate-800/50 text-slate-600 dark:text-slate-400 rounded-none text-xs font-light shadow-sm"
                 >
                   <Award className="w-3 h-3 mr-1" />
                   Bán chạy
@@ -413,7 +403,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
             onClick={onToggleWishlist}
             whileTap={{ scale: 0.9 }}
             className={cn(
-              "flex-shrink-0 w-11 h-11 flex items-center justify-center border rounded-none transition-all duration-200",
+              "shrink-0 w-11 h-11 flex items-center justify-center border rounded-none transition-all duration-200",
               isInWishlist
                 ? "border-red-600 dark:border-red-500 bg-red-600 dark:bg-red-500 text-white"
                 : "border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:border-red-600 dark:hover:border-red-500 hover:text-red-600 dark:hover:text-red-500"
@@ -495,9 +485,9 @@ const Info: React.FC<InfoProps> = ({ data }) => {
                     opacity: [0.6, 1, 0.6],
                   }}
                   transition={{ repeat: Infinity, duration: 2 }}
-                  className="w-2 h-2 bg-gradient-to-r from-slate-400 to-slate-500 dark:from-slate-500 dark:to-slate-400 rounded-full shadow-lg shadow-slate-400/50 dark:shadow-slate-500/30"
+                  className="w-2 h-2 bg-linear-to-r from-slate-400 to-slate-500 dark:from-slate-500 dark:to-slate-400 rounded-full shadow-lg shadow-slate-400/50 dark:shadow-slate-500/30"
                 />
-                <span className="font-medium bg-gradient-to-r from-slate-600 to-slate-500 dark:from-slate-400 dark:to-slate-300 bg-clip-text text-transparent">
+                <span className="font-medium bg-linear-to-r from-slate-600 to-slate-500 dark:from-slate-400 dark:to-slate-300 bg-clip-text text-transparent">
                   Chỉ còn {currentInventory} sản phẩm
                 </span>
               </div>
@@ -761,9 +751,9 @@ const Info: React.FC<InfoProps> = ({ data }) => {
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
-            className="flex items-center gap-2 p-3 bg-gradient-to-r from-slate-50 to-blue-50/50 dark:from-slate-900/30 dark:to-blue-950/20 border border-slate-200 dark:border-slate-800 rounded-none shadow-sm"
+            className="flex items-center gap-2 p-3 bg-linear-to-r from-slate-50 to-blue-50/50 dark:from-slate-900/30 dark:to-blue-950/20 border border-slate-200 dark:border-slate-800 rounded-none shadow-sm"
           >
-            <InfoIcon className="w-4 h-4 text-slate-600 dark:text-slate-400 flex-shrink-0" />
+            <InfoIcon className="w-4 h-4 text-slate-600 dark:text-slate-400 shrink-0" />
             <span className="text-xs text-slate-700 dark:text-slate-300 font-light">
               Vui lòng chọn {!selectedSizeId ? "kích thước" : ""}{" "}
               {!selectedSizeId && !selectedColorId ? "và" : ""}{" "}
@@ -901,7 +891,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
         </h3>
         <div className="grid gap-3 text-xs">
           <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-none">
-            <Package className="w-4 h-4 text-gray-600 dark:text-gray-400 flex-shrink-0 mt-0.5" />
+            <Package className="w-4 h-4 text-gray-600 dark:text-gray-400 shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className="font-medium text-gray-900 dark:text-gray-100 mb-1">
                 Chính sách giao hàng
@@ -914,7 +904,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
           </div>
 
           <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-none">
-            <RefreshCw className="w-4 h-4 text-gray-600 dark:text-gray-400 flex-shrink-0 mt-0.5" />
+            <RefreshCw className="w-4 h-4 text-gray-600 dark:text-gray-400 shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className="font-medium text-gray-900 dark:text-gray-100 mb-1">
                 Chính sách đổi trả
@@ -926,7 +916,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
           </div>
 
           <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-none">
-            <ShieldCheck className="w-4 h-4 text-gray-600 dark:text-gray-400 flex-shrink-0 mt-0.5" />
+            <ShieldCheck className="w-4 h-4 text-gray-600 dark:text-gray-400 shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className="font-medium text-gray-900 dark:text-gray-100 mb-1">
                 Bảo hành chính hãng
@@ -944,10 +934,10 @@ const Info: React.FC<InfoProps> = ({ data }) => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
-        className="p-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900/50 dark:to-gray-800/50 border border-gray-200 dark:border-gray-800 rounded-none"
+        className="p-4 bg-linear-to-r from-gray-50 to-gray-100 dark:from-gray-900/50 dark:to-gray-800/50 border border-gray-200 dark:border-gray-800 rounded-none"
       >
         <div className="flex items-start gap-3">
-          <InfoIcon className="w-5 h-5 text-gray-700 dark:text-gray-300 flex-shrink-0 mt-0.5" />
+          <InfoIcon className="w-5 h-5 text-gray-700 dark:text-gray-300 shrink-0 mt-0.5" />
           <div className="flex-1">
             <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
               Cần hỗ trợ?

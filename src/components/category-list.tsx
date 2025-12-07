@@ -24,7 +24,6 @@ const CategoryList: React.FC<CategoryListProps> = ({
   const [isTransitioning, setIsTransitioning] = useState(false);
   const totalPages = Math.ceil(items.length / itemsPerPage);
 
-  // Debug log
   if (process.env.NODE_ENV === "development") {
     console.log("[CategoryList] Total items:", items.length);
     console.log(

@@ -17,7 +17,6 @@ const MegaMenu: React.FC<MegaMenuProps> = ({ categories }) => {
   const pathname = usePathname();
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
 
-  // Debug log
   if (process.env.NODE_ENV === "development") {
     console.log("[MegaMenu] Categories received:", categories.length);
     console.log(

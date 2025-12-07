@@ -1,67 +1,46 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  images: {
-    
+  // ===== Performance & Production =====
+  compress: true,
+  poweredByHeader: false,
+  productionBrowserSourceMaps: false, // Disable source maps in production
 
+  // ===== Image Optimization =====
+  images: {
+    formats: ["image/avif", "image/webp"],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 3600, // Cache images for 1 hour
     remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "utfs.io", // UploadThing cũ
-      },
-      {
-        protocol: "https",
-        hostname: "**.ufs.sh",
-      },
-      {
-        protocol: "https",
-        hostname: "res.cloudinary.com", // Cloudinary
-      },
-      {
-        protocol: "https",
-        hostname: "placehold.co", // Placeholder
-      },
-      {
-        protocol: "https",
-        hostname: "cdn.pixabay.com", // Ảnh tĩnh/từ bên ngoài
-      },
-      {
-        protocol: "https",
-        hostname: "images.unsplash.com", // Ảnh tĩnh/từ bên ngoài
-      },
-      {
-        protocol: "https",
-        hostname: "uploadthing.com", // Trang web chính
-      },
-      {
-        protocol: "https",
-        hostname: "img.clerk.com", // Clerk images
-      },
-      {
-        protocol: "https",
-        hostname: "images.clerk.dev", // Clerk images (alternative)
-      },
-      {
-        protocol: "https",
-        hostname: "www.google.com", // Google Images
-      },
-      {
-        protocol: "https",
-        hostname: "**.google.com", // Google subdomains
-      },
-      {
-        protocol: "https",
-        hostname: "**.googleusercontent.com", // Google user content
-      },
-      {
-        protocol: "https",
-        hostname: "**.bom.edu.vn", // Domain từ lỗi
-      },
-      {
-        protocol: "https",
-        hostname: "**", // Cho phép tất cả domain (cẩn thận với security)
-      },
+      { protocol: "https", hostname: "utfs.io" },
+      { protocol: "https", hostname: "**.ufs.sh" },
+      { protocol: "https", hostname: "res.cloudinary.com" },
+      { protocol: "https", hostname: "placehold.co" },
+      { protocol: "https", hostname: "cdn.pixabay.com" },
+      { protocol: "https", hostname: "images.unsplash.com" },
+      { protocol: "https", hostname: "uploadthing.com" },
+      { protocol: "https", hostname: "img.clerk.com" },
+      { protocol: "https", hostname: "images.clerk.dev" },
+      { protocol: "https", hostname: "**.googleusercontent.com" },
     ],
+  },
+
+  // ===== Experimental Features for Performance =====
+  experimental: {
+    optimizePackageImports: [
+      "@radix-ui/react-dropdown-menu",
+      "@radix-ui/react-dialog",
+      "@radix-ui/react-select",
+      "@radix-ui/react-tabs",
+      "lucide-react",
+      "date-fns",
+    ],
+  },
+
+  // ===== Turbopack Configuration =====
+  turbopack: {
+    root: "../",
   },
 };
 

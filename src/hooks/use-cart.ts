@@ -49,7 +49,6 @@ const useCart = create(
             item.color?.id === data.color?.id
         );
 
-        // Default inventory to 999 if not provided (safe assumption for a featured product)
         const inventory = data.inventory ?? 999;
 
         if (existingItem) {
@@ -157,7 +156,6 @@ const useCart = create(
       wishlistItems: [],
       isItemInWishlist: (id: string) => get().wishlistItems.includes(id),
       setWishlist: (productIds: string[]) => {
-        // Remove duplicates using Set
         const uniqueProductIds = Array.from(new Set(productIds));
         set({ wishlistItems: uniqueProductIds });
       },
@@ -179,7 +177,6 @@ const useCart = create(
         const isCurrentlyInList = get().isItemInWishlist(productId);
         const url = `${process.env.NEXT_PUBLIC_API_URL}/api/wishlist`;
 
-        // Optimistic UI Update
         const previousWishlist = get().wishlistItems;
         if (isCurrentlyInList) {
           set({

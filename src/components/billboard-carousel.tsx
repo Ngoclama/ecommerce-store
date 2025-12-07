@@ -21,7 +21,6 @@ const BillboardCarousel: React.FC<BillboardCarouselProps> = ({
   const [categories, setCategories] = useState<Category[]>([]);
   const router = useRouter();
 
-  // Debug logging
   useEffect(() => {
     console.log("[BILLBOARD_CAROUSEL] Received billboards:", {
       count: billboards?.length || 0,
@@ -31,32 +30,30 @@ const BillboardCarousel: React.FC<BillboardCarouselProps> = ({
     });
   }, [billboards]);
 
-  // Fetch categories to match with billboards (lazy load, not blocking render)
   useEffect(() => {
-    // Only fetch categories if we have billboards with categoryId
     const needsCategories = billboards.some((b) => b.categoryId);
     if (!needsCategories) return;
 
-    // Defer category fetch to not block initial render
     const timeoutId = setTimeout(() => {
       const fetchCategories = async () => {
         try {
           const cats = await getCategories();
           setCategories(cats);
         } catch (error) {
-          // Silent fail - categories are not critical for billboard display
           if (process.env.NODE_ENV === "development") {
-            console.error("[BILLBOARD_CAROUSEL] Error fetching categories:", error);
+            console.error(
+              "[BILLBOARD_CAROUSEL] Error fetching categories:",
+              error
+            );
           }
         }
       };
       fetchCategories();
-    }, 100); // Small delay to not block initial render
+    }, 100);
 
     return () => clearTimeout(timeoutId);
   }, [billboards]);
 
-  // Get category for current billboard
   const getCategoryForBillboard = (
     billboard: BillboardType
   ): Category | null => {
@@ -78,21 +75,18 @@ const BillboardCarousel: React.FC<BillboardCarouselProps> = ({
     }
   };
 
-  // Preload next billboard image for smoother transitions
   useEffect(() => {
     if (billboards.length <= 1) return;
-    
+
     const nextIndex = (currentIndex + 1) % billboards.length;
     const nextBillboard = billboards[nextIndex];
-    
+
     if (nextBillboard?.imageUrl) {
-      // Preload next image
       const img = new window.Image();
       img.src = nextBillboard.imageUrl;
     }
   }, [currentIndex, billboards]);
 
-  // Auto-play carousel
   useEffect(() => {
     if (!isAutoPlaying || billboards.length <= 1) return;
 
@@ -130,7 +124,7 @@ const BillboardCarousel: React.FC<BillboardCarouselProps> = ({
   const currentBillboard = billboards[currentIndex];
 
   return (
-    <div className="w-full relative overflow-hidden bg-gradient-to-br from-neutral-50 via-white to-neutral-50 dark:from-neutral-950 dark:via-gray-900 dark:to-neutral-950">
+    <div className="w-full relative overflow-hidden bg-linear-to-br from-neutral-50 via-white to-neutral-50 dark:from-neutral-950 dark:via-gray-900 dark:to-neutral-950">
       {/* Carousel Container - Luxury Style */}
       <div className="relative w-full min-h-screen flex items-center justify-center group">
         <AnimatePresence mode="wait">
@@ -155,7 +149,7 @@ const BillboardCarousel: React.FC<BillboardCarouselProps> = ({
           >
             {/* Luxury Gradient Overlay */}
             <motion.div
-              className="absolute inset-0 bg-gradient-to-br from-neutral-900/70 via-neutral-900/60 to-neutral-900/80 dark:from-neutral-950/80 dark:via-neutral-950/70 dark:to-neutral-950/90"
+              className="absolute inset-0 bg-linear-to-br from-neutral-900/70 via-neutral-900/60 to-neutral-900/80 dark:from-neutral-950/80 dark:via-neutral-950/70 dark:to-neutral-950/90"
               animate={{
                 background: [
                   "linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0.8) 100%)",
@@ -179,7 +173,11 @@ const BillboardCarousel: React.FC<BillboardCarouselProps> = ({
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+                transition={{
+                  duration: 1,
+                  delay: 0.3,
+                  ease: [0.25, 0.1, 0.25, 1],
+                }}
                 className="space-y-6 max-w-4xl text-center"
               >
                 <motion.h1
@@ -211,8 +209,8 @@ const BillboardCarousel: React.FC<BillboardCarouselProps> = ({
                   className="pt-4"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <motion.div 
-                    whileHover={{ scale: 1.05 }} 
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     className="will-change-transform"
                   >

@@ -45,7 +45,6 @@ const HomePageClient: React.FC<HomePageClientProps> = ({
   const pathname = usePathname();
   const [mountedKey, setMountedKey] = React.useState(0);
 
-  // Log billboards for debugging
   useEffect(() => {
     console.log("[HOMEPAGE_CLIENT] Billboards received:", {
       count: billboards?.length || 0,
@@ -56,67 +55,52 @@ const HomePageClient: React.FC<HomePageClientProps> = ({
       imageUrl: billboards?.[0]?.imageUrl,
     });
 
-    // Check if billboards should render
     const shouldRender =
       billboards && Array.isArray(billboards) && billboards.length > 0;
     console.log("[HOMEPAGE_CLIENT] Should render billboards:", shouldRender);
   }, [billboards]);
 
-  // Track if component has mounted
   const hasMountedRef = useRef(false);
   const prevPathnameRef = useRef<string | null>(null);
   const isInitialLoadRef = useRef(true);
 
   useEffect(() => {
-    // On initial mount, ensure content is visible
     if (!hasMountedRef.current) {
       hasMountedRef.current = true;
-      // Force a re-render to ensure content displays
       setMountedKey((prev) => prev + 1);
 
-      // Detect if this is a page reload (F5 or refresh)
       try {
         const navigationType = performance.getEntriesByType(
           "navigation"
         )[0] as PerformanceNavigationTiming;
         if (navigationType?.type === "reload") {
-          // Page was reloaded, force refresh to get fresh billboards
           console.log(
             "[HOMEPAGE_CLIENT] Page reload detected, refreshing data"
           );
           router.refresh();
         }
       } catch (e) {
-        // Performance API not available, skip
         console.warn("[HOMEPAGE_CLIENT] Could not detect navigation type", e);
       }
     }
 
-    // Only refresh if we're navigating TO home page FROM another page
-    // Not if we're already on home page
     if (
       pathname === "/" &&
       prevPathnameRef.current !== "/" &&
       prevPathnameRef.current !== null &&
       !isInitialLoadRef.current
     ) {
-      // User navigated to home page from another page
-      // Increment key to force re-render of animations
       setMountedKey((prev) => prev + 1);
-      // Refresh router to ensure fresh data on client-side navigation
       router.refresh();
     }
 
-    // Update previous pathname
     prevPathnameRef.current = pathname;
 
-    // Mark initial load as complete after first render
     if (isInitialLoadRef.current) {
       isInitialLoadRef.current = false;
     }
   }, [pathname, router]);
 
-  // Generate random values for particles (once on mount)
   const particles = React.useMemo(
     () =>
       Array.from({ length: 20 }).map(() => ({
@@ -138,11 +122,10 @@ const HomePageClient: React.FC<HomePageClientProps> = ({
 
   return (
     <div key={mountedKey} className="bg-white dark:bg-gray-900 min-h-screen">
-      {/* Luxury Hero Section with Parallax */}
       <motion.section
         key={`hero-${mountedKey}`}
         ref={heroRef}
-        className="relative w-full min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-neutral-50 via-white to-neutral-50 dark:from-neutral-950 dark:via-gray-900 dark:to-neutral-950"
+        className="relative w-full min-h-screen flex items-center justify-center overflow-hidden bg-linear-to-br from-neutral-50 via-white to-neutral-50 dark:from-neutral-950 dark:via-gray-900 dark:to-neutral-950"
       >
         {billboards &&
         Array.isArray(billboards) &&
@@ -158,7 +141,7 @@ const HomePageClient: React.FC<HomePageClientProps> = ({
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1 }}
-            className="w-full min-h-screen bg-gradient-to-br from-neutral-50 via-white to-neutral-50 dark:from-neutral-950 dark:via-gray-900 dark:to-neutral-950 flex items-center justify-center"
+            className="w-full min-h-screen bg-linear-to-br from-neutral-50 via-white to-neutral-50 dark:from-neutral-950 dark:via-gray-900 dark:to-neutral-950 flex items-center justify-center"
           >
             <div className="text-center space-y-6">
               <motion.div
@@ -181,7 +164,6 @@ const HomePageClient: React.FC<HomePageClientProps> = ({
           </motion.div>
         )}
 
-        {/* Decorative Elements */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           {particles.map((particle, i) => (
             <motion.div
@@ -207,11 +189,9 @@ const HomePageClient: React.FC<HomePageClientProps> = ({
         </div>
       </motion.section>
 
-      {/* Luxury Trust Badges Section */}
       <LuxuryTrustSection />
 
       <Container>
-        {/* Luxury Categories Section */}
         {categories && categories.length > 0 && (
           <LuxurySection
             title="Bộ sưu tập"
@@ -223,7 +203,7 @@ const HomePageClient: React.FC<HomePageClientProps> = ({
               key={`categories-${mountedKey}`}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: false, margin: "-100px" }}
+              viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 0.8 }}
             >
               <CategoryList items={categories} />
@@ -231,7 +211,6 @@ const HomePageClient: React.FC<HomePageClientProps> = ({
           </LuxurySection>
         )}
 
-        {/* Luxury Featured Products */}
         {featuredProducts.length > 0 && (
           <LuxurySection
             title="Sản phẩm nổi bật"
@@ -256,7 +235,7 @@ const HomePageClient: React.FC<HomePageClientProps> = ({
                 key={`featured-${mountedKey}`}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: false, margin: "-100px" }}
+                viewport={{ once: true, margin: "-100px" }}
                 transition={{ duration: 0.8, delay: 0.2 }}
               >
                 <ProductList title="" items={featuredProducts.slice(0, 10)} />
@@ -265,7 +244,6 @@ const HomePageClient: React.FC<HomePageClientProps> = ({
           </LuxurySection>
         )}
 
-        {/* Luxury New Arrivals */}
         {latestProducts.length > 0 && (
           <LuxurySection
             title="Hàng mới về"
@@ -289,7 +267,7 @@ const HomePageClient: React.FC<HomePageClientProps> = ({
                 key={`latest-${mountedKey}`}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: false, margin: "-100px" }}
+                viewport={{ once: true, margin: "-100px" }}
                 transition={{ duration: 0.8, delay: 0.2 }}
               >
                 <ProductList title="" items={latestProducts} />
@@ -298,7 +276,6 @@ const HomePageClient: React.FC<HomePageClientProps> = ({
           </LuxurySection>
         )}
 
-        {/* Luxury Best Sellers */}
         {topSellers.length > 0 && (
           <LuxurySection
             title="Bán chạy nhất"
@@ -311,7 +288,7 @@ const HomePageClient: React.FC<HomePageClientProps> = ({
               key={`topsellers-${mountedKey}`}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: false, margin: "-100px" }}
+              viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 0.8, delay: 0.2 }}
             >
               <ProductList title="" items={topSellers} />
@@ -319,20 +296,17 @@ const HomePageClient: React.FC<HomePageClientProps> = ({
           </LuxurySection>
         )}
 
-        {/* Luxury Why Choose Us Section */}
         <LuxuryWhyChooseUs />
 
-        {/* Luxury Newsletter Section */}
         <LuxuryNewsletter />
       </Container>
     </div>
   );
 };
 
-// Luxury Trust Section Component
 const LuxuryTrustSection = () => {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(sectionRef, { once: false, margin: "-100px" });
+  const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
 
   const features = [
     {
@@ -369,7 +343,6 @@ const LuxuryTrustSection = () => {
       transition={{ duration: 0.8 }}
       className="relative bg-white dark:bg-gray-900 border-y border-neutral-200 dark:border-neutral-800 py-16 md:py-20 overflow-hidden"
     >
-      {/* Background Pattern */}
       <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05]">
         <div
           className="absolute inset-0"
@@ -403,7 +376,7 @@ const LuxuryTrustSection = () => {
                     transition={{ duration: 0.3 }}
                     className="relative"
                   >
-                    <div className="absolute inset-0 bg-gradient-to-br from-neutral-200 to-neutral-300 dark:from-neutral-800 dark:to-neutral-700 rounded-full blur-xl opacity-50 group-hover:opacity-75 transition-opacity" />
+                    <div className="absolute inset-0 bg-linear-to-br from-neutral-200 to-neutral-300 dark:from-neutral-800 dark:to-neutral-700 rounded-full blur-xl opacity-50 group-hover:opacity-75 transition-opacity" />
                     <div className="relative w-16 h-16 md:w-20 md:h-20 border-2 border-neutral-300 dark:border-neutral-700 rounded-full flex items-center justify-center bg-white dark:bg-gray-900 group-hover:border-neutral-400 dark:group-hover:border-neutral-600 transition-all duration-300">
                       <Icon className="w-7 h-7 md:w-8 md:h-8 text-neutral-800 dark:text-neutral-200" />
                     </div>
@@ -426,7 +399,6 @@ const LuxuryTrustSection = () => {
   );
 };
 
-// Luxury Section Component
 interface LuxurySectionProps {
   title: string;
   subtitle: string;
@@ -445,7 +417,7 @@ const LuxurySection: React.FC<LuxurySectionProps> = ({
   children,
 }) => {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(sectionRef, { once: false, margin: "-100px" });
+  const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
 
   return (
     <motion.section
@@ -482,7 +454,7 @@ const LuxurySection: React.FC<LuxurySectionProps> = ({
                   : { opacity: 0, width: 0 }
               }
               transition={{ duration: 1, delay: delay + 0.2 }}
-              className="h-px bg-gradient-to-r from-neutral-900 via-neutral-400 to-transparent dark:from-neutral-100 dark:via-neutral-600"
+              className="h-px bg-linear-to-r from-neutral-900 via-neutral-400 to-transparent dark:from-neutral-100 dark:via-neutral-600"
             />
             <motion.p
               initial={{ opacity: 0, y: 10 }}
@@ -539,10 +511,9 @@ const LuxurySection: React.FC<LuxurySectionProps> = ({
   );
 };
 
-// Luxury Why Choose Us Component
 const LuxuryWhyChooseUs = () => {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(sectionRef, { once: false, margin: "-100px" });
+  const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
 
   const benefits = [
     {
@@ -568,7 +539,7 @@ const LuxuryWhyChooseUs = () => {
   return (
     <motion.section
       ref={sectionRef}
-      className="px-4 sm:px-6 lg:px-8 py-24 md:py-32 bg-gradient-to-br from-neutral-50 via-white to-neutral-50 dark:from-neutral-950 dark:via-gray-900 dark:to-neutral-950 border-b border-neutral-200 dark:border-neutral-800"
+      className="px-4 sm:px-6 lg:px-8 py-24 md:py-32 bg-linear-to-br from-neutral-50 via-white to-neutral-50 dark:from-neutral-950 dark:via-gray-900 dark:to-neutral-950 border-b border-neutral-200 dark:border-neutral-800"
     >
       <div className="max-w-6xl mx-auto">
         <motion.div
@@ -601,7 +572,7 @@ const LuxuryWhyChooseUs = () => {
                 : { opacity: 0, width: 0 }
             }
             transition={{ duration: 1, delay: 0.4 }}
-            className="h-px bg-gradient-to-r from-transparent via-neutral-400 to-transparent dark:via-neutral-600 mx-auto"
+            className="h-px bg-linear-to-r from-transparent via-neutral-400 to-transparent dark:via-neutral-600 mx-auto"
           />
         </motion.div>
 
@@ -645,10 +616,9 @@ const LuxuryWhyChooseUs = () => {
   );
 };
 
-// Luxury Newsletter Component
 const LuxuryNewsletter = () => {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(sectionRef, { once: false, margin: "-100px" });
+  const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
 
   return (
     <motion.section
@@ -662,9 +632,8 @@ const LuxuryNewsletter = () => {
             isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.95 }
           }
           transition={{ duration: 0.8 }}
-          className="relative bg-gradient-to-br from-neutral-50 to-white dark:from-neutral-950 dark:to-gray-900 border-2 border-neutral-200 dark:border-neutral-800 rounded-sm p-12 md:p-16 lg:p-20 text-center overflow-hidden"
+          className="relative bg-linear-to-br from-neutral-50 to-white dark:from-neutral-950 dark:to-gray-900 border-2 border-neutral-200 dark:border-neutral-800 rounded-sm p-12 md:p-16 lg:p-20 text-center overflow-hidden"
         >
-          {/* Decorative Background */}
           <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05]">
             <div
               className="absolute inset-0"
@@ -711,7 +680,7 @@ const LuxuryNewsletter = () => {
                   : { opacity: 0, width: 0 }
               }
               transition={{ duration: 1, delay: 0.4 }}
-              className="h-px bg-gradient-to-r from-transparent via-neutral-400 to-transparent dark:via-neutral-600 mx-auto mb-8"
+              className="h-px bg-linear-to-r from-transparent via-neutral-400 to-transparent dark:via-neutral-600 mx-auto mb-8"
             />
 
             <motion.p

@@ -10,17 +10,17 @@ export const API_MESSAGES = {
   NETWORK_ERROR: "Lỗi kết nối mạng",
   TIMEOUT_ERROR: "Hết thời gian chờ",
   NOT_FOUND: "Không tìm thấy",
-  
+
   // Cart
   ADD_TO_CART_SUCCESS: "Đã thêm vào giỏ hàng",
   REMOVE_FROM_CART_SUCCESS: "Đã xóa khỏi giỏ hàng",
   CART_EMPTY: "Giỏ hàng trống",
-  
+
   // Checkout
   CHECKOUT_SUCCESS: "Đặt hàng thành công",
   CHECKOUT_ERROR: "Lỗi khi đặt hàng",
   PAYMENT_REQUIRED: "Vui lòng chọn phương thức thanh toán",
-  
+
   // Product
   OUT_OF_STOCK: "Sản phẩm đã hết hàng",
   LOW_STOCK: "Sản phẩm sắp hết",
@@ -37,19 +37,19 @@ export const PAGINATION = {
 
 // ─── TIMEOUT ──────────────────────────────────────────────────────
 export const TIMEOUT = {
-  FETCH: 30000, // 30 seconds
-  API: 30000,   // 30 seconds
+  FETCH: 30000,
+  API: 30000,
 } as const;
 
 // ─── CACHE ────────────────────────────────────────────────────────
 export const CACHE = {
-  REVALIDATE_TIME: 60, // seconds
+  REVALIDATE_TIME: 60,
   NO_STORE: "no-store",
 } as const;
 
 // ─── SHIPPING ─────────────────────────────────────────────────────
 export const SHIPPING = {
-  FREE_SHIPPING_THRESHOLD: 500000, // 500k VND
+  FREE_SHIPPING_THRESHOLD: 500000,
   STANDARD_FEE: 30000,
   EXPRESS_FEE: 50000,
 } as const;
@@ -69,4 +69,3 @@ export const ENV = {
   PRODUCTION: "production",
   TEST: "test",
 } as const;
-
