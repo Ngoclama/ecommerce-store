@@ -73,13 +73,17 @@ const HomePageClient: React.FC<HomePageClientProps> = ({
       hasMountedRef.current = true;
       // Force a re-render to ensure content displays
       setMountedKey((prev) => prev + 1);
-      
+
       // Detect if this is a page reload (F5 or refresh)
       try {
-        const navigationType = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming;
+        const navigationType = performance.getEntriesByType(
+          "navigation"
+        )[0] as PerformanceNavigationTiming;
         if (navigationType?.type === "reload") {
           // Page was reloaded, force refresh to get fresh billboards
-          console.log("[HOMEPAGE_CLIENT] Page reload detected, refreshing data");
+          console.log(
+            "[HOMEPAGE_CLIENT] Page reload detected, refreshing data"
+          );
           router.refresh();
         }
       } catch (e) {
@@ -102,10 +106,10 @@ const HomePageClient: React.FC<HomePageClientProps> = ({
       // Refresh router to ensure fresh data on client-side navigation
       router.refresh();
     }
-    
+
     // Update previous pathname
     prevPathnameRef.current = pathname;
-    
+
     // Mark initial load as complete after first render
     if (isInitialLoadRef.current) {
       isInitialLoadRef.current = false;
@@ -133,15 +137,11 @@ const HomePageClient: React.FC<HomePageClientProps> = ({
   const scale = useTransform(scrollYProgress, [0, 0.5], [1, 1.1]);
 
   return (
-    <div
-      key={mountedKey}
-      className="bg-white dark:bg-gray-900 min-h-screen overflow-hidden"
-    >
+    <div key={mountedKey} className="bg-white dark:bg-gray-900 min-h-screen">
       {/* Luxury Hero Section with Parallax */}
       <motion.section
         key={`hero-${mountedKey}`}
         ref={heroRef}
-        style={{ opacity, scale }}
         className="relative w-full min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-neutral-50 via-white to-neutral-50 dark:from-neutral-950 dark:via-gray-900 dark:to-neutral-950"
       >
         {billboards &&

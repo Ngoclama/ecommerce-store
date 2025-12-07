@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { ImagePlus, Video, X, Upload } from "lucide-react";
 import { Button } from "./ui/button";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useAuth as useClerkAuth } from "@clerk/nextjs";
+import { ImageUploadLoadingList } from "./ui/image-upload-loading";
 
 interface ReviewMediaUploadProps {
   images: string[];
@@ -24,63 +25,198 @@ const ReviewMediaUpload: React.FC<ReviewMediaUploadProps> = ({
   disabled = false,
 }) => {
   const [uploading, setUploading] = useState(false);
+  const [uploads, setUploads] = useState<
+    Array<{
+      id: string;
+      fileName: string;
+      progress?: number;
+      status?: "uploading" | "success" | "error";
+      previewUrl?: string;
+      errorMessage?: string;
+    }>
+  >([]);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
   const { getToken } = useClerkAuth();
+
+  // Auto remove completed uploads after 3 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setUploads((prev) =>
+        prev.filter((upload) => upload.status !== "success")
+      );
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [uploads]);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
     setUploading(true);
+    const fileArray = Array.from(files);
+
+    // Create preview URLs and add to uploads list
+    const uploadIds = fileArray.map((file) => {
+      const uploadId = `${Date.now()}-${Math.random()}`;
+      const previewUrl = URL.createObjectURL(file);
+
+      setUploads((prev) => [
+        ...prev,
+        {
+          id: uploadId,
+          fileName: file.name,
+          progress: 0,
+          status: "uploading" as const,
+          previewUrl,
+        },
+      ]);
+
+      return { id: uploadId, file };
+    });
+
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       if (!apiUrl) {
-        toast.error("API URL not configured");
+        toast.error("Đấy chỉ là demo. API chưa được cấu hình");
+        uploadIds.forEach(({ id }) => {
+          setUploads((prev) =>
+            prev.map((upload) =>
+              upload.id === id
+                ? {
+                    ...upload,
+                    status: "error" as const,
+                    errorMessage: "Chưa cấu hình API",
+                  }
+                : upload
+            )
+          );
+        });
         return;
       }
 
       const uploadedUrls: string[] = [];
 
-      for (const file of Array.from(files)) {
+      for (const { id, file } of uploadIds) {
         // Kiểm tra kích thước (max 5MB cho ảnh)
         if (file.size > 5 * 1024 * 1024) {
-          toast.error(`Ảnh ${file.name} quá lớn. Vui lòng chọn ảnh nhỏ hơn 5MB.`);
+          setUploads((prev) =>
+            prev.map((upload) =>
+              upload.id === id
+                ? {
+                    ...upload,
+                    status: "error" as const,
+                    errorMessage: "File quá lớn (>5MB)",
+                  }
+                : upload
+            )
+          );
+          toast.error(
+            `Ảnh ${file.name} quá lớn. Vui lòng chọn ảnh nhỏ hơn 5MB.`
+          );
           continue;
         }
 
         // Kiểm tra định dạng
         if (!file.type.startsWith("image/")) {
+          setUploads((prev) =>
+            prev.map((upload) =>
+              upload.id === id
+                ? {
+                    ...upload,
+                    status: "error" as const,
+                    errorMessage: "Không phải hình ảnh",
+                  }
+                : upload
+            )
+          );
           toast.error(`File ${file.name} không phải là hình ảnh.`);
           continue;
         }
+
+        // Update progress
+        setUploads((prev) =>
+          prev.map((upload) =>
+            upload.id === id ? { ...upload, progress: 30 } : upload
+          )
+        );
 
         const formData = new FormData();
         formData.append("file", file);
 
         // Lấy token từ Clerk
         const token = await getToken();
-        
+
+        // Update progress
+        setUploads((prev) =>
+          prev.map((upload) =>
+            upload.id === id ? { ...upload, progress: 50 } : upload
+          )
+        );
+
         // Upload lên API
         const response = await fetch(`${apiUrl}/api/upload`, {
           method: "POST",
           body: formData,
-          headers: token ? {
-            Authorization: `Bearer ${token}`,
-          } : {},
+          headers: token
+            ? {
+                Authorization: `Bearer ${token}`,
+              }
+            : {},
         });
+
+        setUploads((prev) =>
+          prev.map((upload) =>
+            upload.id === id ? { ...upload, progress: 80 } : upload
+          )
+        );
 
         if (response.ok) {
           const data = await response.json();
           if (data.url) {
             uploadedUrls.push(data.url);
-            toast.success(`Đã upload ảnh ${file.name} thành công`);
+            setUploads((prev) =>
+              prev.map((upload) =>
+                upload.id === id
+                  ? { ...upload, status: "success" as const, progress: 100 }
+                  : upload
+              )
+            );
           } else {
+            setUploads((prev) =>
+              prev.map((upload) =>
+                upload.id === id
+                  ? {
+                      ...upload,
+                      status: "error" as const,
+                      errorMessage: "Không có URL trả về",
+                    }
+                  : upload
+              )
+            );
             toast.error(`Upload thành công nhưng không có URL trả về`);
           }
         } else {
-          const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
-          toast.error(`Không thể upload ảnh ${file.name}: ${errorData.error || response.statusText}`);
+          const errorData = await response
+            .json()
+            .catch(() => ({ error: "Unknown error" }));
+          setUploads((prev) =>
+            prev.map((upload) =>
+              upload.id === id
+                ? {
+                    ...upload,
+                    status: "error" as const,
+                    errorMessage: errorData.error || response.statusText,
+                  }
+                : upload
+            )
+          );
+          toast.error(
+            `Không thể upload ảnh ${file.name}: ${
+              errorData.error || response.statusText
+            }`
+          );
         }
       }
 
@@ -89,7 +225,22 @@ const ReviewMediaUpload: React.FC<ReviewMediaUploadProps> = ({
       }
     } catch (error: any) {
       console.error("[REVIEW_UPLOAD] Error uploading images:", error);
-      toast.error(`Lỗi khi upload ảnh: ${error.message || "Vui lòng thử lại."}`);
+      uploadIds.forEach(({ id }) => {
+        setUploads((prev) =>
+          prev.map((upload) =>
+            upload.id === id
+              ? {
+                  ...upload,
+                  status: "error" as const,
+                  errorMessage: error.message || "Lỗi không xác định",
+                }
+              : upload
+          )
+        );
+      });
+      toast.error(
+        `Lỗi khi upload ảnh: ${error.message || "Vui lòng thử lại."}`
+      );
     } finally {
       setUploading(false);
       if (imageInputRef.current) {
@@ -106,7 +257,7 @@ const ReviewMediaUpload: React.FC<ReviewMediaUploadProps> = ({
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       if (!apiUrl) {
-        toast.error("API URL not configured");
+        toast.error("Đấy chỉ là demo. API chưa được cấu hình");
         return;
       }
 
@@ -115,7 +266,9 @@ const ReviewMediaUpload: React.FC<ReviewMediaUploadProps> = ({
       for (const file of Array.from(files)) {
         // Kiểm tra kích thước (max 64MB cho video)
         if (file.size > 64 * 1024 * 1024) {
-          toast.error(`Video ${file.name} quá lớn. Vui lòng chọn video nhỏ hơn 64MB.`);
+          toast.error(
+            `Video ${file.name} quá lớn. Vui lòng chọn video nhỏ hơn 64MB.`
+          );
           continue;
         }
 
@@ -130,14 +283,16 @@ const ReviewMediaUpload: React.FC<ReviewMediaUploadProps> = ({
 
         // Lấy token từ Clerk
         const token = await getToken();
-        
+
         // Upload lên API
         const response = await fetch(`${apiUrl}/api/upload`, {
           method: "POST",
           body: formData,
-          headers: token ? {
-            Authorization: `Bearer ${token}`,
-          } : {},
+          headers: token
+            ? {
+                Authorization: `Bearer ${token}`,
+              }
+            : {},
         });
 
         if (response.ok) {
@@ -149,8 +304,14 @@ const ReviewMediaUpload: React.FC<ReviewMediaUploadProps> = ({
             toast.error(`Upload thành công nhưng không có URL trả về`);
           }
         } else {
-          const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
-          toast.error(`Không thể upload video ${file.name}: ${errorData.error || response.statusText}`);
+          const errorData = await response
+            .json()
+            .catch(() => ({ error: "Unknown error" }));
+          toast.error(
+            `Không thể upload video ${file.name}: ${
+              errorData.error || response.statusText
+            }`
+          );
         }
       }
 
@@ -280,9 +441,11 @@ const ReviewMediaUpload: React.FC<ReviewMediaUploadProps> = ({
           </Button>
         </div>
       )}
+
+      {/* Loading Overlay */}
+      <ImageUploadLoadingList uploads={uploads} />
     </div>
   );
 };
 
 export default ReviewMediaUpload;
-

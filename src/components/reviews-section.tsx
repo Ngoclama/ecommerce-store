@@ -87,10 +87,13 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
         if (response.ok) {
           const data = await response.json();
           setReviews(data);
-          
+
           // Calculate average rating and total reviews
           if (data.length > 0) {
-            const sum = data.reduce((acc: number, r: Review) => acc + r.rating, 0);
+            const sum = data.reduce(
+              (acc: number, r: Review) => acc + r.rating,
+              0
+            );
             setAverageRating(sum / data.length);
             setTotalReviews(data.length);
           } else {
@@ -136,7 +139,7 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
       setSubmitting(true);
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       if (!apiUrl) {
-        toast.error("API URL not configured");
+        toast.error("Chưa cấu hình API URL");
         return;
       }
 
@@ -175,7 +178,7 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
         setComment("");
         setImageUrls([]);
         setVideoUrls([]);
-        
+
         // Refresh reviews
         const reviewsResponse = await fetch(
           `${baseUrl}/api/${storeId}/reviews?productId=${productId}`,
@@ -192,7 +195,10 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
           const data = await reviewsResponse.json();
           setReviews(data);
           if (data.length > 0) {
-            const sum = data.reduce((acc: number, r: Review) => acc + r.rating, 0);
+            const sum = data.reduce(
+              (acc: number, r: Review) => acc + r.rating,
+              0
+            );
             setAverageRating(sum / data.length);
             setTotalReviews(data.length);
           }
@@ -389,7 +395,8 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
                       {review.content}
                     </p>
                   )}
-                  {(review.imageUrls?.length > 0 || (review.videoUrls && review.videoUrls.length > 0)) && (
+                  {(review.imageUrls?.length > 0 ||
+                    (review.videoUrls && review.videoUrls.length > 0)) && (
                     <div className="flex gap-2 mb-3 flex-wrap">
                       {review.imageUrls?.map((url, idx) => (
                         <div
