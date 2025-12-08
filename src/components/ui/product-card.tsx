@@ -54,7 +54,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   }, [data.originalPrice, data.price]);
 
   const images = data.images || [];
-  // Trim and validate URLs to prevent errors with empty or whitespace-only strings
+  
   const primaryImage =
     images[0]?.url && images[0].url.trim()
       ? images[0].url.trim()
@@ -106,7 +106,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const isOutOfStock = productInventory <= 0;
   const isLowStock = productInventory > 0 && productInventory <= 5;
 
-  // Format price
+  
   const formatVND = (value: number) => {
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",
@@ -220,7 +220,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           className="relative aspect-3/4 bg-gray-50 dark:bg-gray-900 overflow-hidden border border-gray-200 dark:border-gray-700 cursor-pointer"
           onClick={handleClick}
         >
-          {/* PRIMARY IMAGE */}
+          {}
           <AnimatePresence mode="wait">
             <motion.div
               key={imageIndex}
@@ -314,7 +314,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             </div>
           )}
 
-          {/* ACTION BUTTONS OVERLAY - Bottom (Show on hover) */}
+          {}
           <div
             className="absolute inset-x-0 bottom-0 bg-white/98 dark:bg-gray-800/98 backdrop-blur-sm border-t border-gray-200 dark:border-gray-700 p-2.5 space-y-1.5 opacity-0 group-hover:opacity-100 translate-y-5 group-hover:translate-y-0 transition-all duration-300 z-30"
             onClick={(e) => e.stopPropagation()}
@@ -372,7 +372,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           <div className="absolute inset-0 bg-linear-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
         </div>
 
-        {/* PRODUCT INFO */}
+        {}
         <div className="pt-5 pb-4 px-3 space-y-3">
           {/* Product Name */}
           <h3
@@ -401,7 +401,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             )}
           </div>
 
-          {/* Stock Info (if low stock) */}
+          {}
           {isLowStock && !isOutOfStock && (
             <div className="flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-yellow-600" />
@@ -411,7 +411,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             </div>
           )}
 
-          {/* Size and Color Info */}
+          {}
           {(availableSizes.length > 0 || availableColors.length > 0) && (
             <div className="flex flex-wrap items-center gap-2 pt-1">
               {/* Sizes */}
@@ -473,7 +473,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             </div>
           )}
 
-          {/* Category Badge (optional) */}
+          {}
           {data.category && (
             <div className="pt-1">
               <span className="text-sm text-gray-500 dark:text-gray-400 font-light uppercase tracking-wide">

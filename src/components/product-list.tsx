@@ -79,12 +79,12 @@ const ProductList: React.FC<ProductListProps> = ({ title, items }) => {
   const handleToggleFavorite = async (productId: string) => {
     try {
       const newStatus = await toggleWishlistWithAuth(productId);
-      // Update local state
+      
       setWishlistStatus((prev) => ({
         ...prev,
         [productId]: newStatus ?? !prev[productId],
       }));
-      // Update cart wishlist
+      
       if (newStatus) {
         if (!wishlistItems.includes(productId)) {
           setWishlist([...wishlistItems, productId]);
@@ -108,11 +108,11 @@ const ProductList: React.FC<ProductListProps> = ({ title, items }) => {
           <ProductCard
             key={item.id}
             data={item}
-            // Check if the item is currently in the wishlist
+            
             isWishlistActive={
               wishlistStatus[item.id] ?? wishlistItems.includes(item.id)
             }
-            // Pass the toggle handler down
+            
             onToggleFavorite={handleToggleFavorite}
           />
         ))}

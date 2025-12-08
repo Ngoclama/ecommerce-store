@@ -15,7 +15,7 @@ const Navbar = async () => {
 
   return (
     <header className="sticky top-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
-      {/* Top Bar - Contact Info */}
+      {}
       <div className="bg-gray-50 dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 hidden lg:block">
         <Container>
           <div className="flex items-center justify-between h-10 px-4 sm:px-6 lg:px-8 text-xs">
@@ -64,7 +64,7 @@ const Navbar = async () => {
               <CategorySidebar categories={categories || []} />
             </div>
 
-            {/* Logo */}
+            {}
             <Link
               href="/"
               className="flex items-center gap-2 shrink-0 md:mx-auto"
@@ -84,7 +84,7 @@ const Navbar = async () => {
               </span>
             </Link>
 
-            {/* Actions - Right side with Search, Account, Cart */}
+            {}
             <div className="ml-auto flex items-center gap-2 md:gap-4">
               <NavbarActions />
             </div>

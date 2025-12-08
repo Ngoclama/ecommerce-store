@@ -12,7 +12,7 @@ function useThemeSafe() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Use requestAnimationFrame to defer setState
+    
     requestAnimationFrame(() => {
       setMounted(true);
     });
@@ -117,7 +117,7 @@ const FloatingButtons = () => {
               className="absolute right-0 bottom-full mb-2 w-48 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-none shadow-lg"
             >
               <div className="p-2">
-                {/* Dark Mode Toggle */}
+                {}
                 <button
                   onClick={() => {
                     toggleTheme();

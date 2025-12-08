@@ -47,7 +47,7 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
     getAllWishlistItems,
   } = useWishlist();
 
-  // State
+  
   const [currentImage, setCurrentImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [isInWishlist, setIsInWishlist] = useState(false);
@@ -62,11 +62,11 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
   const popoverRef = useRef<HTMLDivElement>(null);
   const thumbnailRef = useRef<HTMLDivElement>(null);
 
-  // Get variants
+  
   const variants = product.variants || [];
   const images = product.images || [];
 
-  // Get unique sizes, colors, materials
+  
   const availableSizes = useMemo(() => {
     const sizes = new Map<
       string,
@@ -103,7 +103,7 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
     return Array.from(materials.values());
   }, [variants]);
 
-  // Determine selected variant
+  
   const selectedVariant = useMemo(() => {
     if (variants.length === 0) return null;
     return variants.find(
@@ -114,12 +114,12 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
     );
   }, [variants, selectedSizeId, selectedColorId, selectedMaterialId]);
 
-  // Get current price and inventory
+  
   const currentPrice = selectedVariant?.price || product.price;
   const currentInventory = selectedVariant?.inventory ?? product.inventory ?? 0;
   const isOutOfStock = currentInventory <= 0;
 
-  // Calculate discount
+  
   const discountPercent = useMemo(() => {
     if (
       product.originalPrice &&
@@ -133,7 +133,7 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
     return 0;
   }, [product.originalPrice, product.price]);
 
-  // Format VND
+  
   const formatVND = (price: number) => {
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",
@@ -141,15 +141,15 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
     }).format(price);
   };
 
-  // Initialize mounted state
+  
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Lock body scroll when popover is open
+  
   useEffect(() => {
     if (isOpen) {
-      // Save current scroll position
+      
       const scrollY = window.scrollY;
       document.body.style.position = "fixed";
       document.body.style.top = `-${scrollY}px`;
@@ -167,12 +167,12 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
     }
   }, [isOpen]);
 
-  // Reset state when product changes
+  
   useEffect(() => {
     if (isOpen) {
       setCurrentImage(0);
       setQuantity(1);
-      // Set initial variant selections
+      
       if (variants.length > 0) {
         const firstVariant = variants[0];
         setSelectedSizeId(firstVariant.size?.id || null);
@@ -186,7 +186,7 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
     }
   }, [isOpen, product.id, variants]);
 
-  // Check wishlist status
+  
   useEffect(() => {
     if (!isOpen) return;
 
@@ -207,7 +207,7 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
     checkWishlistStatus();
   }, [isOpen, product.id, getAllWishlistItems, checkWishlist]);
 
-  // Update quantity when inventory changes
+  
   useEffect(() => {
     if (quantity > currentInventory && currentInventory > 0) {
       setQuantity(currentInventory);
@@ -227,7 +227,7 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
     }
   };
 
-  // Quantity handlers
+  
   const increaseQuantity = () => {
     if (currentInventory > 0 && quantity < currentInventory) {
       setQuantity((prev) => prev + 1);
@@ -240,7 +240,7 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
     }
   };
 
-  // Add to cart
+  
   const handleAddToCart = async () => {
     if (isOutOfStock) {
       toast.error("Sản phẩm đã hết hàng");
@@ -255,7 +255,7 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
     setIsAddingToCart(true);
 
     try {
-      // Create product data with selected variant
+      
       const productData: Product = {
         ...product,
         price: currentPrice,
@@ -290,7 +290,7 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
     }
   };
 
-  // Toggle wishlist
+  
   const handleToggleWishlist = async () => {
     try {
       await toggleWishlistWithAuth(product.id);
@@ -318,7 +318,7 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
         toast.success("Đã sao chép link");
       }
     } catch (error) {
-      // User cancelled or error
+      
       if (error instanceof Error && error.name !== "AbortError") {
         await navigator.clipboard.writeText(url);
         toast.success("Đã sao chép link");
@@ -326,7 +326,7 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
     }
   };
 
-  // Handle escape key
+  
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
@@ -342,7 +342,7 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
 
   if (!mounted || !isOpen) return null;
 
-  // Check if document.body exists (SSR safety)
+  
   if (typeof window === "undefined" || !document.body) {
     return null;
   }
@@ -361,7 +361,7 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
             exit={{ opacity: 0 }}
             transition={{
               duration: 0.3,
-              ease: [0.4, 0, 0.2, 1], // Custom easing curve
+              ease: [0.4, 0, 0.2, 1], 
             }}
             onClick={onClose}
           />
@@ -391,7 +391,7 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
               }}
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Close Button */}
+              {}
               <button
                 onClick={onClose}
                 className="absolute top-4 right-4 z-[102] p-2 bg-white hover:bg-gray-100 border border-gray-300 transition-colors rounded-none shadow-sm"
@@ -415,7 +415,7 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
                         priority
                       />
 
-                      {/* Navigation Arrows */}
+                      {}
                       {hasMultipleImages && (
                         <>
                           <button
@@ -441,14 +441,14 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
                         </>
                       )}
 
-                      {/* Image Counter */}
+                      {}
                       {hasMultipleImages && (
                         <div className="absolute bottom-4 right-4 bg-white/90 text-black border border-gray-300 px-3 py-1 text-xs rounded-none font-light">
                           {currentImage + 1} / {images.length}
                         </div>
                       )}
 
-                      {/* Discount Badge */}
+                      {}
                       {discountPercent > 0 && (
                         <div className="absolute top-4 left-4 z-10">
                           <span className="px-2 py-1 bg-black text-white text-xs font-light uppercase rounded-none">
@@ -523,7 +523,7 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
                 )}
               </div>
 
-              {/* Right: Product Info */}
+              {}
               <div className="w-full md:w-1/2 p-6 md:p-8 flex flex-col gap-6 overflow-y-auto min-h-0">
                 {/* Header */}
                 <div>
@@ -576,7 +576,7 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
                   />
                 )}
 
-                {/* Variants */}
+                {}
                 {variants.length > 0 && (
                   <div className="space-y-4">
                     {/* Size */}
@@ -669,7 +669,7 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
                       </div>
                     )}
 
-                    {/* Inventory Status */}
+                    {}
                     {selectedVariant && (
                       <div className="text-sm font-light">
                         {currentInventory > 0 ? (

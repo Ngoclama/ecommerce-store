@@ -21,7 +21,7 @@ const getProducts = async (
       return [];
     }
 
-    // Ensure API URL doesn't have trailing slash
+    
     const baseUrl = apiUrl.replace(/\/$/, "");
     const baseURL = `${baseUrl}/api/products`;
 
@@ -42,9 +42,9 @@ const getProducts = async (
       console.log("[PRODUCTS] Fetching from:", url);
     }
 
-    // Add timeout to prevent hanging
+    
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+    const timeoutId = setTimeout(() => controller.abort(), 30000); 
 
     const res = await fetch(url, {
       cache: "no-store",
@@ -59,15 +59,15 @@ const getProducts = async (
     }
 
     const data = await res.json();
-    // Handle different response formats:
-    // 1. Array directly: [...]
+    
+    
     // 2. { data: [...] }
-    // 3. { products: [...], pagination: {...} } (new format with pagination)
+    
     if (Array.isArray(data)) {
       return data;
     }
     if (data.products && Array.isArray(data.products)) {
-      // If pagination is requested, return with pagination
+      
       if (query.page && data.pagination) {
         return { products: data.products, pagination: data.pagination };
       }

@@ -13,7 +13,7 @@ interface PaginationProps {
     hasNextPage: boolean;
     hasPrevPage: boolean;
   };
-  basePath: string; // e.g., "/products/featured", "/products/new"
+  basePath: string; 
 }
 
 const Pagination: React.FC<PaginationProps> = ({ pagination, basePath }) => {
@@ -28,25 +28,25 @@ const Pagination: React.FC<PaginationProps> = ({ pagination, basePath }) => {
 
   const { page, totalPages, hasNextPage, hasPrevPage } = pagination;
 
-  // Generate page numbers to show
+  
   const getPageNumbers = () => {
     const pages: (number | string)[] = [];
     const maxPagesToShow = 5;
 
     if (totalPages <= maxPagesToShow) {
-      // Show all pages if total pages is less than max
+      
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i);
       }
     } else {
-      // Always show first page
+      
       pages.push(1);
 
       if (page > 3) {
         pages.push("...");
       }
 
-      // Show pages around current page
+      
       const start = Math.max(2, page - 1);
       const end = Math.min(totalPages - 1, page + 1);
 
@@ -58,7 +58,7 @@ const Pagination: React.FC<PaginationProps> = ({ pagination, basePath }) => {
         pages.push("...");
       }
 
-      // Always show last page
+      
       pages.push(totalPages);
     }
 
@@ -69,7 +69,7 @@ const Pagination: React.FC<PaginationProps> = ({ pagination, basePath }) => {
 
   return (
     <div className="flex items-center justify-center gap-2 mt-12">
-      {/* Previous Button */}
+      {}
       <Button
         variant="outline"
         size="sm"
@@ -80,7 +80,7 @@ const Pagination: React.FC<PaginationProps> = ({ pagination, basePath }) => {
         <ChevronLeft className="w-4 h-4" />
       </Button>
 
-      {/* Page Numbers */}
+      {}
       <div className="flex items-center gap-1">
         {getPageNumbers().map((pageNum, index) => {
           if (pageNum === "...") {
@@ -113,7 +113,7 @@ const Pagination: React.FC<PaginationProps> = ({ pagination, basePath }) => {
         })}
       </div>
 
-      {/* Next Button */}
+      {}
       <Button
         variant="outline"
         size="sm"

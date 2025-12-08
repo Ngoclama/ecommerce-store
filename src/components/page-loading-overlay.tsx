@@ -22,12 +22,12 @@ const getPageName = (pathname: string): string => {
     "/products/featured": "Sản phẩm nổi bật",
   };
 
-  // Check exact matches first
+  
   if (pathMap[pathname]) {
     return pathMap[pathname];
   }
 
-  // Check dynamic routes
+  
   if (pathname.startsWith("/product/")) {
     return "Chi tiết sản phẩm";
   }
@@ -41,7 +41,7 @@ const getPageName = (pathname: string): string => {
     return "Banner";
   }
 
-  // Default
+  
   return "Đang tải trang";
 };
 
@@ -53,36 +53,36 @@ export function PageLoadingOverlay() {
   const loadingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    // Listen for link clicks to show loading immediately
+    
     const handleLinkClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       const link = target.closest("a");
 
       if (link && link.href) {
-        // Check if link is disabled or has preventDefault
+        
         if (link.hasAttribute("disabled") || link.getAttribute("aria-disabled") === "true") {
           return;
         }
 
         try {
           const url = new URL(link.href);
-          // Only show loading for internal navigation
+          
           if (url.origin === window.location.origin) {
             setIsLoading(true);
             setPageName(getPageName(url.pathname));
           }
         } catch (error) {
-          // Invalid URL, ignore
+          
         }
       }
     };
 
-    // Listen for navigation start
+    
     const handleNavigationStart = () => {
       setIsLoading(true);
     };
 
-    // Use capture phase to catch clicks early, but don't prevent default
+    
     document.addEventListener("click", handleLinkClick, true);
     window.addEventListener("beforeunload", handleNavigationStart);
 
@@ -96,37 +96,37 @@ export function PageLoadingOverlay() {
   }, []);
 
   useEffect(() => {
-    // Only show loading if pathname actually changed
+    
     if (prevPathnameRef.current !== pathname) {
-      // Use requestAnimationFrame to defer setState
+      
       requestAnimationFrame(() => {
         setIsLoading(true);
         setPageName(getPageName(pathname));
       });
       prevPathnameRef.current = pathname;
 
-      // Clear any existing timeout
+      
       if (loadingTimeoutRef.current) {
         clearTimeout(loadingTimeoutRef.current);
       }
 
-      // Minimum loading time for smooth UX (300ms)
-      // Maximum loading time to prevent infinite loading (5s)
+      
+      
       const minLoadingTime = 300;
-      const maxLoadingTime = 5000; // 5 seconds max
+      const maxLoadingTime = 5000; 
 
-      // Hide loading after minimum time
+      
       loadingTimeoutRef.current = setTimeout(() => {
         setIsLoading(false);
       }, minLoadingTime);
 
-      // Safety timeout: force hide loading after max time
+      
       const maxTimeout = setTimeout(() => {
         console.warn("[PageLoadingOverlay] Loading timeout - forcing hide");
         setIsLoading(false);
       }, maxLoadingTime);
 
-      // Also hide loading when page is fully loaded
+      
       const handleLoad = () => {
         if (loadingTimeoutRef.current) {
           clearTimeout(loadingTimeoutRef.current);
@@ -134,7 +134,7 @@ export function PageLoadingOverlay() {
         setIsLoading(false);
       };
 
-      // Check if page is already loaded
+      
       if (document.readyState === "complete") {
         handleLoad();
       } else {
@@ -149,8 +149,8 @@ export function PageLoadingOverlay() {
         window.removeEventListener("load", handleLoad);
       };
     } else {
-      // If pathname hasn't changed, ensure loading is hidden
-      // This handles the case when page is already loaded
+      
+      
       if (document.readyState === "complete") {
         setIsLoading(false);
       }

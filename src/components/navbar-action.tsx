@@ -52,7 +52,7 @@ export const NavbarActions: React.FC = () => {
     wishlistItemsRef.current = wishlistItems;
   }, [wishlistItems]);
 
-  // Track userId to detect account changes
+  
   const { userId } = useAuth();
   const prevUserIdRef = useRef<string | null>(null);
   const hasClearedOnUserChangeRef = useRef(false);
@@ -67,12 +67,12 @@ export const NavbarActions: React.FC = () => {
         currentUserId,
       });
 
-      // Clear cart
+      
       cart.removeAll();
 
       setWishlist([]);
 
-      // Clear localStorage for cart/wishlist
+      
       try {
         localStorage.removeItem("ecommerce-cart-wishlist-storage");
         console.log("[USER_CHANGE] Cleared localStorage");
@@ -136,7 +136,7 @@ export const NavbarActions: React.FC = () => {
               }
             }
           }
-          // Reset flag after first sync
+          
           hasClearedOnUserChangeRef.current = false;
           return;
         }
@@ -220,7 +220,7 @@ export const NavbarActions: React.FC = () => {
           }
         }
 
-        // Use server wishlist as source of truth (no local merge to prevent data leakage)
+        
         const uniqueWishlistItems = Array.from(new Set(serverWishlistItems));
         const newCount = uniqueWishlistItems.length;
         const wishlistKey = uniqueWishlistItems.sort().join(",");
@@ -271,7 +271,7 @@ export const NavbarActions: React.FC = () => {
         syncIntervalRef.current = null;
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [isSignedIn, getAllWishlistItems, setWishlist]);
 
   const handleCheckout = () => {
@@ -315,7 +315,7 @@ export const NavbarActions: React.FC = () => {
   // wishlistItems được cập nhật optimistic khi user bấm yêu thích và được sync từ server
   const wishlistCount = wishlistItems.length;
 
-  // Calculate popover position (prevent overflow on both sides)
+  
   const [popoverPosition, setPopoverPosition] = useState({
     top: 0,
     left: 0,
@@ -324,7 +324,7 @@ export const NavbarActions: React.FC = () => {
   useEffect(() => {
     if (isOpen && cartButtonRef.current) {
       const rect = cartButtonRef.current.getBoundingClientRect();
-      const popoverMaxWidth = 448; // max-w-md = 448px
+      const popoverMaxWidth = 448; 
       const popoverWidth = Math.min(popoverMaxWidth, window.innerWidth * 0.9);
       const viewportWidth = window.innerWidth;
       const margin = 16;
@@ -332,16 +332,16 @@ export const NavbarActions: React.FC = () => {
       // Start from cart button position
       let left = rect.left;
 
-      // Check if popover would overflow on the right
+      
       if (left + popoverWidth > viewportWidth - margin) {
-        // Align to right edge with margin
+        
         left = viewportWidth - popoverWidth - margin;
       }
 
-      // Ensure minimum margin from left edge
+      
       left = Math.max(margin, left);
 
-      // Ensure popover doesn't exceed viewport width
+      
       const maxAllowedWidth = viewportWidth - left - margin;
       const finalWidth = Math.min(popoverWidth, maxAllowedWidth);
 
@@ -355,10 +355,10 @@ export const NavbarActions: React.FC = () => {
 
   return (
     <div className="flex items-center gap-3 md:gap-4">
-      {/* Search Dropdown - Real-time search */}
+      {}
       <SearchDropdown />
 
-      {/* User Account */}
+      {}
       {mounted && (
         <motion.div
           whileHover={{ scale: 1.05 }}
@@ -396,7 +396,7 @@ export const NavbarActions: React.FC = () => {
         </motion.div>
       )}
 
-      {/* Wishlist Icon */}
+      {}
       <motion.button
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
@@ -416,7 +416,7 @@ export const NavbarActions: React.FC = () => {
         )}
       </motion.button>
 
-      {/* Orders Icon - Only show if signed in */}
+      {}
       {isSignedIn && (
         <motion.button
           whileHover={{ scale: 1.05 }}
@@ -518,7 +518,7 @@ export const NavbarActions: React.FC = () => {
                     </Button>
                   </div>
 
-                  {/* BODY (Scrollable Items) */}
+                  {}
                   <div className="flex-1 overflow-y-auto px-5 py-4 scrollbar-hide">
                     {cart.items.length === 0 ? (
                       <motion.div
@@ -598,7 +598,7 @@ export const NavbarActions: React.FC = () => {
                                   </h3>
                                 </Link>
 
-                                {/* Variant Info */}
+                                {}
                                 <div className="mt-1 mb-2 space-y-1">
                                   {item.size && (
                                     <div className="text-xs font-light text-gray-600">
@@ -660,7 +660,7 @@ export const NavbarActions: React.FC = () => {
                                   )}
                                 </div>
 
-                                {/* Inventory Status */}
+                                {}
                                 {inventory <= 5 && inventory > 0 && (
                                   <div className="mb-2 text-xs text-amber-600 font-light">
                                     Chỉ còn {inventory} sản phẩm

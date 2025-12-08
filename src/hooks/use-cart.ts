@@ -8,7 +8,7 @@ import { v4 as uuidv4 } from "uuid";
 // Cấu hình axios để gửi credentials (cookies) với mọi request
 axios.defaults.withCredentials = true;
 
-// --- Wishlist Types & Logic ---
+
 interface WishlistState {
   wishlistItems: string[];
   isItemInWishlist: (id: string) => boolean;
@@ -18,7 +18,7 @@ interface WishlistState {
   removeFromWishlist: (productId: string) => void;
 }
 
-// --- Cart Types & Logic (Corrected Signatures) ---
+
 interface CartState {
   items: CartItem[];
   addItem: (data: Product, quantity?: number) => void;
@@ -35,13 +35,13 @@ type CartStore = CartState & WishlistState;
 const useCart = create(
   persist<CartStore>(
     (set, get) => ({
-      // --- Cart State & Actions ---
+      
       items: [],
 
       addItem: (data: Product, quantity = 1) => {
         const currentItems = get().items;
 
-        // 1. Check if a duplicate *variant* exists
+        
         const existingItem = currentItems.find(
           (item) =>
             item.id === data.id &&
@@ -54,7 +54,7 @@ const useCart = create(
         if (existingItem) {
           const newQuantity = existingItem.quantity + quantity;
 
-          // 2. Check stock when adding more
+          
           if (newQuantity > inventory) {
             toast.error(
               `Chỉ còn ${inventory} sản phẩm trong kho. Bạn đã có ${existingItem.quantity} trong giỏ.`
@@ -62,7 +62,7 @@ const useCart = create(
             return;
           }
 
-          // 3. Update quantity of existing item
+          
           set({
             items: currentItems.map((item) =>
               item.cartItemId === existingItem.cartItemId
@@ -72,7 +72,7 @@ const useCart = create(
           });
           toast.success(`Đã tăng số lượng lên ${newQuantity}.`);
         } else {
-          // 4. Add new item (assign unique ID and inventory snapshot)
+          
           const newItem: CartItem = {
             ...data,
             cartItemId: uuidv4(),
@@ -110,13 +110,13 @@ const useCart = create(
           return;
         }
 
-        // 2. Remove if quantity is 0
+        
         if (safeQuantity === 0) {
           get().removeItem(cartItemId);
           return;
         }
 
-        // 3. Update quantity
+        
         set({
           items: get().items.map((i) =>
             i.cartItemId === cartItemId ? { ...i, quantity: safeQuantity } : i
@@ -152,7 +152,7 @@ const useCart = create(
         }
       },
 
-      // --- Wishlist State & Actions ---
+      
       wishlistItems: [],
       isItemInWishlist: (id: string) => get().wishlistItems.includes(id),
       setWishlist: (productIds: string[]) => {

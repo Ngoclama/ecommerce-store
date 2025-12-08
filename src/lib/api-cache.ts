@@ -12,9 +12,7 @@ interface CacheOptions {
 const CACHE_PREFIX = "api_cache_";
 const DEFAULT_TTL = 30000;
 
-/**
- * Get cached data from sessionStorage
- */
+
 export function getCachedData<T>(key: string): T | null {
   if (typeof window === "undefined") return null;
 
@@ -37,9 +35,7 @@ export function getCachedData<T>(key: string): T | null {
   }
 }
 
-/**
- * Set cached data in sessionStorage
- */
+
 export function setCachedData<T>(
   key: string,
   data: T,
@@ -60,9 +56,7 @@ export function setCachedData<T>(
   }
 }
 
-/**
- * Clear old cache entries to free up space
- */
+
 function clearOldCache(): void {
   if (typeof window === "undefined") return;
 
@@ -90,17 +84,13 @@ function clearOldCache(): void {
   }
 }
 
-/**
- * Clear specific cache entry
- */
+
 export function clearCache(key: string): void {
   if (typeof window === "undefined") return;
   sessionStorage.removeItem(`${CACHE_PREFIX}${key}`);
 }
 
-/**
- * Clear all API cache
- */
+
 export function clearAllCache(): void {
   if (typeof window === "undefined") return;
 

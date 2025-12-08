@@ -31,14 +31,14 @@ export const useVietnamAddress = () => {
     wards: false,
   });
 
-  // Fetch all provinces
+  
   const fetchProvinces = useCallback(async () => {
     setLoading((prev) => ({ ...prev, provinces: true }));
     try {
       const response = await fetch(`${API_BASE_URL}/p/`);
       if (!response.ok) throw new Error("Failed to fetch provinces");
       const data = await response.json();
-      // API returns array of provinces with code and name
+      
       const formattedProvinces = data.map((item: Record<string, unknown>) => ({
         code: item.code || item.codeName || String(item.code),
         name: item.name || item.name_with_type || "",
@@ -58,7 +58,7 @@ export const useVietnamAddress = () => {
     }
   }, []);
 
-  // Fetch districts by province code
+  
   const fetchDistricts = useCallback(async (provinceCode: string) => {
     if (!provinceCode) {
       setDistricts([]);
@@ -71,7 +71,7 @@ export const useVietnamAddress = () => {
       const response = await fetch(`${API_BASE_URL}/p/${provinceCode}?depth=2`);
       if (!response.ok) throw new Error("Failed to fetch districts");
       const data = await response.json();
-      // API returns districts in data.districts array
+      
       const districtsList = (data.districts || []).map(
         (item: Record<string, unknown>) => ({
           code: item.code || item.codeName || String(item.code),
@@ -86,7 +86,7 @@ export const useVietnamAddress = () => {
         );
       }
       setDistricts(districtsList);
-      // Clear wards when province changes
+      
       setWards([]);
     } catch (error) {
       console.error("[useVietnamAddress] Error fetching districts:", error);
@@ -97,7 +97,7 @@ export const useVietnamAddress = () => {
     }
   }, []);
 
-  // Fetch wards by district code
+  
   const fetchWards = useCallback(async (districtCode: string) => {
     if (!districtCode) {
       setWards([]);
@@ -109,7 +109,7 @@ export const useVietnamAddress = () => {
       const response = await fetch(`${API_BASE_URL}/d/${districtCode}?depth=2`);
       if (!response.ok) throw new Error("Failed to fetch wards");
       const data = await response.json();
-      // API returns wards in data.wards array
+      
       const wardsList = (data.wards || []).map(
         (item: Record<string, unknown>) => ({
           code: item.code || item.codeName || String(item.code),

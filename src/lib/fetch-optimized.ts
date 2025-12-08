@@ -14,9 +14,7 @@ const DEFAULT_TIMEOUT = 10000;
 const DEFAULT_RETRIES = 2;
 const DEFAULT_RETRY_DELAY = 1000;
 
-/**
- * Fetch with timeout
- */
+
 function fetchWithTimeout(
   url: string,
   options: FetchOptions = {}
@@ -46,9 +44,7 @@ function fetchWithTimeout(
   });
 }
 
-/**
- * Fetch with retry logic
- */
+
 export async function fetchWithRetry<T>(
   url: string,
   options: FetchOptions = {}
@@ -114,9 +110,7 @@ export async function fetchParallel<T>(
   return Promise.all(promises);
 }
 
-/**
- * Fetch with request deduplication
- */
+
 const pendingRequests = new Map<string, Promise<unknown>>();
 
 export function fetchDeduplicated<T>(

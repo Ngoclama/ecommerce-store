@@ -19,14 +19,14 @@ function useThemeSafe() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Use requestAnimationFrame to defer setState
+    
     requestAnimationFrame(() => {
       setMounted(true);
     });
     // Lấy theme từ localStorage, mặc định là light mode
     const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
     const initialTheme = savedTheme || "light";
-    // Use requestAnimationFrame to defer setState
+    
     requestAnimationFrame(() => {
       setTheme(initialTheme);
     });
@@ -156,7 +156,7 @@ export const SettingsButton: React.FC = () => {
     };
   }, [isMenuOpen]);
 
-  // Scroll to top function
+  
   const scrollToTop = () => {
     // Ẩn nút ngay khi bắt đầu scroll
     setIsVisible(false);
@@ -224,7 +224,7 @@ export const SettingsButton: React.FC = () => {
                   className="absolute right-0 bottom-full mb-2 w-56 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-none shadow-xl z-50"
                 >
                   <div className="p-2">
-                    {/* Dark Mode Toggle */}
+                    {}
                     <button
                       onClick={() => {
                         toggleTheme();
@@ -266,7 +266,7 @@ export const SettingsButton: React.FC = () => {
                     {/* Divider */}
                     <div className="border-t border-gray-200 dark:border-gray-700 my-1" />
 
-                    {/* Message Options */}
+                    {}
                     <div className="space-y-1">
                       <a
                         href="https://zalo.me/0123456789"

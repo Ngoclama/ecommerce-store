@@ -169,7 +169,7 @@ const BillboardCarousel: React.FC<BillboardCarouselProps> = ({
               className="relative h-full flex flex-col justify-center items-center gap-8 px-6 sm:px-12 md:px-16 lg:px-24 py-16 cursor-pointer"
               onClick={handleBillboardClick}
             >
-              {/* Main Text - Luxury Typography */}
+              {}
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -228,7 +228,7 @@ const BillboardCarousel: React.FC<BillboardCarouselProps> = ({
           </motion.div>
         </AnimatePresence>
 
-        {/* Navigation Arrows - Luxury Style: Elegant, Smooth */}
+        {}
         {billboards.length > 1 && (
           <>
             <motion.button
@@ -252,7 +252,7 @@ const BillboardCarousel: React.FC<BillboardCarouselProps> = ({
           </>
         )}
 
-        {/* Dots Indicator - Luxury Style: Minimal, Elegant */}
+        {}
         {billboards.length > 1 && (
           <div className="absolute bottom-8 md:bottom-12 left-1/2 -translate-x-1/2 flex gap-3 z-10">
             {billboards.map((_, index) => (

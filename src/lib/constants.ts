@@ -3,9 +3,9 @@
  * Thay thế magic strings và hardcoded values
  */
 
-// ─── API RESPONSE MESSAGES ────────────────────────────────────────
+
 export const API_MESSAGES = {
-  // Error
+  
   FETCH_ERROR: "Lỗi khi tải dữ liệu",
   NETWORK_ERROR: "Lỗi kết nối mạng",
   TIMEOUT_ERROR: "Hết thời gian chờ",
@@ -16,7 +16,7 @@ export const API_MESSAGES = {
   REMOVE_FROM_CART_SUCCESS: "Đã xóa khỏi giỏ hàng",
   CART_EMPTY: "Giỏ hàng trống",
 
-  // Checkout
+  
   CHECKOUT_SUCCESS: "Đặt hàng thành công",
   CHECKOUT_ERROR: "Lỗi khi đặt hàng",
   PAYMENT_REQUIRED: "Vui lòng chọn phương thức thanh toán",
@@ -35,13 +35,13 @@ export const PAGINATION = {
   MIN_LIMIT: 1,
 } as const;
 
-// ─── TIMEOUT ──────────────────────────────────────────────────────
+
 export const TIMEOUT = {
   FETCH: 30000,
   API: 30000,
 } as const;
 
-// ─── CACHE ────────────────────────────────────────────────────────
+
 export const CACHE = {
   REVALIDATE_TIME: 60,
   NO_STORE: "no-store",
@@ -54,7 +54,7 @@ export const SHIPPING = {
   EXPRESS_FEE: 50000,
 } as const;
 
-// ─── PAYMENT METHODS ──────────────────────────────────────────────
+
 export const PAYMENT_METHODS = {
   COD: "cod",
   STRIPE: "stripe",
@@ -63,7 +63,7 @@ export const PAYMENT_METHODS = {
   QR: "qr",
 } as const;
 
-// ─── ENVIRONMENT ─────────────────────────────────────────────────
+
 export const ENV = {
   DEVELOPMENT: "development",
   PRODUCTION: "production",

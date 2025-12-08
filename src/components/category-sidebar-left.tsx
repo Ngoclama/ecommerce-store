@@ -84,7 +84,7 @@ export default function CategorySidebarLeft({
     });
   };
 
-  // Don't render until mounted to avoid hydration mismatch
+  
   if (!mounted) {
     return (
       <>
@@ -96,7 +96,7 @@ export default function CategorySidebarLeft({
 
   return (
     <>
-      {/* Toggle Button - Luxury Style */}
+      {}
       <AnimatePresence mode="wait">
         <motion.button
           key={isOpen ? "open" : "closed"}

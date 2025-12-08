@@ -7,12 +7,12 @@ import Container from "@/components/ui/container";
 const logos = [
   {
     name: "Gucci",
-    src: "https://logos-world.net/wp-content/uploads/2020/04/Gucci-Logo.png",
+    src: "/gucci-logo.png",
     height: 24,
   },
   {
     name: "Chanel",
-    src: "https://logos-world.net/wp-content/uploads/2020/04/Chanel-Logo.png",
+    src: "/chanel-logo.png",
     height: 24,
   },
   {

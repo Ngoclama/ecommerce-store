@@ -25,7 +25,7 @@ const ProductSwiper: React.FC<ProductSwiperProps> = ({ products }) => {
     {}
   );
 
-  // Sync wishlist status
+  
   useEffect(() => {
     const syncWishlist = async () => {
       const status: Record<string, boolean> = {};

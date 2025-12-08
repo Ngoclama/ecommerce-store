@@ -8,7 +8,7 @@ export function SidebarContentWrapper({
 }: {
   children: React.ReactNode;
 }) {
-  // Initialize state from localStorage if available, otherwise default to false (closed)
+  
   const [sidebarOpen, setSidebarOpen] = useState(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("sidebarOpen");
@@ -18,7 +18,7 @@ export function SidebarContentWrapper({
   });
 
   useEffect(() => {
-    // Listen for sidebar toggle events
+    
     const handleToggle = (e: CustomEvent) => {
       setSidebarOpen(e.detail.isOpen);
     };

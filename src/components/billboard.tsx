@@ -4,7 +4,7 @@ import { Billboard as BillboardType } from "@/types";
 import { motion } from "framer-motion";
 import { Sparkles, Gift, Zap, Star } from "lucide-react";
 
-// Fixed positions for sparkles to avoid hydration mismatch
+
 const SPARKLE_POSITIONS = [
   { left: "10%", top: "15%" },
   { left: "25%", top: "30%" },
@@ -83,7 +83,7 @@ const Billboard: React.FC<BillboardProps> = ({ data }) => {
 
         {/* Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
-          {/* Enhanced Confetti/Sparkles with glow */}
+          {}
           {SPARKLE_POSITIONS.map((pos, i) => (
             <motion.div
               key={i}
@@ -205,7 +205,7 @@ const Billboard: React.FC<BillboardProps> = ({ data }) => {
 
         {/* Content */}
         <div className="relative z-10 h-full flex flex-col justify-center items-start gap-6 px-6 sm:px-12 md:px-16 lg:px-20 py-12">
-          {/* Main Text with enhanced animations */}
+          {}
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
@@ -347,7 +347,7 @@ const Billboard: React.FC<BillboardProps> = ({ data }) => {
           </motion.div>
         </motion.div>
 
-        {/* Floating Discount Badge */}
+        {}
         <motion.div
           className="absolute top-8 right-8 hidden lg:block z-20"
           initial={{ opacity: 0, scale: 0, rotate: -180 }}

@@ -118,7 +118,7 @@ export function Parallax({
       const elementTop = rect.top;
       const elementHeight = rect.height;
 
-      // Calculate parallax offset based on element position relative to viewport
+      
       const scrolled = windowHeight - elementTop;
       const progress = Math.max(0, Math.min(1, scrolled / (windowHeight + elementHeight)));
       

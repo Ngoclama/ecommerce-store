@@ -54,7 +54,7 @@ const RecentlyViewed: React.FC<RecentlyViewedProps> = ({
           setWishlistStatus(status);
         }
       } catch (error) {
-        // Fallback to local storage
+        
         if (isMounted) {
           const status: Record<string, boolean> = {};
           viewedProducts.forEach((product) => {
@@ -75,12 +75,12 @@ const RecentlyViewed: React.FC<RecentlyViewedProps> = ({
   const handleToggleFavorite = async (productId: string) => {
     try {
       const newStatus = await toggleWishlistWithAuth(productId);
-      // Update local state
+      
       setWishlistStatus((prev) => ({
         ...prev,
         [productId]: newStatus ?? !prev[productId],
       }));
-      // Update cart wishlist
+      
       if (newStatus) {
         if (!wishlistItems.includes(productId)) {
           setWishlist([...wishlistItems, productId]);
@@ -98,13 +98,13 @@ const RecentlyViewed: React.FC<RecentlyViewedProps> = ({
       const stored = localStorage.getItem("recentlyViewed");
       const viewed = stored ? JSON.parse(stored) : [];
 
-      // Remove current product if exists and add to front
+      
       const filtered = viewed.filter((p: Product) => p.id !== currentProductId);
       const currentProduct = viewed.find(
         (p: Product) => p.id === currentProductId
       );
 
-      // Use requestAnimationFrame to defer setState
+      
       requestAnimationFrame(() => {
         if (currentProduct) {
           setViewedProducts([currentProduct, ...filtered].slice(0, 8));
@@ -134,7 +134,7 @@ const RecentlyViewed: React.FC<RecentlyViewedProps> = ({
       transition={{ duration: 0.5 }}
       className="border-t border-gray-200 pt-10 mt-12"
     >
-      {/* Header Section - Modern 2025 Style */}
+      {}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-gray-50 border border-gray-200 rounded-none">

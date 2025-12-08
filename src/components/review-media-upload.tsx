@@ -39,7 +39,7 @@ const ReviewMediaUpload: React.FC<ReviewMediaUploadProps> = ({
   const videoInputRef = useRef<HTMLInputElement>(null);
   const { getToken } = useClerkAuth();
 
-  // Auto remove completed uploads after 3 seconds
+  
   useEffect(() => {
     const timer = setTimeout(() => {
       setUploads((prev) =>
@@ -57,7 +57,7 @@ const ReviewMediaUpload: React.FC<ReviewMediaUploadProps> = ({
     setUploading(true);
     const fileArray = Array.from(files);
 
-    // Create preview URLs and add to uploads list
+    
     const uploadIds = fileArray.map((file) => {
       const uploadId = `${Date.now()}-${Math.random()}`;
       const previewUrl = URL.createObjectURL(file);
@@ -135,7 +135,7 @@ const ReviewMediaUpload: React.FC<ReviewMediaUploadProps> = ({
           continue;
         }
 
-        // Update progress
+        
         setUploads((prev) =>
           prev.map((upload) =>
             upload.id === id ? { ...upload, progress: 30 } : upload
@@ -148,7 +148,7 @@ const ReviewMediaUpload: React.FC<ReviewMediaUploadProps> = ({
         // Lấy token từ Clerk
         const token = await getToken();
 
-        // Update progress
+        
         setUploads((prev) =>
           prev.map((upload) =>
             upload.id === id ? { ...upload, progress: 50 } : upload
@@ -339,7 +339,7 @@ const ReviewMediaUpload: React.FC<ReviewMediaUploadProps> = ({
 
   return (
     <div className="space-y-4">
-      {/* Images Preview */}
+      {}
       {images.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {images.map((url, index) => (
@@ -368,7 +368,7 @@ const ReviewMediaUpload: React.FC<ReviewMediaUploadProps> = ({
         </div>
       )}
 
-      {/* Videos Preview */}
+      {}
       {videos.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {videos.map((url, index) => (

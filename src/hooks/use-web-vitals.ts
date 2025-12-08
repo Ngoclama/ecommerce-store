@@ -44,9 +44,6 @@ export function useWebVitals() {
   }, []);
 }
 
-/**
- * Measure Component Render Time
- */
 export function useRenderPerformance(componentName: string) {
   useEffect(() => {
     const startTime = performance.now();
@@ -60,9 +57,6 @@ export function useRenderPerformance(componentName: string) {
   }, [componentName]);
 }
 
-/**
- * Measure API Response Time
- */
 export async function measureApiCall<T>(
   url: string,
   fetcher: () => Promise<T>

@@ -25,7 +25,7 @@ export const CartAnimation: React.FC<CartAnimationProps> = ({
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Use requestAnimationFrame to defer setState
+    
     requestAnimationFrame(() => {
       setMounted(true);
     });
@@ -93,7 +93,7 @@ export const CartAnimation: React.FC<CartAnimationProps> = ({
     return null;
   }
 
-  // Check if document.body exists (SSR safety)
+  
   if (typeof window === "undefined" || !document.body) {
     return null;
   }

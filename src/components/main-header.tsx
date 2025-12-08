@@ -29,7 +29,7 @@ export default function MainHeader({
 }: MainHeaderProps) {
   const pathname = usePathname();
 
-  // Filter parent categories (categories already have children populated from action)
+  
   const parentCategories = categories.filter((category) => !category.parentId);
 
   return (
@@ -78,7 +78,7 @@ export default function MainHeader({
       <div className="bg-white dark:bg-gray-900">
         <Container>
           <div className="flex items-center justify-between h-16 md:h-20 px-4 sm:px-6 lg:px-8 gap-4">
-            {/* Logo */}
+            {}
             <Link href="/" className="flex items-center shrink-0">
               <div className="relative w-10 h-10 md:w-12 md:h-12">
                 <Image
@@ -169,7 +169,7 @@ export default function MainHeader({
                         ))}
                       </div>
 
-                      {/* Footer - View All */}
+                      {}
                       <div className="border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 px-10 py-4">
                         <Link
                           href="/categories"
@@ -195,7 +195,7 @@ export default function MainHeader({
                   </div>
                 )}
               </div>
-              {/* New */}
+              {}
               <Link
                 href="/products/new"
                 prefetch={true}
@@ -205,7 +205,7 @@ export default function MainHeader({
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-black dark:bg-white group-hover/nav:w-full transition-all duration-300 ease-out will-change-[width]"></span>
               </Link>
 
-              {/* Blog */}
+              {}
               <Link
                 href="/blog"
                 prefetch={true}
@@ -227,7 +227,7 @@ export default function MainHeader({
                     <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-black dark:bg-white group-hover/nav:w-full transition-all duration-300 ease-out will-change-[width]"></span>
                   </Link>
                   <div className="absolute left-0 top-full mt-2 w-56 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-none shadow-xl opacity-0 invisible scale-95 -translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:scale-100 group-hover:translate-y-0 pointer-events-none group-hover:pointer-events-auto z-50 transition-all duration-300 ease-out will-change-[opacity,transform]">
-                    {/* Hover bridge to prevent dropdown from closing when moving mouse */}
+                    {}
                     <div className="absolute -top-2 left-0 right-0 h-2" />
                     <div className="py-2">
                       {billboards.map((billboard) => (
@@ -256,7 +256,7 @@ export default function MainHeader({
               </Link>
             </nav>
 
-            {/* Right Actions - Use NavbarActions component for all icons */}
+            {}
             <NavbarActions />
           </div>
         </Container>

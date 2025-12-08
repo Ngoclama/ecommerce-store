@@ -1,7 +1,4 @@
-/**
- * Optimized Animation Presets
- * Reduces over-animation and improves performance
- */
+
 
 export const useReducedMotion = () => {
   if (typeof window === "undefined") return false;
@@ -40,10 +37,6 @@ export const ANIMATION_PRESETS = {
   },
 } as const;
 
-/**
- * Conditional animation wrapper
- * Respects prefers-reduced-motion
- */
 export const conditionalAnimation = (
   animation: any,
   disabled: boolean = false
@@ -58,10 +51,6 @@ export const conditionalAnimation = (
   return animation;
 };
 
-/**
- * Optimized stagger container
- * Use for lists - reduces jank
- */
 export const STAGGER_CONTAINER = {
   hidden: { opacity: 0 },
   visible: {

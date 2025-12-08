@@ -21,7 +21,7 @@ interface GalleryProps {
 export default function Gallery({ images }: GalleryProps) {
   const [index, setIndex] = useState(0);
 
-  // Auto switch after 10s if user doesn't touch
+  
   useEffect(() => {
     const timer = setTimeout(() => {
       setIndex((prev) => (prev + 1) % images.length);

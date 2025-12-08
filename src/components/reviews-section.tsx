@@ -61,7 +61,7 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
     setMounted(true);
   }, []);
 
-  // Fetch reviews
+  
   useEffect(() => {
     const fetchReviews = async () => {
       try {
@@ -88,7 +88,7 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
           const data = await response.json();
           setReviews(data);
 
-          // Calculate average rating and total reviews
+          
           if (data.length > 0) {
             const sum = data.reduce(
               (acc: number, r: Review) => acc + r.rating,
@@ -179,7 +179,7 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
         setImageUrls([]);
         setVideoUrls([]);
 
-        // Refresh reviews
+        
         const reviewsResponse = await fetch(
           `${baseUrl}/api/${storeId}/reviews?productId=${productId}`,
           {
@@ -253,7 +253,7 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
         )}
       </div>
 
-      {/* Review Form */}
+      {}
       {showForm && (
         <div className="bg-white dark:bg-gray-900 p-6 mb-6 border border-gray-300 dark:border-gray-700">
           <h4 className="text-sm font-light text-black dark:text-white mb-4 uppercase tracking-wider">
@@ -333,7 +333,7 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
         </div>
       )}
 
-      {/* Reviews List */}
+      {}
       {loading ? (
         <div className="text-center py-12 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700">
           <p className="text-gray-600 dark:text-gray-400 text-sm font-light">
@@ -427,7 +427,7 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
                       ))}
                     </div>
                   )}
-                  {/* Admin Response */}
+                  {}
                   {review.adminResponse && (
                     <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 border-l-4 border-black dark:border-white">
                       <div className="flex items-start gap-2 mb-2">

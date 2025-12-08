@@ -62,7 +62,7 @@ export const ImageUploadLoading: React.FC<ImageUploadLoadingProps> = ({
 
   return (
     <div className="relative w-full max-w-sm bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-lg overflow-hidden animate-in fade-in slide-in-from-right-5 duration-300">
-      {/* Preview Image */}
+      {}
       {previewUrl && (
         <div className="relative w-full h-32 bg-neutral-100 dark:bg-neutral-900">
           <Image
@@ -84,7 +84,7 @@ export const ImageUploadLoading: React.FC<ImageUploadLoadingProps> = ({
           {/* Icon */}
           <div className="flex-shrink-0 mt-0.5">{getStatusIcon()}</div>
 
-          {/* File Info */}
+          {}
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100 truncate">
               {fileName}
@@ -103,7 +103,7 @@ export const ImageUploadLoading: React.FC<ImageUploadLoadingProps> = ({
           </div>
         </div>
 
-        {/* Progress Bar - Only show when uploading */}
+        {}
         {status === "uploading" && (
           <div className="space-y-1">
             <div className="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400">
@@ -131,7 +131,7 @@ export const ImageUploadLoading: React.FC<ImageUploadLoadingProps> = ({
           </div>
         )}
 
-        {/* Error Message */}
+        {}
         {status === "error" && errorMessage && (
           <div className="text-xs text-red-500 bg-red-50 dark:bg-red-900/20 p-2 rounded border border-red-200 dark:border-red-800">
             {errorMessage}
@@ -139,7 +139,7 @@ export const ImageUploadLoading: React.FC<ImageUploadLoadingProps> = ({
         )}
       </div>
 
-      {/* Success Checkmark */}
+      {}
       {status === "success" && (
         <div className="absolute top-2 right-2 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center animate-in zoom-in duration-300">
           <CheckCircle2 className="h-5 w-5 text-white" />

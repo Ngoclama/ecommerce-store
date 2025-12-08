@@ -140,7 +140,7 @@ const SizeGuide: React.FC<SizeGuideProps> = ({ category = "Áo" }) => {
         </DialogHeader>
 
         <div className="px-8 py-8 space-y-8">
-          {/* Gender Toggle - Luxury Style */}
+          {}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -199,7 +199,7 @@ const SizeGuide: React.FC<SizeGuideProps> = ({ category = "Áo" }) => {
             </TabsList>
 
             <TabsContent value="chart" className="mt-8 space-y-8">
-              {/* Size Chart Table - Luxury Style */}
+              {}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}

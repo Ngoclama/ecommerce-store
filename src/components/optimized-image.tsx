@@ -9,12 +9,6 @@ interface OptimizedImageProps extends Omit<ImageProps, "onLoad"> {
   placeholderClassName?: string;
 }
 
-/**
- * Optimized Image Component with blur placeholder
- * - Lazy loading by default
- * - Blur placeholder while loading
- * - Proper aspect ratio handling
- */
 export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   src,
   alt,

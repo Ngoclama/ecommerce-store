@@ -8,7 +8,7 @@ const getCategories = async (): Promise<Category[]> => {
       return [];
     }
 
-    // Ensure API URL doesn't have trailing slash
+    
     const baseUrl = apiUrl.replace(/\/$/, "");
     const URL = `${baseUrl}/api/categories`;
 
@@ -16,9 +16,9 @@ const getCategories = async (): Promise<Category[]> => {
       console.log("[CATEGORIES] Fetching from:", URL);
     }
 
-    // Add timeout to prevent hanging - increased to 15s for better reliability
+    
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
+    const timeoutId = setTimeout(() => controller.abort(), 15000); 
 
     const res = await fetch(URL, {
       signal: controller.signal,
@@ -47,7 +47,7 @@ const getCategories = async (): Promise<Category[]> => {
       children: allCategories.filter((cat) => cat.parentId === parent.id),
     }));
 
-    // Debug log to check billboard data
+    
     if (process.env.NODE_ENV === "development") {
       console.log(
         "[CATEGORIES] Parent categories count:",

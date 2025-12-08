@@ -44,7 +44,7 @@ export default function Footer() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Use requestAnimationFrame to defer setState
+    
     requestAnimationFrame(() => {
       setMounted(true);
     });
@@ -52,11 +52,11 @@ export default function Footer() {
 
   return (
     <footer className="bg-white dark:bg-gray-900 text-black dark:text-white border-t border-gray-200 dark:border-gray-800">
-      {/* Main Footer - Aigle Style */}
+      {}
       <div className="border-b border-gray-200 dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8 md:gap-12">
-            {/* Help & Information */}
+            {}
             <div>
               <h3 className="text-xs font-light text-black dark:text-white uppercase tracking-wider mb-4">
                 Trợ giúp & Thông tin
@@ -218,7 +218,7 @@ export default function Footer() {
               </ul>
             </div>
 
-            {/* Newsletter & Social */}
+            {}
             <div className="col-span-2 md:col-span-1 lg:col-span-2">
               <h3 className="text-xs font-light text-black dark:text-white uppercase tracking-wider mb-4">
                 Kết nối với chúng tôi
@@ -248,7 +248,7 @@ export default function Footer() {
                 </div>
               )}
 
-              {/* Social Links */}
+              {}
               <div className="flex gap-3">
                 <a
                   href="#"
@@ -284,11 +284,11 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Payment Methods & Bottom Bar - Aigle Style */}
+      {}
       <div className="border-t border-gray-200 dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            {/* Payment Methods */}
+            {}
             <div className="flex items-center gap-4">
               <span className="text-xs font-light text-gray-600 dark:text-gray-400">
                 Chúng tôi chấp nhận
@@ -312,7 +312,7 @@ export default function Footer() {
               </div>
             </div>
 
-            {/* Copyright */}
+            {}
             <p
               className="text-xs font-light text-gray-600 dark:text-gray-400"
               suppressHydrationWarning

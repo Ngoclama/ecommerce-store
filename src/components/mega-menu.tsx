@@ -55,7 +55,7 @@ const MegaMenu: React.FC<MegaMenuProps> = ({ categories }) => {
                 onMouseEnter={() => setHoveredCategory(category.id)}
                 onMouseLeave={() => setHoveredCategory(null)}
               >
-                {/* Parent Category Link */}
+                {}
                 <Link
                   href={`/category/${category.id}`}
                   className={cn(
@@ -77,7 +77,7 @@ const MegaMenu: React.FC<MegaMenuProps> = ({ categories }) => {
                   )}
                 </Link>
 
-                {/* Dropdown Mega Menu - Only show if has children */}
+                {}
                 <AnimatePresence>
                   {isHovered && hasChildren && category.children && (
                     <motion.div

@@ -28,7 +28,7 @@ export const SearchDropdown = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const debouncedQuery = useDebounce(query, 300);
 
-  // Close dropdown when clicking outside
+  
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -43,7 +43,7 @@ export const SearchDropdown = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Fetch products when debounced query changes
+  
   useEffect(() => {
     const fetchProducts = async () => {
       if (!debouncedQuery.trim()) {
@@ -76,7 +76,7 @@ export const SearchDropdown = () => {
         }
 
         const data = await res.json();
-        // Handle both array and object responses
+        
         const productsData = Array.isArray(data) ? data : data.products || [];
         setProducts(productsData);
         setIsOpen(true);
@@ -113,7 +113,7 @@ export const SearchDropdown = () => {
 
   return (
     <div ref={searchRef} className="relative w-full">
-      {/* Search Input */}
+      {}
       <div className="relative flex items-center border-b border-black dark:border-white pb-1">
         <Search className="w-4 h-4 text-black dark:text-white shrink-0" />
         <input
@@ -158,7 +158,7 @@ export const SearchDropdown = () => {
               </p>
             </div>
 
-            {/* Products List */}
+            {}
             <div className="p-2">
               {products.map((product, index) => (
                 <motion.button
@@ -186,7 +186,7 @@ export const SearchDropdown = () => {
                     )}
                   </div>
 
-                  {/* Product Info */}
+                  {}
                   <div className="flex-1 min-w-0">
                     {product.category && (
                       <p className="text-[10px] font-light uppercase tracking-wider text-gray-400 mb-1">
@@ -201,7 +201,7 @@ export const SearchDropdown = () => {
                     </p>
                   </div>
 
-                  {/* Arrow */}
+                  {}
                   <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                     <svg
                       className="w-4 h-4 text-gray-400"
@@ -221,7 +221,7 @@ export const SearchDropdown = () => {
               ))}
             </div>
 
-            {/* Footer - View All */}
+            {}
             <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950">
               <button
                 onClick={handleViewAll}

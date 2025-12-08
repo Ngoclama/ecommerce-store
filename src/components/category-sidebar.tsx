@@ -115,7 +115,7 @@ const CategoryTreeList: React.FC<CategoryTreeListProps> = ({
                   />
                 )}
 
-                {/* Products - Show for all categories (parent or leaf) */}
+                {}
                 <div
                   style={{
                     marginLeft: `${(indentLevel + 1) * 20 + 24}px`,
@@ -191,12 +191,12 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({ categories }) => {
   );
   const pathname = usePathname();
 
-  // Build category tree
+  
   const categoryTree = useMemo(() => {
     const categoryMap = new Map<string, TreeNode>();
     const roots: TreeNode[] = [];
 
-    // First pass: create all nodes
+    
     categories.forEach((cat) => {
       categoryMap.set(cat.id, {
         ...cat,
@@ -206,7 +206,7 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({ categories }) => {
       });
     });
 
-    // Second pass: build tree structure
+    
     categories.forEach((cat) => {
       const node = categoryMap.get(cat.id)!;
       if (cat.parentId && cat.parentId.trim() !== "") {
@@ -226,7 +226,7 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({ categories }) => {
       }
     });
 
-    // Sort each level alphabetically
+    
     const sortTree = (nodes: TreeNode[]): TreeNode[] => {
       return nodes
         .map((node) => ({
@@ -239,7 +239,7 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({ categories }) => {
     return sortTree(roots);
   }, [categories]);
 
-  // Flatten tree for display
+  
   const flattenedCategories = useMemo(() => {
     const result: TreeNode[] = [];
 
@@ -272,7 +272,7 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({ categories }) => {
         newSet.add(categoryId);
 
         // Always fetch products when expanding, even if category has children
-        // This allows parent categories to show their own products too
+        
         if (!categoryProducts.has(categoryId)) {
           fetchCategoryProducts(categoryId);
         }
@@ -284,7 +284,7 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({ categories }) => {
   const fetchCategoryProducts = async (categoryId: string) => {
     setLoadingCategories((prev) => new Set(prev).add(categoryId));
     try {
-      // Fetch products with higher limit for category sidebar
+      
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       if (!apiUrl) {
         console.error(
@@ -316,7 +316,7 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({ categories }) => {
 
       const data = await res.json();
 
-      // Handle pagination response format
+      
       let products: Product[] = [];
       if (Array.isArray(data)) {
         products = data;

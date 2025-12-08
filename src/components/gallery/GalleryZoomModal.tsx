@@ -29,7 +29,7 @@ export default function GalleryZoomModal({
   const [startDrag, setStartDrag] = useState<{ x: number; y: number } | null>(
     null
   );
-  const [origin, setOrigin] = useState({ x: 50, y: 50 }); // default center
+  const [origin, setOrigin] = useState({ x: 50, y: 50 }); 
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const resetKey = `${index}-${open}`;

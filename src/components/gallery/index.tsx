@@ -81,7 +81,7 @@ const Gallery: React.FC<GalleryProps> = ({
     }
   };
 
-  // Keyboard navigation
+  
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (images.length === 0) return;
@@ -216,7 +216,7 @@ const Gallery: React.FC<GalleryProps> = ({
           </motion.div>
         </AnimatePresence>
 
-        {/* Navigation Arrows */}
+        {}
         {hasMultipleImages && (
           <>
             <motion.button
@@ -246,7 +246,7 @@ const Gallery: React.FC<GalleryProps> = ({
           </>
         )}
 
-        {/* Image Counter */}
+        {}
         {hasMultipleImages && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -257,7 +257,7 @@ const Gallery: React.FC<GalleryProps> = ({
           </motion.div>
         )}
 
-        {/* Discount Badge */}
+        {}
         {discountPercent > 0 && (
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}

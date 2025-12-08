@@ -48,7 +48,7 @@ export const useWishlist = () => {
           return;
         }
 
-        // Ensure API URL doesn't have trailing slash
+        
         const baseUrl = apiUrl.replace(/\/$/, "");
         const url = `${baseUrl}/api/wishlist`;
 
@@ -68,7 +68,7 @@ export const useWishlist = () => {
           }
         );
 
-        // Verify response matches optimistic update
+        
         if (
           response.data &&
           typeof response.data === "object" &&
@@ -137,7 +137,7 @@ export const useWishlist = () => {
           return false;
         }
 
-        // Ensure API URL doesn't have trailing slash
+        
         const baseUrl = apiUrl.replace(/\/$/, "");
         const url = `${baseUrl}/api/wishlist`;
 
@@ -200,7 +200,7 @@ export const useWishlist = () => {
         return [];
       }
 
-      // Ensure API URL doesn't have trailing slash
+      
       const baseUrl = apiUrl.replace(/\/$/, "");
       url = `${baseUrl}/api/wishlist`;
 

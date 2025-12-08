@@ -62,7 +62,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
     null
   );
 
-  // Get available variants
+  
   const variants = data.variants || [];
 
   const availableSizes = useMemo(() => {
@@ -298,7 +298,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
     switch (type) {
       case "facebook":
         window.open(
-          `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+          `https:
             url
           )}`,
           "_blank"
@@ -306,7 +306,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
         break;
       case "messenger":
         window.open(
-          `https://www.facebook.com/dialog/send?link=${encodeURIComponent(
+          `https:
             url
           )}&app_id=YOUR_APP_ID`,
           "_blank"
@@ -314,7 +314,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
         break;
       case "twitter":
         window.open(
-          `https://twitter.com/intent/tweet?url=${encodeURIComponent(
+          `https:
             url
           )}&text=${encodeURIComponent(text)}`,
           "_blank"
@@ -330,7 +330,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
 
   return (
     <div className="space-y-8 lg:space-y-12">
-      {/* Header Section - Luxury Style */}
+      {}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -884,7 +884,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
         </div>
       )}
 
-      {/* Additional Product Info */}
+      {}
       <div className="space-y-4 pt-6 border-t border-gray-200 dark:border-gray-800">
         <h3 className="text-xs font-medium text-black dark:text-white uppercase tracking-wider">
           Thông tin thêm
@@ -929,7 +929,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
         </div>
       </div>
 
-      {/* Customer Support CTA */}
+      {}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

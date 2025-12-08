@@ -15,7 +15,7 @@ const Currency: React.FC<CurrencyProps> = ({ value }) => {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    // Use requestAnimationFrame to defer setState
+    
     requestAnimationFrame(() => {
       setIsMounted(true);
     });

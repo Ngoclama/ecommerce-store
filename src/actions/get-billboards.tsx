@@ -2,7 +2,7 @@ import { Billboard } from "@/types";
 
 const getBillboards = async (): Promise<Billboard[]> => {
   try {
-    // Validate API URL
+    
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     if (!apiUrl) {
       console.error("[BILLBOARDS] NEXT_PUBLIC_API_URL is not configured");
@@ -12,22 +12,22 @@ const getBillboards = async (): Promise<Billboard[]> => {
       return [];
     }
 
-    // Ensure API URL doesn't have trailing slash
+    
     const baseUrl = apiUrl.replace(/\/$/, "");
     const URL = `${baseUrl}/api/billboards`;
 
-    // Log URL for debugging (only in development)
+    
     if (process.env.NODE_ENV === "development") {
       console.log("[BILLBOARDS] Fetching from:", URL);
     }
 
-    // Reduced timeout for faster failure and retry
+    
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout (reduced from 10s)
+    const timeoutId = setTimeout(() => controller.abort(), 5000); 
 
-    // Force no cache to ensure fresh data on reload
+    
     const res = await fetch(URL, {
-      cache: "no-store", // No cache, always fetch fresh data
+      cache: "no-store", 
       signal: controller.signal,
       headers: {
         "Content-Type": "application/json",
@@ -56,7 +56,7 @@ const getBillboards = async (): Promise<Billboard[]> => {
       firstItem: Array.isArray(data) ? data[0] : data?.data?.[0],
     });
 
-    // Handle both array response and { data: [...] } response
+    
     const billboards = Array.isArray(data) ? data : data.data || [];
     console.log(`[BILLBOARDS] Returning ${billboards.length} billboards`);
 

@@ -2,7 +2,7 @@
  * API Types - Các types dùng chung cho API responses
  */
 
-// ─── API RESPONSE TYPES ───────────────────────────────────────────
+
 export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;

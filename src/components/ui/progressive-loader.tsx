@@ -82,9 +82,7 @@ export function ProgressiveLoader({
   );
 }
 
-/**
- * Inline Loading State
- */
+
 export function InlineLoader({
   text = "Đang tải...",
   className,

@@ -53,7 +53,7 @@ export const CartAnimationProvider: React.FC<{ children: React.ReactNode }> = ({
             const svg = btn.querySelector("svg");
             if (!svg) return false;
 
-            // Check for cart-related aria-label (various languages)
+            
             const ariaLabel =
               btn.getAttribute("aria-label")?.toLowerCase() || "";
             const hasCartAriaLabel =
@@ -61,10 +61,10 @@ export const CartAnimationProvider: React.FC<{ children: React.ReactNode }> = ({
               ariaLabel.includes("giỏ") ||
               ariaLabel.includes("bag");
 
-            // Check for cart-related class
+            
             const hasCartClass = btn.className.toLowerCase().includes("cart");
 
-            // Check if button is near cart count badge
+            
             const hasCartBadge = btn.querySelector('span[class*="absolute"]');
 
             return hasCartAriaLabel || hasCartClass || hasCartBadge;
@@ -93,7 +93,7 @@ export const CartAnimationProvider: React.FC<{ children: React.ReactNode }> = ({
           cartIcon = findCartIcon();
 
           if (cartIcon) {
-            // Debug log
+            
             if (process.env.NODE_ENV === "development") {
               console.log(
                 "[CartAnimation] Triggering animation (after retry)",
@@ -112,10 +112,10 @@ export const CartAnimationProvider: React.FC<{ children: React.ReactNode }> = ({
               toElement: cartIcon,
             });
           } else if (retryCount < maxRetries) {
-            // Continue retrying
+            
             setTimeout(retryFindCartIcon, retryDelay);
           } else {
-            // Final attempt failed - log warning but don't block the add to cart action
+            
             console.warn("[CartAnimation] Cart icon not found after retry", {
               attempts: retryCount,
               selectors: [
@@ -124,7 +124,7 @@ export const CartAnimationProvider: React.FC<{ children: React.ReactNode }> = ({
                 'button[aria-label="Giỏ hàng"]',
               ],
             });
-            // Don't return - allow the cart to update even without animation
+            
           }
         };
 
@@ -132,7 +132,7 @@ export const CartAnimationProvider: React.FC<{ children: React.ReactNode }> = ({
         return;
       }
 
-      // Debug log
+      
       if (process.env.NODE_ENV === "development") {
         console.log("[CartAnimation] Triggering animation", {
           fromElement,
