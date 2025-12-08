@@ -101,16 +101,22 @@ const HomePageClient: React.FC<HomePageClientProps> = ({
     }
   }, [pathname, router]);
 
-  const particles = React.useMemo(
-    () =>
+  const [particles, setParticles] = React.useState<
+    Array<{ left: number; top: number; duration: number; delay: number }>
+  >([]);
+
+  React.useEffect(() => {
+    // Generate particles only on client to avoid hydration mismatch
+    setParticles(
       Array.from({ length: 20 }).map(() => ({
         left: Math.random() * 100,
         top: Math.random() * 100,
         duration: 4 + Math.random() * 2,
         delay: Math.random() * 4,
-      })),
-    []
-  );
+      }))
+    );
+  }, []);
+
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: heroRef,

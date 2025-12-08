@@ -58,17 +58,35 @@ const WishlistPage = () => {
         let serverWishlistItems: string[] = [];
         if (isSignedIn) {
           try {
+            console.log("[WISHLIST_PAGE] Fetching from server...");
             serverWishlistItems = await getAllWishlistItems();
+            console.log(
+              "[WISHLIST_PAGE] Server wishlist items:",
+              serverWishlistItems
+            );
             if (isMounted) {
               const currentWishlistKey = wishlistItemsRef.current
                 .sort()
                 .join(",");
               const serverWishlistKey = serverWishlistItems.sort().join(",");
 
+              console.log(
+                "[WISHLIST_PAGE] Current local items:",
+                wishlistItemsRef.current
+              );
+              console.log("[WISHLIST_PAGE] Comparing:", {
+                currentWishlistKey,
+                serverWishlistKey,
+              });
+
               if (currentWishlistKey !== serverWishlistKey) {
                 if (serverWishlistItems.length > 0) {
+                  console.log(
+                    "[WISHLIST_PAGE] Updating local wishlist with server data"
+                  );
                   setWishlist(serverWishlistItems);
                 } else {
+                  console.log("[WISHLIST_PAGE] Clearing local wishlist");
                   setWishlist([]);
                 }
               }
@@ -76,6 +94,11 @@ const WishlistPage = () => {
           } catch (error) {
             console.error("Error syncing wishlist from server:", error);
           }
+        } else {
+          console.log(
+            "[WISHLIST_PAGE] User not signed in, using local items:",
+            wishlistItemsRef.current
+          );
         }
 
         if (!isMounted) return;
@@ -85,7 +108,13 @@ const WishlistPage = () => {
             ? serverWishlistItems
             : wishlistItemsRef.current;
 
+        console.log(
+          "[WISHLIST_PAGE] Final wishlist items to fetch:",
+          finalWishlistItems
+        );
+
         if (finalWishlistItems.length === 0) {
+          console.log("[WISHLIST_PAGE] No wishlist items, showing empty state");
           setProducts([]);
           setLoading(false);
           return;
@@ -97,10 +126,24 @@ const WishlistPage = () => {
           ? allProductsResult
           : allProductsResult?.products || [];
 
+        console.log(
+          "[WISHLIST_PAGE] Total products fetched:",
+          allProducts.length
+        );
+
         if (!isMounted) return;
 
         const wishlistProducts = allProducts.filter((product: Product) =>
           finalWishlistItems.includes(product.id)
+        );
+
+        console.log(
+          "[WISHLIST_PAGE] Filtered wishlist products:",
+          wishlistProducts.length
+        );
+        console.log(
+          "[WISHLIST_PAGE] Product IDs:",
+          wishlistProducts.map((p) => p.id)
         );
 
         // Sort products
@@ -159,7 +202,7 @@ const WishlistPage = () => {
 
   if (loading) {
     return (
-      <div className="bg-gradient-to-br from-neutral-50 via-white to-neutral-50 dark:from-neutral-950 dark:via-gray-900 dark:to-neutral-950 min-h-screen">
+      <div className="bg-linear-to-br from-neutral-50 via-white to-neutral-50 dark:from-neutral-950 dark:via-gray-900 dark:to-neutral-950 min-h-screen">
         <Container>
           <div className="px-4 py-32 sm:px-6 lg:px-8 flex flex-col items-center justify-center gap-6">
             <motion.div
@@ -183,7 +226,7 @@ const WishlistPage = () => {
   }
 
   return (
-    <div className="bg-gradient-to-br from-neutral-50 via-white to-neutral-50 dark:from-neutral-950 dark:via-gray-900 dark:to-neutral-950 min-h-screen">
+    <div className="bg-linear-to-br from-neutral-50 via-white to-neutral-50 dark:from-neutral-950 dark:via-gray-900 dark:to-neutral-950 min-h-screen">
       <Container>
         <div>
           {/* Luxury Header Section */}
@@ -206,7 +249,7 @@ const WishlistPage = () => {
                       : { opacity: 0, scale: 0.8 }
                   }
                   transition={{ duration: 0.6, delay: 0.2, type: "spring" }}
-                  className="inline-flex items-center gap-3 px-5 py-3 bg-gradient-to-br from-red-50 to-pink-50 dark:from-red-950/20 dark:to-pink-950/20 border-2 border-red-200 dark:border-red-800 rounded-sm"
+                  className="inline-flex items-center gap-3 px-5 py-3 bg-linear-to-br from-red-50 to-pink-50 dark:from-red-950/20 dark:to-pink-950/20 border-2 border-red-200 dark:border-red-800 rounded-sm"
                 >
                   <motion.div
                     animate={{ scale: [1, 1.1, 1] }}
@@ -244,7 +287,7 @@ const WishlistPage = () => {
                       : { opacity: 0, width: 0 }
                   }
                   transition={{ duration: 1, delay: 0.4 }}
-                  className="h-px bg-gradient-to-r from-neutral-900 via-neutral-400 to-transparent dark:from-neutral-100 dark:via-neutral-600"
+                  className="h-px bg-linear-to-r from-neutral-900 via-neutral-400 to-transparent dark:from-neutral-100 dark:via-neutral-600"
                 />
 
                 <motion.p
@@ -419,7 +462,7 @@ const LuxuryEmptyState = () => {
           className="flex justify-center"
         >
           <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-red-100 to-pink-100 dark:from-red-950/30 dark:to-pink-950/30 rounded-full blur-2xl opacity-50" />
+            <div className="absolute inset-0 bg-linear-to-br from-red-100 to-pink-100 dark:from-red-950/30 dark:to-pink-950/30 rounded-full blur-2xl opacity-50" />
             <div className="relative p-8 bg-white dark:bg-gray-900 border-2 border-neutral-200 dark:border-neutral-800 rounded-full">
               <motion.div
                 animate={{ scale: [1, 1.1, 1] }}
@@ -452,7 +495,7 @@ const LuxuryEmptyState = () => {
                 : { opacity: 0, width: 0 }
             }
             transition={{ duration: 1, delay: 0.4 }}
-            className="h-px bg-gradient-to-r from-transparent via-neutral-400 to-transparent dark:via-neutral-600 mx-auto"
+            className="h-px bg-linear-to-r from-transparent via-neutral-400 to-transparent dark:via-neutral-600 mx-auto"
           />
           <p className="text-sm md:text-base text-neutral-600 dark:text-neutral-400 font-light leading-relaxed max-w-md mx-auto">
             Bạn chưa có sản phẩm nào trong danh sách yêu thích.

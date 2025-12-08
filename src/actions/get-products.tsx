@@ -53,10 +53,6 @@ const getProducts = async (
     const res = await fetch(urlWithTimestamp, {
       cache: "no-store",
       signal: controller.signal,
-      headers: {
-        "Cache-Control": "no-cache",
-        Pragma: "no-cache",
-      },
     });
 
     clearTimeout(timeoutId);
