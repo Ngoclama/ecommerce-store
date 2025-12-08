@@ -8,7 +8,17 @@ const getCoupons = async (): Promise<Coupon[]> => {
       console.error("NEXT_PUBLIC_API_URL is not configured");
       return [];
     }
-    const res = await fetch(URL, { cache: "no-store" });
+    // Add timestamp to bypass cache in production
+    const timestamp = Date.now();
+    const urlWithTimestamp = `${URL}?_t=${timestamp}`;
+
+    const res = await fetch(urlWithTimestamp, {
+      cache: "no-store",
+      headers: {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
+      },
+    });
     if (!res.ok) {
       console.error(`Failed to fetch coupons: ${res.status} ${res.statusText}`);
       return [];

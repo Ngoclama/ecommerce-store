@@ -6,16 +6,6 @@ import Container from "@/components/ui/container";
 
 const logos = [
   {
-    name: "Gucci",
-    src: "/gucci-logo.png",
-    height: 24,
-  },
-  {
-    name: "Chanel",
-    src: "/chanel-logo.png",
-    height: 24,
-  },
-  {
     name: "Prada",
     src: "/Prada-Logo.png",
     height: 24,

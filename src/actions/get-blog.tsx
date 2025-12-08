@@ -4,7 +4,17 @@ const URL = `${process.env.NEXT_PUBLIC_API_URL}/api/blog`;
 
 const getBlog = async (slug: string): Promise<BlogPost> => {
   try {
-    const res = await fetch(`${URL}/${slug}`, { cache: "no-store" });
+    // Add timestamp to bypass cache in production
+    const timestamp = Date.now();
+    const urlWithTimestamp = `${URL}/${slug}?_t=${timestamp}`;
+
+    const res = await fetch(urlWithTimestamp, {
+      cache: "no-store",
+      headers: {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
+      },
+    });
 
     if (!res.ok) {
       throw new Error(`Failed to fetch blog: ${res.status}`);
@@ -19,4 +29,3 @@ const getBlog = async (slug: string): Promise<BlogPost> => {
 };
 
 export default getBlog;
-

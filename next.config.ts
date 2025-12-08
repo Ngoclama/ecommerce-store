@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
   compress: true,
   poweredByHeader: false,
   productionBrowserSourceMaps: false, // Disable source maps in production
+  typedRoutes: false, // Disable typed routes to fix catch-all route errors
 
   images: {
     formats: ["image/avif", "image/webp"],

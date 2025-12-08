@@ -8,7 +8,17 @@ const getBillboard = async (id: string): Promise<Billboard | null> => {
       console.error("NEXT_PUBLIC_API_URL is not configured");
       return null;
     }
-    const res = await fetch(`${URL}/${id}`, { cache: "no-store" });
+    // Add timestamp to bypass cache in production
+    const timestamp = Date.now();
+    const urlWithTimestamp = `${URL}/${id}?_t=${timestamp}`;
+
+    const res = await fetch(urlWithTimestamp, {
+      cache: "no-store",
+      headers: {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
+      },
+    });
     if (!res.ok) {
       console.error(
         `Failed to fetch billboard: ${res.status} ${res.statusText}`

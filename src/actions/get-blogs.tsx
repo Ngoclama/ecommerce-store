@@ -20,10 +20,12 @@ interface GetBlogsResponse {
   };
 }
 
-const getBlogs = async (params?: GetBlogsParams): Promise<GetBlogsResponse | BlogPost[]> => {
+const getBlogs = async (
+  params?: GetBlogsParams
+): Promise<GetBlogsResponse | BlogPost[]> => {
   try {
     const searchParams = new URLSearchParams();
-    
+
     if (params?.categoryId) {
       searchParams.append("categoryId", params.categoryId);
     }
@@ -37,9 +39,20 @@ const getBlogs = async (params?: GetBlogsParams): Promise<GetBlogsResponse | Blo
       searchParams.append("limit", params.limit.toString());
     }
 
+    // Add timestamp to bypass cache in production
+    const timestamp = Date.now();
     const queryString = searchParams.toString();
-    const res = await fetch(`${URL}${queryString ? `?${queryString}` : ""}`, {
+    const separator = queryString ? "&" : "?";
+    const urlWithTimestamp = `${URL}${
+      queryString ? `?${queryString}` : ""
+    }${separator}_t=${timestamp}`;
+
+    const res = await fetch(urlWithTimestamp, {
       cache: "no-store",
+      headers: {
+        "Cache-Control": "no-cache",
+        Pragma: "no-cache",
+      },
     });
 
     if (!res.ok) {
@@ -55,4 +68,3 @@ const getBlogs = async (params?: GetBlogsParams): Promise<GetBlogsResponse | Blo
 };
 
 export default getBlogs;
-

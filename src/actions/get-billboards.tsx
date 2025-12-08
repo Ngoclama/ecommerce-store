@@ -2,7 +2,6 @@ import { Billboard } from "@/types";
 
 const getBillboards = async (): Promise<Billboard[]> => {
   try {
-    
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     if (!apiUrl) {
       console.error("[BILLBOARDS] NEXT_PUBLIC_API_URL is not configured");
@@ -12,22 +11,22 @@ const getBillboards = async (): Promise<Billboard[]> => {
       return [];
     }
 
-    
     const baseUrl = apiUrl.replace(/\/$/, "");
     const URL = `${baseUrl}/api/billboards`;
 
-    
     if (process.env.NODE_ENV === "development") {
       console.log("[BILLBOARDS] Fetching from:", URL);
     }
 
-    
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000); 
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-    
-    const res = await fetch(URL, {
-      cache: "no-store", 
+    // Add timestamp to bypass cache in production
+    const timestamp = Date.now();
+    const urlWithTimestamp = `${URL}?_t=${timestamp}`;
+
+    const res = await fetch(urlWithTimestamp, {
+      cache: "no-store",
       signal: controller.signal,
       headers: {
         "Content-Type": "application/json",
@@ -56,7 +55,6 @@ const getBillboards = async (): Promise<Billboard[]> => {
       firstItem: Array.isArray(data) ? data[0] : data?.data?.[0],
     });
 
-    
     const billboards = Array.isArray(data) ? data : data.data || [];
     console.log(`[BILLBOARDS] Returning ${billboards.length} billboards`);
 

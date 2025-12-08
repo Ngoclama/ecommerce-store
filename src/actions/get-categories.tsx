@@ -8,7 +8,6 @@ const getCategories = async (): Promise<Category[]> => {
       return [];
     }
 
-    
     const baseUrl = apiUrl.replace(/\/$/, "");
     const URL = `${baseUrl}/api/categories`;
 
@@ -16,13 +15,20 @@ const getCategories = async (): Promise<Category[]> => {
       console.log("[CATEGORIES] Fetching from:", URL);
     }
 
-    
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000); 
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-    const res = await fetch(URL, {
+    // Add timestamp to bypass cache in production
+    const timestamp = Date.now();
+    const urlWithTimestamp = `${URL}?_t=${timestamp}`;
+
+    const res = await fetch(urlWithTimestamp, {
       signal: controller.signal,
-      cache: "no-store", // Always fetch fresh data
+      cache: "no-store",
+      headers: {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
+      },
     });
 
     clearTimeout(timeoutId);
@@ -47,7 +53,6 @@ const getCategories = async (): Promise<Category[]> => {
       children: allCategories.filter((cat) => cat.parentId === parent.id),
     }));
 
-    
     if (process.env.NODE_ENV === "development") {
       console.log(
         "[CATEGORIES] Parent categories count:",

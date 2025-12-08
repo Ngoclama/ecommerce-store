@@ -21,7 +21,6 @@ const getProducts = async (
       return [];
     }
 
-    
     const baseUrl = apiUrl.replace(/\/$/, "");
     const baseURL = `${baseUrl}/api/products`;
 
@@ -42,13 +41,22 @@ const getProducts = async (
       console.log("[PRODUCTS] Fetching from:", url);
     }
 
-    
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000); 
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-    const res = await fetch(url, {
+    // Add timestamp to bypass cache in production
+    const timestamp = Date.now();
+    const urlWithTimestamp = `${url}${
+      url.includes("?") ? "&" : "?"
+    }_t=${timestamp}`;
+
+    const res = await fetch(urlWithTimestamp, {
       cache: "no-store",
       signal: controller.signal,
+      headers: {
+        "Cache-Control": "no-cache",
+        Pragma: "no-cache",
+      },
     });
 
     clearTimeout(timeoutId);
@@ -59,15 +67,13 @@ const getProducts = async (
     }
 
     const data = await res.json();
-    
-    
+
     // 2. { data: [...] }
-    
+
     if (Array.isArray(data)) {
       return data;
     }
     if (data.products && Array.isArray(data.products)) {
-      
       if (query.page && data.pagination) {
         return { products: data.products, pagination: data.pagination };
       }

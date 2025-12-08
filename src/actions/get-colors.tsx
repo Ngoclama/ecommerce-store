@@ -8,15 +8,23 @@ const getColors = async (): Promise<Color[]> => {
       console.error("NEXT_PUBLIC_API_URL is not configured");
       return [];
     }
-    const res = await fetch(URL, { cache: "no-store" });
+    // Add timestamp to bypass cache in production
+    const timestamp = Date.now();
+    const urlWithTimestamp = `${URL}?_t=${timestamp}`;
+
+    const res = await fetch(urlWithTimestamp, {
+      cache: "no-store",
+      headers: {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
+      },
+    });
     if (!res.ok) {
-      console.error(
-        `Failed to fetch colors: ${res.status} ${res.statusText}`
-      );
+      console.error(`Failed to fetch colors: ${res.status} ${res.statusText}`);
       return [];
     }
     const data = await res.json();
-    return Array.isArray(data) ? data : (data.data || []);
+    return Array.isArray(data) ? data : data.data || [];
   } catch (error) {
     console.error("Error fetching colors:", error);
     return [];

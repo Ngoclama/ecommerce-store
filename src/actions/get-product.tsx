@@ -4,7 +4,17 @@ const URL = `${process.env.NEXT_PUBLIC_API_URL}/api/products`;
 
 const getProduct = async (id: string): Promise<Product> => {
   try {
-    const res = await fetch(`${URL}/${id}`, { cache: "no-store" });
+    // Add timestamp to bypass cache in production
+    const timestamp = Date.now();
+    const urlWithTimestamp = `${URL}/${id}?_t=${timestamp}`;
+
+    const res = await fetch(urlWithTimestamp, {
+      cache: "no-store",
+      headers: {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
+      },
+    });
 
     if (!res.ok) {
       throw new Error(`Failed to fetch product: ${res.status}`);
