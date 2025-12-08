@@ -5,6 +5,11 @@ import ProductPageClient from "./product-page-client";
 import Container from "@/components/ui/container";
 import NoResult from "@/components/ui/result";
 
+// Force dynamic rendering to prevent caching issues
+export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
+export const revalidate = 0;
+
 type Params = Promise<{ productId: string }>;
 
 const ProductPage = async ({ params }: { params: Params }) => {

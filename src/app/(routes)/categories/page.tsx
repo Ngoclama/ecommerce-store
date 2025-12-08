@@ -2,6 +2,9 @@ import getCategories from "@/actions/get-categories";
 import Container from "@/components/ui/container";
 import CategoryList from "@/components/category-list";
 
+// Force dynamic rendering to prevent caching issues
+export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 export const revalidate = 0;
 
 const CategoriesPage = async () => {
@@ -37,4 +40,3 @@ const CategoriesPage = async () => {
 };
 
 export default CategoriesPage;
-

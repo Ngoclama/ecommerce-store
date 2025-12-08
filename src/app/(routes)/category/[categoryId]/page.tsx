@@ -12,6 +12,9 @@ import PriceFilter from "../components/price-filter";
 import NoResult from "@/components/ui/result";
 import CategoryClient from "./category-client";
 
+// Force dynamic rendering to prevent caching issues
+export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 export const revalidate = 0;
 
 type Params = Promise<{ categoryId: string }>;
@@ -30,23 +33,23 @@ const CategoryPage = async ({
   params: Params;
   searchParams: SearchParams;
 }) => {
-    const { categoryId } = await params;
-    // Fetch all products for the category (filtering will be done client-side)
-    // This allows instant filtering without page reload
-    const productsResult = await getProducts({
-      categoryId: categoryId,
-    });
-  
+  const { categoryId } = await params;
+  // Fetch all products for the category (filtering will be done client-side)
+  // This allows instant filtering without page reload
+  const productsResult = await getProducts({
+    categoryId: categoryId,
+  });
+
   // Handle different return types from getProducts
-  const products = Array.isArray(productsResult) 
-    ? productsResult 
+  const products = Array.isArray(productsResult)
+    ? productsResult
     : productsResult?.products || [];
-    
-    const sizes = await getSizes();
-    const colors = await getColors();
+
+  const sizes = await getSizes();
+  const colors = await getColors();
   const category = await getCategory(categoryId);
 
-    return ( 
+  return (
     <CategoryClient
       products={products}
       sizes={sizes}
@@ -54,7 +57,7 @@ const CategoryPage = async ({
       category={category}
       searchParams={await searchParams}
     />
-    );
+  );
 };
 
 export default CategoryPage;

@@ -3,8 +3,10 @@ import getCategories from "@/actions/get-categories";
 import { notFound } from "next/navigation";
 import BillboardPageClient from "./billboard-page-client";
 
-export const revalidate = 0;
+// Force dynamic rendering to prevent caching issues
 export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
+export const revalidate = 0;
 
 type Params = Promise<{ billboardId: string }>;
 

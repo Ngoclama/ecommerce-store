@@ -2,6 +2,9 @@ import getBlogs from "@/actions/get-blogs";
 import Container from "@/components/ui/container";
 import BlogPageClient from "./blog-client";
 
+// Force dynamic rendering to prevent caching issues
+export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 export const revalidate = 0;
 
 const BlogPage = async () => {

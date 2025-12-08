@@ -3,6 +3,9 @@ import CartClient from "./cart-client";
 import getCoupons from "@/actions/get-coupons";
 import { Coupon } from "@/types";
 
+// Force dynamic rendering to prevent caching issues
+export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 export const revalidate = 0;
 
 const CartPage = async () => {

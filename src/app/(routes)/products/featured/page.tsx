@@ -4,6 +4,9 @@ import ProductList from "@/components/product-list";
 import NoResult from "@/components/ui/result";
 import Pagination from "@/components/ui/pagination";
 
+// Force dynamic rendering to prevent caching issues
+export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 export const revalidate = 0;
 
 type SearchParams = Promise<{
@@ -54,7 +57,10 @@ const FeaturedProductsPage = async ({
             <>
               <ProductList title="" items={products} />
               {pagination && (
-                <Pagination pagination={pagination} basePath="/products/featured" />
+                <Pagination
+                  pagination={pagination}
+                  basePath="/products/featured"
+                />
               )}
             </>
           )}
@@ -65,4 +71,3 @@ const FeaturedProductsPage = async ({
 };
 
 export default FeaturedProductsPage;
-

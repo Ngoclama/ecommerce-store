@@ -32,6 +32,9 @@ export const metadata: Metadata = {
   description: "LUXURY FASHION STORE",
 };
 
+// Force dynamic rendering to prevent caching issues
+export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 export const revalidate = 0;
 
 export default async function RootLayout({
@@ -65,12 +68,12 @@ export default async function RootLayout({
       <body
         className={`${montserratAlternates.variable} ${beVietnamPro.variable}`}
       >
-        <ClerkProvider 
-          signInUrl="/sign-in" 
+        <ClerkProvider
+          signInUrl="/sign-in"
           signUpUrl="/sign-up"
           appearance={{
             // Suppress development warning in console
-            variables: { colorPrimary: "#000" }
+            variables: { colorPrimary: "#000" },
           }}
         >
           <ThemeProvider>

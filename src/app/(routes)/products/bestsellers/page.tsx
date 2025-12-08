@@ -3,6 +3,9 @@ import ProductList from "@/components/product-list";
 import NoResult from "@/components/ui/result";
 import Pagination from "@/components/ui/pagination";
 
+// Force dynamic rendering to prevent caching issues
+export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 export const revalidate = 0;
 
 type SearchParams = Promise<{
@@ -36,7 +39,11 @@ const BestSellersPage = async ({
       });
 
       if (!res.ok) {
-        console.error("Failed to fetch bestsellers:", res.status, res.statusText);
+        console.error(
+          "Failed to fetch bestsellers:",
+          res.status,
+          res.statusText
+        );
         hasError = true;
       } else {
         const data = await res.json();
@@ -101,4 +108,3 @@ const BestSellersPage = async ({
 };
 
 export default BestSellersPage;
-

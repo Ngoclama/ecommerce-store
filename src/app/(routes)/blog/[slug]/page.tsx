@@ -4,6 +4,9 @@ import Container from "@/components/ui/container";
 import { notFound } from "next/navigation";
 import BlogDetailClient from "./blog-detail-client";
 
+// Force dynamic rendering to prevent caching issues
+export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 export const revalidate = 0;
 
 interface BlogDetailPageProps {
