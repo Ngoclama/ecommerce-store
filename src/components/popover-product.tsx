@@ -350,9 +350,18 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
   const hasMultipleImages = images.length > 1;
 
   return createPortal(
-    <AnimatePresence mode="wait">
+    <AnimatePresence>
       {isOpen && (
-        <>
+        <motion.div
+          key="popover-container"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{
+            duration: 0.3,
+            ease: [0.4, 0, 0.2, 1],
+          }}
+        >
           {/* Backdrop */}
           <motion.div
             className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm"
@@ -765,7 +774,7 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
               </div>
             </motion.div>
           </motion.div>
-        </>
+        </motion.div>
       )}
     </AnimatePresence>,
     document.body

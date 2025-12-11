@@ -405,7 +405,7 @@ const CategoryClient: React.FC<CategoryClientProps> = ({
                   <NoResult />
                 </motion.div>
               ) : (
-                <AnimatePresence mode="wait">
+                <AnimatePresence>
                   {viewMode === "grid" ? (
                     <motion.div
                       key="grid"

@@ -375,9 +375,17 @@ const WishlistPage = () => {
           </motion.div>
 
           {/* Products Section */}
-          <AnimatePresence mode="wait">
+          <AnimatePresence>
             {products.length === 0 ? (
-              <LuxuryEmptyState />
+              <motion.div
+                key="empty"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <LuxuryEmptyState />
+              </motion.div>
             ) : (
               <motion.div
                 key="products"

@@ -109,7 +109,7 @@ const Filter = ({ data, name, valueKey }: FilterProps) => {
 
       {/* Filter Options */}
       <div className="flex flex-wrap gap-2.5">
-        <AnimatePresence mode="wait">
+        <AnimatePresence>
           {data.map((filter) => {
             const isSelected = selectedValue === filter.id;
 
