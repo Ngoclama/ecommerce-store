@@ -14,7 +14,7 @@ Customer-facing storefront application cho nền tảng thương mại điện t
 - [State Management](#state-management)
 - [Development](#development)
 
-## 🎯 Tổng quan
+##  Tổng quan
 
 Storefront là ứng dụng frontend cho phép khách hàng duyệt sản phẩm, mua sắm, quản lý giỏ hàng, và thực hiện thanh toán. Ứng dụng được tối ưu hóa cho trải nghiệm người dùng với animations mượt mà, responsive design, và performance cao.
 
@@ -33,40 +33,40 @@ Storefront là ứng dụng frontend cho phép khách hàng duyệt sản phẩm
 - **HTTP Client**: Axios
 - **Notifications**: Sonner, React Hot Toast
 
-## 🏗️ Kiến trúc hệ thống
+##  Kiến trúc hệ thống
 
 ### Sơ đồ tổng quan
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    E-Commerce Platform                       │
+│                    E-Commerce Platform                      │
 ├─────────────────────────────────────────────────────────────┤
-│                                                               │
+│                                                             │
 │  ┌──────────────────┐         ┌──────────────────┐          │
 │  │   Storefront     │         │   Admin Panel    │          │
 │  │   (Port 3001)    │◄───────►│   (Port 3000)    │          │
 │  └────────┬─────────┘         └────────┬─────────┘          │
-│           │                            │                     │
-│           │  REST API                  │                     │
-│           │  /api/products             │                     │
-│           │  /api/categories           │                     │
-│           │  /api/orders               │                     │
-│           │  ...                       │                     │
-│           │                            │                     │
-│           ▼                            ▼                     │
+│           │                            │                    │
+│           │  REST API                  │                    │
+│           │  /api/products             │                    │
+│           │  /api/categories           │                    │
+│           │  /api/orders               │                    │
+│           │  ...                       │                    │
+│           │                            │                    │
+│           ▼                            ▼                    │
 │  ┌─────────────────────────────────────────────┐            │
 │  │         Next.js API Routes (Proxy)          │            │
 │  │  /api/orders (proxy to admin)               │            │
 │  │  /api/coupons (proxy to admin)              │            │
 │  └──────────────────┬──────────────────────────┘            │
-│                     │                                         │
-│           ┌─────────┴─────────┐                              │
-│           ▼                   ▼                              │
+│                     │                                       │
+│           ┌─────────┴─────────┐                             │
+│           ▼                   ▼                             │
 │  ┌──────────────┐    ┌──────────────┐                       │
 │  │   MongoDB    │    │    Clerk     │                       │
 │  │  (via Admin) │    │  (Auth)      │                       │
 │  └──────────────┘    └──────────────┘                       │
-│                                                               │
+│                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -115,7 +115,7 @@ Response → Storefront → UI Update
 └─────────────────────────────────────┘
 ```
 
-## ✨ Tính năng chính
+##  Tính năng chính
 
 ### 1. Trang chủ (Homepage)
 - **Billboard Carousel**: Hiển thị banner quảng cáo với animations
@@ -238,7 +238,7 @@ Response → Storefront → UI Update
 - **Recently Viewed**: Lưu lịch sử xem sản phẩm
 - **Floating Buttons**: Quick actions (cart, wishlist)
 
-## 🚀 Cài đặt
+##  Cài đặt
 
 ### Yêu cầu
 
@@ -317,7 +317,7 @@ Sử dụng Clerk cho authentication:
 - Responsive images
 - Placeholder blur
 
-## 📁 Cấu trúc dự án
+##  Cấu trúc dự án
 
 ```
 store/
@@ -383,7 +383,7 @@ store/
 └── tailwind.config.ts
 ```
 
-## 📖 Hướng dẫn sử dụng
+##  Hướng dẫn sử dụng
 
 ### Duyệt sản phẩm
 
@@ -435,7 +435,7 @@ store/
 4. Enter để xem kết quả
 5. Sử dụng filters để refine kết quả
 
-## 🔄 State Management
+##  State Management
 
 ### Cart Store
 
@@ -475,7 +475,7 @@ Cart được lưu vào `localStorage` tự động:
 - Sync với server khi user đăng nhập
 - Merge cart khi login
 
-## 💻 Development
+##  Development
 
 ### Scripts
 
@@ -569,7 +569,7 @@ try {
 - **Debouncing**: Search input debouncing
 - **Memoization**: React.memo cho components
 
-## 🎨 UI Components
+##  UI Components
 
 ### Product Card
 
@@ -597,7 +597,7 @@ try {
 />
 ```
 
-## 🔐 Authentication Flow
+##  Authentication Flow
 
 ```
 User clicks "Sign In"
@@ -618,7 +618,7 @@ Merge cart (if guest cart exists)
 Redirect to intended page
 ```
 
-## 📱 Responsive Design
+##  Responsive Design
 
 - **Mobile First**: Designed for mobile devices first
 - **Breakpoints**:
@@ -628,7 +628,7 @@ Redirect to intended page
 - **Touch Optimized**: Large touch targets
 - **Mobile Navigation**: Hamburger menu
 
-## 🚨 Common Issues
+##  Common Issues
 
 ### API Connection Error
 
@@ -657,7 +657,7 @@ Redirect to intended page
 - Ensure image URLs are correct
 - Check CORS settings on admin API
 
-## 📝 Notes
+##  Notes
 
 - Storefront là client-side application, không có database riêng
 - Tất cả data được fetch từ Admin Panel API
@@ -665,7 +665,7 @@ Redirect to intended page
 - Authentication được handle bởi Clerk
 - Payment redirects được handle qua payment providers
 
-## 🤝 Contributing
+##  Contributing
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
@@ -673,11 +673,11 @@ Redirect to intended page
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-## 📄 License
+##  License
 
 This project is private and proprietary.
 
-## 🔗 Links
+##  Links
 
 - **Repository**: https://github.com/Ngoclama/ecommerce-store.git
 - **Live Demo**: ecommerce-store-henna-nine.vercel.app
@@ -685,5 +685,5 @@ This project is private and proprietary.
 
 ---
 
-**Made with ❤️ by Ngoclama**
+**Made with  by Ngoclam**
 
