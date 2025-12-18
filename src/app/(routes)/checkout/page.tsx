@@ -42,6 +42,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { vietnamProvinces } from "@/lib/vietnam-address";
+import {
+  calculateShippingWithDetails,
+  type ShippingCalculation,
+} from "@/lib/shipping-calculator";
 
 type PaymentMethod = "cod" | "momo" | "vnpay" | "qr" | "stripe" | null;
 
@@ -173,18 +177,22 @@ export default function CheckoutPage() {
       : appliedCoupon.value
     : 0;
 
-  // Calculate shipping fee based on method and subtotal (trước discount)
-  const getShippingFee = () => {
-    if (subtotal >= 500000) {
-      return 0; // Free shipping for orders >= 500k
+  // ━━━ TÍNH PHÍ SHIP THEO ĐỊA CHỈ ━━━
+  const shippingCalculation: ShippingCalculation | null = useMemo(() => {
+    // Chỉ tính khi đã chọn tỉnh
+    if (!selectedProvinceCode) {
+      return null;
     }
-    if (shippingMethod === "express") {
-      return 50000; // Express shipping
-    }
-    return 30000; // Standard shipping
-  };
 
-  const shippingFee = getShippingFee();
+    return calculateShippingWithDetails(
+      selectedProvinceCode,
+      shippingMethod as "standard" | "express",
+      subtotal
+    );
+  }, [selectedProvinceCode, shippingMethod, subtotal]);
+
+  const shippingFee = shippingCalculation?.actualFee || 0;
+
   // Total = subtotal - discount + shipping
   const finalTotal = subtotal - discount + shippingFee;
 
@@ -226,10 +234,12 @@ export default function CheckoutPage() {
       hasProcessedPayment.current = true;
       const orderId = searchParams?.get("orderId");
       const method = searchParams?.get("method") || "stripe";
-      
+
       // Redirect to payment failure page
       if (orderId) {
-        router.push(`/payment/failure?orderId=${orderId}&method=${method}&reason=cancelled`);
+        router.push(
+          `/payment/failure?orderId=${orderId}&method=${method}&reason=cancelled`
+        );
       } else {
         router.push(`/payment/failure?method=${method}&reason=cancelled`);
       }
@@ -314,6 +324,12 @@ export default function CheckoutPage() {
       return;
     }
 
+    if (!shippingCalculation) {
+      toast.error("Vui lòng chọn tỉnh/thành để tính phí vận chuyển");
+      setStep(1);
+      return;
+    }
+
     // Scroll về đầu trang trước khi thanh toán
     window.scrollTo({ top: 0, behavior: "smooth" });
 
@@ -359,6 +375,8 @@ export default function CheckoutPage() {
               ward: shippingAddress.ward,
             },
             shippingMethod: shippingMethod,
+            shippingCost: shippingFee,
+            shippingDetails: shippingCalculation,
             paymentMethod: "COD",
             coupon: appliedCoupon
               ? {
@@ -429,6 +447,8 @@ export default function CheckoutPage() {
               ward: shippingAddress.ward,
             },
             shippingMethod: shippingMethod,
+            shippingCost: shippingFee,
+            shippingDetails: shippingCalculation,
             paymentMethod: "STRIPE",
             coupon: appliedCoupon
               ? {
@@ -507,6 +527,8 @@ export default function CheckoutPage() {
               ward: shippingAddress.ward,
             },
             shippingMethod: shippingMethod,
+            shippingCost: shippingFee,
+            shippingDetails: shippingCalculation,
             paymentMethod: "MOMO",
             coupon: appliedCoupon
               ? {
@@ -583,6 +605,8 @@ export default function CheckoutPage() {
               ward: shippingAddress.ward,
             },
             shippingMethod: shippingMethod,
+            shippingCost: shippingFee,
+            shippingDetails: shippingCalculation,
             paymentMethod: "VNPAY",
             coupon: appliedCoupon
               ? {
@@ -684,7 +708,7 @@ export default function CheckoutPage() {
 
   if (cart.items.length === 0) {
     return (
-      <div className="bg-gradient-to-br from-neutral-50 via-white to-neutral-50 dark:from-neutral-950 dark:via-gray-900 dark:to-neutral-950 min-h-screen py-12 md:py-16 lg:py-20">
+      <div className="bg-linear-to-br from-neutral-50 via-white to-neutral-50 dark:from-neutral-950 dark:via-gray-900 dark:to-neutral-950 min-h-screen py-12 md:py-16 lg:py-20">
         <Container>
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -696,7 +720,7 @@ export default function CheckoutPage() {
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.2, type: "spring" }}
-              className="inline-flex items-center justify-center w-24 h-24 rounded-sm bg-gradient-to-br from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 border-2 border-neutral-900 dark:border-neutral-100 mb-8"
+              className="inline-flex items-center justify-center w-24 h-24 rounded-sm bg-linear-to-br from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 border-2 border-neutral-900 dark:border-neutral-100 mb-8"
             >
               <ShoppingBag className="w-12 h-12 text-white dark:text-neutral-900" />
             </motion.div>
@@ -723,7 +747,7 @@ export default function CheckoutPage() {
             >
               <Button
                 asChild
-                className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 text-white dark:text-neutral-900 hover:from-neutral-800 hover:to-neutral-700 dark:hover:from-neutral-200 dark:hover:to-neutral-300 border-2 border-neutral-900 dark:border-neutral-100 rounded-sm text-sm font-light uppercase tracking-[0.15em] transition-all duration-300 hover:scale-105 hover:shadow-xl"
+                className="inline-flex items-center gap-3 px-8 py-4 bg-linear-to-r from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 text-white dark:text-neutral-900 hover:from-neutral-800 hover:to-neutral-700 dark:hover:from-neutral-200 dark:hover:to-neutral-300 border-2 border-neutral-900 dark:border-neutral-100 rounded-sm text-sm font-light uppercase tracking-[0.15em] transition-all duration-300 hover:scale-105 hover:shadow-xl"
               >
                 <Link href="/">Tiếp tục mua sắm</Link>
               </Button>
@@ -735,7 +759,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="bg-gradient-to-br from-neutral-50 via-white to-neutral-50 dark:from-neutral-950 dark:via-gray-900 dark:to-neutral-950 min-h-screen py-12 md:py-16 lg:py-20">
+    <div className="bg-linear-to-br from-neutral-50 via-white to-neutral-50 dark:from-neutral-950 dark:via-gray-900 dark:to-neutral-950 min-h-screen py-12 md:py-16 lg:py-20">
       <Container>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Luxury Progress Steps */}
@@ -759,7 +783,7 @@ export default function CheckoutPage() {
                     className={cn(
                       "w-12 h-12 md:w-14 md:h-14 rounded-sm flex items-center justify-center border-2 transition-all duration-300 font-light text-sm md:text-base",
                       step >= stepNum
-                        ? "bg-gradient-to-br from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 text-white dark:text-neutral-900 border-neutral-900 dark:border-neutral-100 shadow-lg"
+                        ? "bg-linear-to-br from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 text-white dark:text-neutral-900 border-neutral-900 dark:border-neutral-100 shadow-lg"
                         : "bg-white dark:bg-gray-900 text-neutral-400 dark:text-neutral-600 border-neutral-300 dark:border-neutral-700"
                     )}
                   >
@@ -777,7 +801,7 @@ export default function CheckoutPage() {
                       className={cn(
                         "w-16 md:w-24 h-0.5 transition-all duration-300",
                         step > stepNum
-                          ? "bg-gradient-to-r from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200"
+                          ? "bg-linear-to-r from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200"
                           : "bg-neutral-300 dark:bg-neutral-700"
                       )}
                     />
@@ -819,7 +843,7 @@ export default function CheckoutPage() {
                     <div className="flex items-center gap-4 mb-8 pb-6 border-b-2 border-neutral-200 dark:border-neutral-800">
                       <motion.div
                         whileHover={{ rotate: 5 }}
-                        className="p-3 rounded-sm bg-gradient-to-br from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 border-2 border-neutral-900 dark:border-neutral-100"
+                        className="p-3 rounded-sm bg-linear-to-br from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 border-2 border-neutral-900 dark:border-neutral-100"
                       >
                         <MapPin className="w-6 h-6 md:w-7 md:h-7 text-white dark:text-neutral-900" />
                       </motion.div>
@@ -1090,7 +1114,7 @@ export default function CheckoutPage() {
                         <Button
                           type="submit"
                           variant="default"
-                          className="w-full rounded-sm text-sm font-light uppercase tracking-[0.15em] bg-gradient-to-r from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 text-white dark:text-neutral-900 hover:from-neutral-800 hover:to-neutral-700 dark:hover:from-neutral-200 dark:hover:to-neutral-300 border-2 border-neutral-900 dark:border-neutral-100 h-12 mt-6 transition-all duration-300 hover:shadow-xl"
+                          className="w-full rounded-sm text-sm font-light uppercase tracking-[0.15em] bg-linear-to-r from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 text-white dark:text-neutral-900 hover:from-neutral-800 hover:to-neutral-700 dark:hover:from-neutral-200 dark:hover:to-neutral-300 border-2 border-neutral-900 dark:border-neutral-100 h-12 mt-6 transition-all duration-300 hover:shadow-xl"
                         >
                           Tiếp tục
                         </Button>
@@ -1113,7 +1137,7 @@ export default function CheckoutPage() {
                       <div className="flex items-center gap-4 mb-8 pb-6 border-b-2 border-neutral-200 dark:border-neutral-800">
                         <motion.div
                           whileHover={{ rotate: 5 }}
-                          className="p-3 rounded-sm bg-gradient-to-br from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 border-2 border-neutral-900 dark:border-neutral-100"
+                          className="p-3 rounded-sm bg-linear-to-br from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 border-2 border-neutral-900 dark:border-neutral-100"
                         >
                           <Truck className="w-6 h-6 md:w-7 md:h-7 text-white dark:text-neutral-900" />
                         </motion.div>
@@ -1139,7 +1163,7 @@ export default function CheckoutPage() {
                           className={cn(
                             "relative flex items-start gap-4 p-6 md:p-8 border-2 rounded-sm cursor-pointer transition-all duration-300 shadow-lg hover:shadow-xl",
                             shippingMethod === "standard"
-                              ? "border-neutral-900 dark:border-neutral-100 bg-gradient-to-br from-neutral-50 to-white dark:from-neutral-900 dark:to-neutral-800"
+                              ? "border-neutral-900 dark:border-neutral-100 bg-linear-to-br from-neutral-50 to-white dark:from-neutral-900 dark:to-neutral-800"
                               : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 bg-white dark:bg-gray-900"
                           )}
                           onClick={() => setShippingMethod("standard")}
@@ -1165,28 +1189,44 @@ export default function CheckoutPage() {
                                     <p className="font-light text-sm uppercase tracking-wider text-black dark:text-white">
                                       Giao hàng tiêu chuẩn
                                     </p>
-                                    {shippingFee === 0 && (
+                                    {shippingCalculation?.isFreeShipping && (
                                       <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs font-medium uppercase tracking-wide">
                                         Miễn phí
                                       </span>
                                     )}
                                   </div>
                                   <p className="text-xs text-gray-600 dark:text-gray-400 font-light">
-                                    3-5 ngày làm việc
+                                    {shippingCalculation?.estimatedDays ||
+                                      "3-5 ngày làm việc"}
                                   </p>
-                                  <p className="text-xs text-gray-500 dark:text-gray-500 font-light mt-1">
-                                    Giao hàng trong giờ hành chính
-                                  </p>
+                                  {shippingCalculation &&
+                                    !shippingCalculation.isFreeShipping &&
+                                    shippingCalculation.remainingForFreeShipping >
+                                      0 && (
+                                      <p className="text-xs text-amber-600 dark:text-amber-400 font-light mt-1">
+                                        Mua thêm{" "}
+                                        <Currency
+                                          value={
+                                            shippingCalculation.remainingForFreeShipping
+                                          }
+                                        />{" "}
+                                        để miễn phí ship
+                                      </p>
+                                    )}
                                 </div>
                               </div>
                               <div className="text-right shrink-0">
-                                {shippingFee === 0 ? (
+                                {shippingCalculation?.isFreeShipping ? (
                                   <span className="text-lg font-light text-green-600 dark:text-green-400">
                                     Miễn phí
                                   </span>
+                                ) : shippingCalculation ? (
+                                  <Currency
+                                    value={shippingCalculation.originalFee}
+                                  />
                                 ) : (
-                                  <span className="text-lg font-light text-black dark:text-white">
-                                    30.000₫
+                                  <span className="text-sm text-gray-500">
+                                    Chọn tỉnh/thành
                                   </span>
                                 )}
                               </div>
@@ -1227,31 +1267,52 @@ export default function CheckoutPage() {
                                     <p className="font-light text-sm uppercase tracking-wider text-black dark:text-white">
                                       Giao hàng nhanh
                                     </p>
-                                    {subtotal >= 500000 && (
+                                    {shippingCalculation?.isFreeShipping && (
                                       <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs font-medium uppercase tracking-wide">
                                         Miễn phí
                                       </span>
                                     )}
-                                    <span className="px-2 py-0.5 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 text-xs font-medium uppercase tracking-wide">
-                                      Nhanh
-                                    </span>
                                   </div>
                                   <p className="text-xs text-gray-600 dark:text-gray-400 font-light">
-                                    1-2 ngày làm việc
+                                    {shippingMethod === "express" &&
+                                    shippingCalculation
+                                      ? shippingCalculation.estimatedDays
+                                      : "1-2 ngày làm việc"}
                                   </p>
-                                  <p className="text-xs text-gray-500 dark:text-gray-500 font-light mt-1">
-                                    Giao hàng ưu tiên, hỗ trợ giao ngoài giờ
-                                  </p>
+                                  {shippingCalculation &&
+                                    !shippingCalculation.isFreeShipping &&
+                                    shippingCalculation.remainingForFreeShipping >
+                                      0 && (
+                                      <p className="text-xs text-amber-600 dark:text-amber-400 font-light mt-1">
+                                        Mua thêm{" "}
+                                        <Currency
+                                          value={
+                                            shippingCalculation.remainingForFreeShipping
+                                          }
+                                        />{" "}
+                                        để miễn phí ship
+                                      </p>
+                                    )}
                                 </div>
                               </div>
                               <div className="text-right shrink-0">
-                                {subtotal >= 500000 ? (
+                                {shippingMethod === "express" &&
+                                shippingCalculation?.isFreeShipping ? (
                                   <span className="text-lg font-light text-green-600 dark:text-green-400">
                                     Miễn phí
                                   </span>
+                                ) : shippingCalculation ? (
+                                  <Currency
+                                    value={
+                                      shippingCalculation.shippingMethod ===
+                                      "express"
+                                        ? shippingCalculation.originalFee
+                                        : shippingCalculation.originalFee * 1.67
+                                    }
+                                  />
                                 ) : (
-                                  <span className="text-lg font-light text-black dark:text-white">
-                                    50.000₫
+                                  <span className="text-sm text-gray-500">
+                                    Chọn tỉnh/thành
                                   </span>
                                 )}
                               </div>
@@ -1266,7 +1327,7 @@ export default function CheckoutPage() {
                       <div className="flex items-center gap-4 mb-8 pb-6 border-b-2 border-neutral-200 dark:border-neutral-800">
                         <motion.div
                           whileHover={{ rotate: 5 }}
-                          className="p-3 rounded-sm bg-gradient-to-br from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 border-2 border-neutral-900 dark:border-neutral-100"
+                          className="p-3 rounded-sm bg-linear-to-br from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 border-2 border-neutral-900 dark:border-neutral-100"
                         >
                           <CreditCard className="w-6 h-6 md:w-7 md:h-7 text-white dark:text-neutral-900" />
                         </motion.div>
@@ -1294,7 +1355,7 @@ export default function CheckoutPage() {
                           className={cn(
                             "flex items-center gap-4 p-6 md:p-8 border-2 rounded-sm cursor-pointer transition-all duration-300 shadow-lg hover:shadow-xl",
                             paymentMethod === "cod"
-                              ? "border-neutral-900 dark:border-neutral-100 bg-gradient-to-br from-neutral-50 to-white dark:from-neutral-900 dark:to-neutral-800"
+                              ? "border-neutral-900 dark:border-neutral-100 bg-linear-to-br from-neutral-50 to-white dark:from-neutral-900 dark:to-neutral-800"
                               : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 bg-white dark:bg-gray-900"
                           )}
                           onClick={() => setPaymentMethod("cod")}
@@ -1331,7 +1392,7 @@ export default function CheckoutPage() {
                           className={cn(
                             "flex items-center gap-4 p-6 md:p-8 border-2 rounded-sm cursor-pointer transition-all duration-300 shadow-lg hover:shadow-xl",
                             paymentMethod === "stripe"
-                              ? "border-neutral-900 dark:border-neutral-100 bg-gradient-to-br from-neutral-50 to-white dark:from-neutral-900 dark:to-neutral-800"
+                              ? "border-neutral-900 dark:border-neutral-100 bg-linear-to-br from-neutral-50 to-white dark:from-neutral-900 dark:to-neutral-800"
                               : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 bg-white dark:bg-gray-900"
                           )}
                           onClick={() => setPaymentMethod("stripe")}
@@ -1368,7 +1429,7 @@ export default function CheckoutPage() {
                           className={cn(
                             "flex items-center gap-4 p-6 md:p-8 border-2 rounded-sm cursor-pointer transition-all duration-300 shadow-lg hover:shadow-xl",
                             paymentMethod === "momo"
-                              ? "border-neutral-900 dark:border-neutral-100 bg-gradient-to-br from-neutral-50 to-white dark:from-neutral-900 dark:to-neutral-800"
+                              ? "border-neutral-900 dark:border-neutral-100 bg-linear-to-br from-neutral-50 to-white dark:from-neutral-900 dark:to-neutral-800"
                               : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 bg-white dark:bg-gray-900"
                           )}
                           onClick={() => setPaymentMethod("momo")}
@@ -1405,7 +1466,7 @@ export default function CheckoutPage() {
                           className={cn(
                             "flex items-center gap-4 p-6 md:p-8 border-2 rounded-sm cursor-pointer transition-all duration-300 shadow-lg hover:shadow-xl",
                             paymentMethod === "vnpay"
-                              ? "border-neutral-900 dark:border-neutral-100 bg-gradient-to-br from-neutral-50 to-white dark:from-neutral-900 dark:to-neutral-800"
+                              ? "border-neutral-900 dark:border-neutral-100 bg-linear-to-br from-neutral-50 to-white dark:from-neutral-900 dark:to-neutral-800"
                               : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 bg-white dark:bg-gray-900"
                           )}
                           onClick={() => setPaymentMethod("vnpay")}
@@ -1471,7 +1532,7 @@ export default function CheckoutPage() {
                       <div className="flex items-center gap-4 mb-6 pb-6 border-b-2 border-neutral-200 dark:border-neutral-800">
                         <motion.div
                           whileHover={{ rotate: 5 }}
-                          className="p-3 rounded-sm bg-gradient-to-br from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 border-2 border-neutral-900 dark:border-neutral-100"
+                          className="p-3 rounded-sm bg-linear-to-br from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 border-2 border-neutral-900 dark:border-neutral-100"
                         >
                           <MapPin className="w-6 h-6 md:w-7 md:h-7 text-white dark:text-neutral-900" />
                         </motion.div>
@@ -1526,7 +1587,7 @@ export default function CheckoutPage() {
                             "w-full rounded-sm text-sm font-light uppercase tracking-[0.15em] h-12 transition-all duration-300",
                             !paymentMethod
                               ? "bg-neutral-200 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-600 cursor-not-allowed border-2 border-neutral-200 dark:border-neutral-800"
-                              : "bg-gradient-to-r from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 text-white dark:text-neutral-900 hover:from-neutral-800 hover:to-neutral-700 dark:hover:from-neutral-200 dark:hover:to-neutral-300 border-2 border-neutral-900 dark:border-neutral-100 hover:shadow-xl"
+                              : "bg-linear-to-r from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 text-white dark:text-neutral-900 hover:from-neutral-800 hover:to-neutral-700 dark:hover:from-neutral-200 dark:hover:to-neutral-300 border-2 border-neutral-900 dark:border-neutral-100 hover:shadow-xl"
                           )}
                         >
                           Tiếp tục
@@ -1548,7 +1609,7 @@ export default function CheckoutPage() {
                     <div className="flex items-center gap-4 mb-8 pb-6 border-b-2 border-neutral-200 dark:border-neutral-800">
                       <motion.div
                         whileHover={{ rotate: 5 }}
-                        className="p-3 rounded-sm bg-gradient-to-br from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 border-2 border-neutral-900 dark:border-neutral-100"
+                        className="p-3 rounded-sm bg-linear-to-br from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 border-2 border-neutral-900 dark:border-neutral-100"
                       >
                         <Lock className="w-6 h-6 md:w-7 md:h-7 text-white dark:text-neutral-900" />
                       </motion.div>
@@ -1572,7 +1633,7 @@ export default function CheckoutPage() {
                         <h3 className="text-sm md:text-base font-light text-neutral-900 dark:text-neutral-100 uppercase tracking-[0.15em] mb-4">
                           Địa chỉ giao hàng
                         </h3>
-                        <div className="p-5 md:p-6 bg-gradient-to-br from-neutral-50 to-white dark:from-neutral-900 dark:to-neutral-800 border-2 border-neutral-200 dark:border-neutral-800 rounded-sm">
+                        <div className="p-5 md:p-6 bg-linear-to-br from-neutral-50 to-white dark:from-neutral-900 dark:to-neutral-800 border-2 border-neutral-200 dark:border-neutral-800 rounded-sm">
                           <p className="font-light text-sm md:text-base text-neutral-900 dark:text-neutral-100">
                             {shippingAddress.fullName}
                           </p>
@@ -1600,7 +1661,7 @@ export default function CheckoutPage() {
                         <h3 className="text-sm md:text-base font-light text-neutral-900 dark:text-neutral-100 uppercase tracking-[0.15em] mb-4">
                           Phương thức thanh toán
                         </h3>
-                        <div className="p-5 md:p-6 bg-gradient-to-br from-neutral-50 to-white dark:from-neutral-900 dark:to-neutral-800 border-2 border-neutral-200 dark:border-neutral-800 rounded-sm">
+                        <div className="p-5 md:p-6 bg-linear-to-br from-neutral-50 to-white dark:from-neutral-900 dark:to-neutral-800 border-2 border-neutral-200 dark:border-neutral-800 rounded-sm">
                           <p className="font-light text-sm md:text-base text-neutral-900 dark:text-neutral-100">
                             {paymentMethod === "cod" &&
                               "Thanh toán khi nhận hàng (COD)"}
@@ -1638,7 +1699,7 @@ export default function CheckoutPage() {
                         <Button
                           onClick={handleCheckout}
                           disabled={loading}
-                          className="w-full rounded-sm text-sm font-light uppercase tracking-[0.15em] bg-gradient-to-r from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 text-white dark:text-neutral-900 hover:from-neutral-800 hover:to-neutral-700 dark:hover:from-neutral-200 dark:hover:to-neutral-300 border-2 border-neutral-900 dark:border-neutral-100 h-12 transition-all duration-300 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="w-full rounded-sm text-sm font-light uppercase tracking-[0.15em] bg-linear-to-r from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 text-white dark:text-neutral-900 hover:from-neutral-800 hover:to-neutral-700 dark:hover:from-neutral-200 dark:hover:to-neutral-300 border-2 border-neutral-900 dark:border-neutral-100 h-12 transition-all duration-300 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {loading ? (
                             <>
@@ -1676,7 +1737,7 @@ export default function CheckoutPage() {
                 <div className="flex items-center gap-3 mb-6 pb-6 border-b-2 border-neutral-200 dark:border-neutral-800">
                   <motion.div
                     whileHover={{ rotate: 5 }}
-                    className="p-2 rounded-sm bg-gradient-to-br from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 border-2 border-neutral-900 dark:border-neutral-100"
+                    className="p-2 rounded-sm bg-linear-to-br from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 border-2 border-neutral-900 dark:border-neutral-100"
                   >
                     <ShoppingBag className="w-5 h-5 text-white dark:text-neutral-900" />
                   </motion.div>
@@ -1755,7 +1816,7 @@ export default function CheckoutPage() {
                   ))}
                 </div>
 
-                <div className="h-px bg-gradient-to-r from-transparent via-neutral-200 to-transparent dark:via-neutral-800 my-6" />
+                <div className="h-px bg-linear-to-r from-transparent via-neutral-200 to-transparent dark:via-neutral-800 my-6" />
 
                 <div className="space-y-4 mt-6">
                   <div className="flex justify-between text-neutral-600 dark:text-neutral-400 text-xs md:text-sm font-light">
@@ -1795,7 +1856,7 @@ export default function CheckoutPage() {
                       )}
                     </span>
                   </div>
-                  <div className="h-px bg-gradient-to-r from-transparent via-neutral-900 to-transparent dark:via-neutral-100 my-4" />
+                  <div className="h-px bg-linear-to-r from-transparent via-neutral-900 to-transparent dark:via-neutral-100 my-4" />
                   <div className="flex justify-between text-base md:text-lg font-light text-neutral-900 dark:text-neutral-100">
                     <span className="uppercase tracking-[0.15em]">
                       Tổng cộng:

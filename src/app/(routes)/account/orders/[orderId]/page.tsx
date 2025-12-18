@@ -171,8 +171,12 @@ export default function OrderDetailPage() {
 
         // Check cache first (skip cache if from payment to get fresh data)
         const cacheKey = `order_${orderId}`;
-        const cachedData = !fromPayment ? sessionStorage.getItem(cacheKey) : null;
-        const cacheTime = !fromPayment ? sessionStorage.getItem(`${cacheKey}_time`) : null;
+        const cachedData = !fromPayment
+          ? sessionStorage.getItem(cacheKey)
+          : null;
+        const cacheTime = !fromPayment
+          ? sessionStorage.getItem(`${cacheKey}_time`)
+          : null;
 
         if (cachedData && cacheTime) {
           const age = Date.now() - parseInt(cacheTime);
@@ -190,7 +194,9 @@ export default function OrderDetailPage() {
                 throw new Error(`HTTP ${res.status}`);
               })
               .then((orderData) => {
-                const foundOrder = orderData?.id ? orderData : orderData?.order || orderData?.data;
+                const foundOrder = orderData?.id
+                  ? orderData
+                  : orderData?.order || orderData?.data;
                 if (foundOrder && foundOrder.id === orderId) {
                   setOrder(foundOrder);
                   sessionStorage.setItem(cacheKey, JSON.stringify(foundOrder));
@@ -224,8 +230,12 @@ export default function OrderDetailPage() {
         if (!response.ok) {
           // Handle 503 Service Unavailable - retry for new orders
           if (response.status === 503 && fromPayment && retryCount < 3) {
-            console.log(`[ORDER_DETAIL] Retrying fetch (attempt ${retryCount + 1}/3)...`);
-            await new Promise((resolve) => setTimeout(resolve, 3000 * (retryCount + 1)));
+            console.log(
+              `[ORDER_DETAIL] Retrying fetch (attempt ${retryCount + 1}/3)...`
+            );
+            await new Promise((resolve) =>
+              setTimeout(resolve, 3000 * (retryCount + 1))
+            );
             return fetchOrder(retryCount + 1);
           }
 
@@ -238,7 +248,9 @@ export default function OrderDetailPage() {
 
           // Handle 403 Forbidden (email không khớp)
           if (response.status === 403) {
-            toast.error("Bạn không có quyền xem đơn hàng này. Vui lòng kiểm tra email đã nhập khi thanh toán.");
+            toast.error(
+              "Bạn không có quyền xem đơn hàng này. Vui lòng kiểm tra email đã nhập khi thanh toán."
+            );
             router.push("/account/orders");
             return;
           }
@@ -247,8 +259,14 @@ export default function OrderDetailPage() {
           if (response.status === 404) {
             // For new orders, retry a few times as it might not be synced yet
             if (fromPayment && retryCount < 3) {
-              console.log(`[ORDER_DETAIL] Order not found, retrying (attempt ${retryCount + 1}/3)...`);
-              await new Promise((resolve) => setTimeout(resolve, 3000 * (retryCount + 1)));
+              console.log(
+                `[ORDER_DETAIL] Order not found, retrying (attempt ${
+                  retryCount + 1
+                }/3)...`
+              );
+              await new Promise((resolve) =>
+                setTimeout(resolve, 3000 * (retryCount + 1))
+              );
               return fetchOrder(retryCount + 1);
             }
             toast.error("Không tìm thấy đơn hàng. Vui lòng thử lại sau.");
@@ -271,7 +289,7 @@ export default function OrderDetailPage() {
               // Ignore text parsing error
             }
           }
-          
+
           const error = new Error(errorMessage);
           (error as any).status = response.status;
           (error as any).statusText = response.statusText;
@@ -287,19 +305,31 @@ export default function OrderDetailPage() {
           orderData = JSON.parse(responseText);
         } catch (parseError: any) {
           console.error("[ORDER_DETAIL] JSON parse error:", parseError);
-          throw new Error(`Failed to parse response: ${parseError?.message || "Invalid JSON"}`);
+          throw new Error(
+            `Failed to parse response: ${parseError?.message || "Invalid JSON"}`
+          );
         }
 
         // Handle both direct order object or wrapped response
-        const foundOrder = orderData?.id ? orderData : orderData?.order || orderData?.data;
+        const foundOrder = orderData?.id
+          ? orderData
+          : orderData?.order || orderData?.data;
 
         if (!foundOrder || foundOrder.id !== orderId) {
-          console.warn(`[ORDER_DETAIL] Order ${orderId} not found or invalid response`);
-          
+          console.warn(
+            `[ORDER_DETAIL] Order ${orderId} not found or invalid response`
+          );
+
           // For new orders, retry a few times as it might not be synced yet
           if (fromPayment && retryCount < 3) {
-            console.log(`[ORDER_DETAIL] Order not found, retrying (attempt ${retryCount + 1}/3)...`);
-            await new Promise((resolve) => setTimeout(resolve, 3000 * (retryCount + 1)));
+            console.log(
+              `[ORDER_DETAIL] Order not found, retrying (attempt ${
+                retryCount + 1
+              }/3)...`
+            );
+            await new Promise((resolve) =>
+              setTimeout(resolve, 3000 * (retryCount + 1))
+            );
             return fetchOrder(retryCount + 1);
           }
 
@@ -328,31 +358,43 @@ export default function OrderDetailPage() {
           fromPayment,
           orderId,
         };
-        
+
         console.error("[ORDER_DETAIL_FETCH_ERROR]", errorDetails);
-        
+
         // Log the raw error if it exists
         if (error) {
           console.error("[ORDER_DETAIL_FETCH_ERROR] Raw error:", error);
           console.error("[ORDER_DETAIL_FETCH_ERROR] Error type:", typeof error);
-          console.error("[ORDER_DETAIL_FETCH_ERROR] Error keys:", Object.keys(error || {}));
+          console.error(
+            "[ORDER_DETAIL_FETCH_ERROR] Error keys:",
+            Object.keys(error || {})
+          );
         }
 
         // Retry for network errors if from payment
-        if (fromPayment && retryCount < 3 && (
-          error?.message?.includes("503") ||
-          error?.message?.includes("timeout") ||
-          error?.message?.includes("ECONNREFUSED") ||
-          error?.message?.includes("fetch failed")
-        )) {
-          console.log(`[ORDER_DETAIL] Network error, retrying (attempt ${retryCount + 1}/3)...`);
-          await new Promise((resolve) => setTimeout(resolve, 3000 * (retryCount + 1)));
+        if (
+          fromPayment &&
+          retryCount < 3 &&
+          (error?.message?.includes("503") ||
+            error?.message?.includes("timeout") ||
+            error?.message?.includes("ECONNREFUSED") ||
+            error?.message?.includes("fetch failed"))
+        ) {
+          console.log(
+            `[ORDER_DETAIL] Network error, retrying (attempt ${
+              retryCount + 1
+            }/3)...`
+          );
+          await new Promise((resolve) =>
+            setTimeout(resolve, 3000 * (retryCount + 1))
+          );
           return fetchOrder(retryCount + 1);
         }
 
-        const errorMessage = error?.message || "Không thể tải chi tiết đơn hàng";
+        const errorMessage =
+          error?.message || "Không thể tải chi tiết đơn hàng";
         toast.error(errorMessage);
-        
+
         // Don't redirect immediately for new orders - let user see the error
         if (!fromPayment) {
           router.push("/account/orders");
@@ -419,7 +461,7 @@ export default function OrderDetailPage() {
         if (response.status === 401) {
           const errorData = await response.json().catch(() => ({}));
           const errorMessage = errorData.message || "Chưa xác thực";
-          
+
           if (isSignedIn) {
             // User is signed in but got 401 - session expired
             toast.info("Đơn hàng đã hủy. Vui lòng tải lại trang để thay đổi.");
@@ -446,7 +488,10 @@ export default function OrderDetailPage() {
             errorMessage = text || errorMessage;
           } catch (textError) {
             // Fallback to default message
-            console.error("[CANCEL_ORDER] Failed to parse error response:", textError);
+            console.error(
+              "[CANCEL_ORDER] Failed to parse error response:",
+              textError
+            );
           }
         }
         throw new Error(errorMessage);
@@ -455,7 +500,7 @@ export default function OrderDetailPage() {
       // Parse success response
       const data = await response.json();
       toast.success(data.message || "Đã hủy đơn hàng thành công");
-      
+
       // Clear cache for this order
       try {
         sessionStorage.removeItem(`order_${order.id}`);
@@ -463,27 +508,30 @@ export default function OrderDetailPage() {
       } catch (e) {
         console.warn("[CANCEL_ORDER] Failed to clear cache", e);
       }
-      
+
       // Reload page after a short delay to show success message
       setTimeout(() => {
         window.location.href = "/account/orders";
       }, 1000);
     } catch (error: any) {
       console.error("[CANCEL_ORDER_ERROR]", error);
-      toast.error(error.message || "Không thể hủy đơn hàng. Vui lòng thử lại sau.");
+      toast.error(
+        error.message || "Không thể hủy đơn hàng. Vui lòng thử lại sau."
+      );
     } finally {
       setCancelling(false);
     }
   };
 
   // Check if order can be cancelled
-  const canCancelOrder = order.status === "PENDING" || order.status === "PROCESSING";
+  const canCancelOrder =
+    order.status === "PENDING" || order.status === "PROCESSING";
 
   // Check if order can be reviewed
   const canReviewOrder = order.status === "DELIVERED";
 
   return (
-    <div className="bg-gradient-to-br from-neutral-50 via-white to-neutral-50 dark:from-neutral-950 dark:via-gray-900 dark:to-neutral-950 min-h-screen py-12 md:py-16 lg:py-20">
+    <div className="bg-linear-to-br from-neutral-50 via-white to-neutral-50 dark:from-neutral-950 dark:via-gray-900 dark:to-neutral-950 min-h-screen py-12 md:py-16 lg:py-20">
       <Container>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Back Button */}
@@ -507,7 +555,7 @@ export default function OrderDetailPage() {
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 border-2 border-green-200 dark:border-green-800 rounded-sm p-4 md:p-6 mb-6"
+              className="bg-linear-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 border-2 border-green-200 dark:border-green-800 rounded-sm p-4 md:p-6 mb-6"
             >
               <div className="flex items-center gap-3">
                 <CheckCircle2 className="w-6 h-6 text-green-600 dark:text-green-400 shrink-0" />
@@ -809,16 +857,23 @@ export default function OrderDetailPage() {
                   </span>
                 </div>
               )}
-              {order.shippingCost && order.shippingCost > 0 && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-neutral-600 dark:text-neutral-400 uppercase tracking-wide">
-                    Phí vận chuyển:
-                  </span>
-                  <span className="text-neutral-900 dark:text-neutral-100 font-medium">
-                    <Currency value={order.shippingCost} />
-                  </span>
-                </div>
-              )}
+              {order.shippingCost !== undefined &&
+                order.shippingCost !== null && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-neutral-600 dark:text-neutral-400 uppercase tracking-wide">
+                      Phí vận chuyển:
+                    </span>
+                    <span className="text-neutral-900 dark:text-neutral-100 font-medium">
+                      {order.shippingCost === 0 ? (
+                        <span className="text-green-600 dark:text-green-400">
+                          Miễn phí
+                        </span>
+                      ) : (
+                        <Currency value={order.shippingCost} />
+                      )}
+                    </span>
+                  </div>
+                )}
               {order.tax > 0 && (
                 <div className="flex justify-between text-sm">
                   <span className="text-neutral-600 dark:text-neutral-400 uppercase tracking-wide">
@@ -851,45 +906,48 @@ export default function OrderDetailPage() {
           </motion.div>
 
           {/* Tracking Section */}
-          {order.trackingNumber && order.status !== "DELIVERED" && order.status !== "CANCELLED" && (
-            <motion.div
-              id="tracking"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              className="bg-white dark:bg-gray-900 rounded-sm border-2 border-neutral-200 dark:border-neutral-800 shadow-xl p-6 md:p-8 mt-6"
-            >
-              <h2 className="text-lg font-light text-neutral-900 dark:text-neutral-100 uppercase tracking-wide mb-4 flex items-center gap-2">
-                <Truck className="w-5 h-5" />
-                Theo dõi đơn hàng
-              </h2>
-              <div className="space-y-3">
-                <div className="p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-sm border border-neutral-200 dark:border-neutral-700">
-                  <div className="text-sm text-neutral-600 dark:text-neutral-400 uppercase tracking-wide mb-2">
-                    Mã vận đơn:
+          {order.trackingNumber &&
+            order.status !== "DELIVERED" &&
+            order.status !== "CANCELLED" && (
+              <motion.div
+                id="tracking"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="bg-white dark:bg-gray-900 rounded-sm border-2 border-neutral-200 dark:border-neutral-800 shadow-xl p-6 md:p-8 mt-6"
+              >
+                <h2 className="text-lg font-light text-neutral-900 dark:text-neutral-100 uppercase tracking-wide mb-4 flex items-center gap-2">
+                  <Truck className="w-5 h-5" />
+                  Theo dõi đơn hàng
+                </h2>
+                <div className="space-y-3">
+                  <div className="p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-sm border border-neutral-200 dark:border-neutral-700">
+                    <div className="text-sm text-neutral-600 dark:text-neutral-400 uppercase tracking-wide mb-2">
+                      Mã vận đơn:
+                    </div>
+                    <div className="text-lg font-mono font-medium text-neutral-900 dark:text-neutral-100">
+                      {order.trackingNumber}
+                    </div>
                   </div>
-                  <div className="text-lg font-mono font-medium text-neutral-900 dark:text-neutral-100">
-                    {order.trackingNumber}
+                  {order.shippingMethod && (
+                    <div className="text-sm">
+                      <span className="text-neutral-600 dark:text-neutral-400 uppercase tracking-wide">
+                        Đơn vị vận chuyển:{" "}
+                      </span>
+                      <span className="text-neutral-900 dark:text-neutral-100 font-medium">
+                        {order.shippingMethod}
+                      </span>
+                    </div>
+                  )}
+                  <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800">
+                    <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+                      Bạn có thể tra cứu đơn hàng trên website của đơn vị vận
+                      chuyển bằng mã vận đơn trên.
+                    </p>
                   </div>
                 </div>
-                {order.shippingMethod && (
-                  <div className="text-sm">
-                    <span className="text-neutral-600 dark:text-neutral-400 uppercase tracking-wide">
-                      Đơn vị vận chuyển:{" "}
-                    </span>
-                    <span className="text-neutral-900 dark:text-neutral-100 font-medium">
-                      {order.shippingMethod}
-                    </span>
-                  </div>
-                )}
-                <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800">
-                  <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
-                    Bạn có thể tra cứu đơn hàng trên website của đơn vị vận chuyển bằng mã vận đơn trên.
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-          )}
+              </motion.div>
+            )}
 
           {/* Review Section */}
           {canReviewOrder && (
@@ -917,7 +975,11 @@ export default function OrderDetailPage() {
                       {item.imageUrl || item.product?.images?.[0]?.url ? (
                         <div className="relative w-16 h-16 shrink-0 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 overflow-hidden">
                           <Image
-                            src={item.imageUrl || item.product?.images?.[0]?.url || "/placeholder.svg"}
+                            src={
+                              item.imageUrl ||
+                              item.product?.images?.[0]?.url ||
+                              "/placeholder.svg"
+                            }
                             alt={item.productName}
                             fill
                             sizes="64px"
