@@ -47,7 +47,6 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
     getAllWishlistItems,
   } = useWishlist();
 
-  
   const [currentImage, setCurrentImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [isInWishlist, setIsInWishlist] = useState(false);
@@ -62,11 +61,9 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
   const popoverRef = useRef<HTMLDivElement>(null);
   const thumbnailRef = useRef<HTMLDivElement>(null);
 
-  
   const variants = product.variants || [];
   const images = product.images || [];
 
-  
   const availableSizes = useMemo(() => {
     const sizes = new Map<
       string,
@@ -103,7 +100,6 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
     return Array.from(materials.values());
   }, [variants]);
 
-  
   const selectedVariant = useMemo(() => {
     if (variants.length === 0) return null;
     return variants.find(
@@ -114,12 +110,10 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
     );
   }, [variants, selectedSizeId, selectedColorId, selectedMaterialId]);
 
-  
   const currentPrice = selectedVariant?.price || product.price;
   const currentInventory = selectedVariant?.inventory ?? product.inventory ?? 0;
   const isOutOfStock = currentInventory <= 0;
 
-  
   const discountPercent = useMemo(() => {
     if (
       product.originalPrice &&
@@ -133,7 +127,6 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
     return 0;
   }, [product.originalPrice, product.price]);
 
-  
   const formatVND = (price: number) => {
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",
@@ -141,15 +134,12 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
     }).format(price);
   };
 
-  
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  
   useEffect(() => {
     if (isOpen) {
-      
       const scrollY = window.scrollY;
       document.body.style.position = "fixed";
       document.body.style.top = `-${scrollY}px`;
@@ -167,12 +157,11 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
     }
   }, [isOpen]);
 
-  
   useEffect(() => {
     if (isOpen) {
       setCurrentImage(0);
       setQuantity(1);
-      
+
       if (variants.length > 0) {
         const firstVariant = variants[0];
         setSelectedSizeId(firstVariant.size?.id || null);
@@ -186,7 +175,6 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
     }
   }, [isOpen, product.id, variants]);
 
-  
   useEffect(() => {
     if (!isOpen) return;
 
@@ -207,7 +195,6 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
     checkWishlistStatus();
   }, [isOpen, product.id, getAllWishlistItems, checkWishlist]);
 
-  
   useEffect(() => {
     if (quantity > currentInventory && currentInventory > 0) {
       setQuantity(currentInventory);
@@ -227,7 +214,6 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
     }
   };
 
-  
   const increaseQuantity = () => {
     if (currentInventory > 0 && quantity < currentInventory) {
       setQuantity((prev) => prev + 1);
@@ -240,7 +226,6 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
     }
   };
 
-  
   const handleAddToCart = async () => {
     if (isOutOfStock) {
       toast.error("Sản phẩm đã hết hàng");
@@ -255,7 +240,6 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
     setIsAddingToCart(true);
 
     try {
-      
       const productData: Product = {
         ...product,
         price: currentPrice,
@@ -290,7 +274,6 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
     }
   };
 
-  
   const handleToggleWishlist = async () => {
     try {
       await toggleWishlistWithAuth(product.id);
@@ -318,7 +301,6 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
         toast.success("Đã sao chép link");
       }
     } catch (error) {
-      
       if (error instanceof Error && error.name !== "AbortError") {
         await navigator.clipboard.writeText(url);
         toast.success("Đã sao chép link");
@@ -326,7 +308,6 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
     }
   };
 
-  
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
@@ -342,7 +323,6 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
 
   if (!mounted || !isOpen) return null;
 
-  
   if (typeof window === "undefined" || !document.body) {
     return null;
   }
@@ -364,13 +344,13 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
         >
           {/* Backdrop */}
           <motion.div
-            className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-100 bg-black/60 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{
               duration: 0.3,
-              ease: [0.4, 0, 0.2, 1], 
+              ease: [0.4, 0, 0.2, 1],
             }}
             onClick={onClose}
           />
@@ -378,7 +358,7 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
           {/* Popover */}
           <motion.div
             ref={popoverRef}
-            className="fixed inset-0 z-[101] flex items-center justify-center p-4 pointer-events-none"
+            className="fixed inset-0 z-101 flex items-center justify-center p-4 pointer-events-none"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -403,7 +383,7 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
               {}
               <button
                 onClick={onClose}
-                className="absolute top-4 right-4 z-[102] p-2 bg-white hover:bg-gray-100 border border-gray-300 transition-colors rounded-none shadow-sm"
+                className="absolute top-4 right-4 z-102 p-2 bg-white hover:bg-gray-100 border border-gray-300 transition-colors rounded-none shadow-sm"
                 aria-label="Đóng"
               >
                 <X className="w-5 h-5 text-black" />
@@ -596,9 +576,9 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
                         </label>
                         <ToggleGroup
                           type="single"
-                          value={selectedSizeId || undefined}
+                          value={selectedSizeId ?? undefined}
                           onValueChange={(value) => {
-                            if (value) setSelectedSizeId(value);
+                            setSelectedSizeId(value || null);
                           }}
                           className="justify-start"
                         >
@@ -624,9 +604,9 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
                         </label>
                         <ToggleGroup
                           type="single"
-                          value={selectedColorId || undefined}
+                          value={selectedColorId ?? undefined}
                           onValueChange={(value) => {
-                            if (value) setSelectedColorId(value);
+                            setSelectedColorId(value || null);
                           }}
                           className="justify-start"
                         >
@@ -724,7 +704,7 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
                   <Button
                     onClick={handleAddToCart}
                     disabled={isOutOfStock || isAddingToCart}
-                    className="w-full h-12 rounded-none bg-gray-400 text-white hover:bg-gray-900 hover:shadow-lg hover:shadow-gray-400/30 font-light uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed transition-[background-color,box-shadow,transform] duration-200 ease-out will-change-[transform] hover:scale-[1.01] active:scale-[0.99]"
+                    className="w-full h-12 rounded-none bg-gray-400 text-white hover:bg-gray-900 hover:shadow-lg hover:shadow-gray-400/30 font-light uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed transition-[background-color,box-shadow,transform] duration-200 ease-out will-change-transform hover:scale-[1.01] active:scale-[0.99]"
                   >
                     {isAddingToCart ? (
                       "Đang thêm..."
