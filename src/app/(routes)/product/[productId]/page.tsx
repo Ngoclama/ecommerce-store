@@ -18,7 +18,7 @@ const ProductPage = async ({ params }: { params: Params }) => {
 
   if (!product) {
     return (
-      <div className="bg-gradient-to-br from-neutral-50 via-white to-neutral-50 dark:from-neutral-950 dark:via-gray-900 dark:to-neutral-950 min-h-screen">
+      <div className="bg-linear-to-br from-neutral-50 via-white to-neutral-50 dark:from-neutral-950 dark:via-gray-900 dark:to-neutral-950 min-h-screen">
         <ProductClient product={product} />
         <Container>
           <div className="px-4 py-24 sm:px-6 lg:px-8">
@@ -39,7 +39,7 @@ const ProductPage = async ({ params }: { params: Params }) => {
     : suggestProductsResult?.products || [];
 
   return (
-    <div className="bg-gradient-to-br from-neutral-50 via-white to-neutral-50 dark:from-neutral-950 dark:via-gray-900 dark:to-neutral-950 min-h-screen">
+    <div className="bg-linear-to-br from-neutral-50 via-white to-neutral-50 dark:from-neutral-950 dark:via-gray-900 dark:to-neutral-950 min-h-screen">
       <ProductClient product={product} />
       <Container>
         <div className="px-4 sm:px-6 lg:px-8 py-16 md:py-24">

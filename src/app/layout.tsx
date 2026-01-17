@@ -3,7 +3,10 @@ import CategorySidebarLeft from "@/components/category-sidebar-left";
 import { SidebarContentWrapper } from "@/components/sidebar-content-wrapper";
 import getCategories from "@/actions/get-categories";
 import getBillboards from "@/actions/get-billboards";
+import { FallingFlowers } from "@/components/falling-flowers";
 import "./globals.css";
+import "@/styles/tet-theme.css";
+import "@/styles/tet-theme-complete.css";
 
 import type { Metadata } from "next";
 import { Montserrat_Alternates, Be_Vietnam_Pro } from "next/font/google";
@@ -46,7 +49,7 @@ export default async function RootLayout({
   const billboards = await getBillboards();
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="vi" suppressHydrationWarning className="tet-mode">
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -59,6 +62,7 @@ export default async function RootLayout({
                   } else {
                     document.documentElement.classList.remove('dark');
                   }
+                  document.documentElement.classList.add('tet-mode');
                 } catch (e) {}
               })();
             `,
@@ -66,7 +70,7 @@ export default async function RootLayout({
         />
       </head>
       <body
-        className={`${montserratAlternates.variable} ${beVietnamPro.variable}`}
+        className={`${montserratAlternates.variable} ${beVietnamPro.variable} bg-linear-to-br from-tet-cream via-white to-tet-ivory min-h-screen`}
       >
         <ClerkProvider
           signInUrl="/sign-in"
@@ -78,6 +82,7 @@ export default async function RootLayout({
         >
           <ThemeProvider>
             <CartAnimationProvider>
+              <FallingFlowers />
               <MainHeader
                 categories={categories || []}
                 billboards={billboards || []}

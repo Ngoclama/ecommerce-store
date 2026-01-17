@@ -1,0 +1,678 @@
+/* ════════════════════════════════════════════════════════════════════════════
+   TẾT NGUYÊN ĐÁN THEME - COMPREHENSIVE STYLING GUIDE
+   
+   Tết theme cho website bán quần áo - May mắn, cao cấp, hiện đại
+   
+   Sections:
+   1. Root Variables & Base
+   2. Typography
+   3. Buttons (Primary / Secondary / Sizes)
+   4. Cards & Badges
+   5. Animations & Effects
+   6. Utilities
+   7. Components
+   8. Responsive
+   9. Dark Mode
+   ════════════════════════════════════════════════════════════════════════════ */
+
+@import url("https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Playfair+Display:wght@700;900&display=swap");
+
+/* ─────────────────────────────────────────────────────────────────────────
+   1. ROOT VARIABLES & BASE
+   ───────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* Primary Colors */
+  --tet-red: #c81d25;
+  --tet-red-dark: #9b111e;
+  --tet-red-light: #d32f2f;
+  --tet-red-pale: #fee2e4;
+
+  /* Gold Colors */
+  --tet-gold: #f5c542;
+  --tet-gold-dark: #e0a000;
+  --tet-gold-light: #ffd54f;
+  --tet-gold-pale: #fef3c7;
+
+  /* Neutral Colors */
+  --tet-warm-white: #fff9f0;
+  --tet-ivory: #f5f0e8;
+  --tet-neutral: #f3f4f6;
+
+  /* Accent Colors */
+  --tet-green: #4caf50;
+  --tet-green-light: #66bb6a;
+
+  /* Transitions */
+  --tet-transition: all 250ms ease-in-out;
+  --tet-transition-slow: all 300ms ease-in-out;
+}
+
+html.tet-mode {
+  background: linear-gradient(
+    180deg,
+    var(--tet-warm-white) 0%,
+    var(--tet-ivory) 50%,
+    var(--tet-warm-white) 100%
+  );
+  color-scheme: light;
+}
+
+html.tet-mode.dark {
+  background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 50%, #1a1a1a 100%);
+  color-scheme: dark;
+}
+
+body.tet-mode {
+  transition: var(--tet-transition-slow);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   2. TYPOGRAPHY
+   ───────────────────────────────────────────────────────────────────────── */
+
+.tet-mode h1,
+.tet-mode h2,
+.tet-mode h3 {
+  font-family: "Playfair Display", serif;
+  font-weight: 900;
+  color: var(--tet-red-dark);
+  letter-spacing: 0.5px;
+}
+
+.tet-mode h4,
+.tet-mode h5,
+.tet-mode h6 {
+  color: var(--tet-red);
+  font-weight: 600;
+}
+
+.tet-mode p,
+.tet-mode body {
+  font-family: "Inter", "Roboto", system-ui, sans-serif;
+  color: #1f2937;
+  line-height: 1.6;
+}
+
+.tet-mode.dark p,
+.tet-mode.dark body {
+  color: #e5e7eb;
+}
+
+.heading-tet {
+  font-family: "Playfair Display", serif;
+  color: var(--tet-red-dark);
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  transition: var(--tet-transition);
+}
+
+.text-tet-blessing {
+  font-family: "Dancing Script", cursive;
+  color: var(--tet-red);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.text-tet-gold {
+  color: var(--tet-gold-dark);
+  font-weight: 600;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   3. BUTTONS - PRIMARY / SECONDARY / SIZES
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* PRIMARY BUTTON */
+.btn-tet-primary {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  /* Style */
+  background: linear-gradient(135deg, var(--tet-red) 0%, var(--tet-gold) 100%);
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+
+  /* Size & Shape */
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  overflow: hidden;
+
+  /* Effects */
+  box-shadow: 0 4px 12px rgba(200, 29, 37, 0.15);
+  transition: var(--tet-transition);
+}
+
+.btn-tet-primary::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  transition: left 500ms ease;
+}
+
+.btn-tet-primary:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 12px 20px rgba(200, 29, 37, 0.25),
+    0 0 20px rgba(245, 197, 66, 0.3);
+}
+
+.btn-tet-primary:hover::before {
+  left: 100%;
+}
+
+.btn-tet-primary:active {
+  transform: translateY(0px);
+  box-shadow: 0 6px 12px rgba(200, 29, 37, 0.2);
+}
+
+.btn-tet-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* SECONDARY BUTTON */
+.btn-tet-secondary {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  /* Style */
+  background: transparent;
+  color: var(--tet-red);
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border: 2px solid var(--tet-red);
+
+  /* Size & Shape */
+  padding: 10px 22px;
+  border-radius: 8px;
+  cursor: pointer;
+  overflow: hidden;
+
+  /* Effects */
+  transition: var(--tet-transition);
+}
+
+.btn-tet-secondary:hover {
+  background: rgba(200, 29, 37, 0.05);
+  border-color: var(--tet-red-dark);
+  color: var(--tet-red-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(200, 29, 37, 0.15);
+}
+
+.btn-tet-secondary:active {
+  transform: translateY(0px);
+  background: rgba(200, 29, 37, 0.08);
+}
+
+/* BUTTON SIZES */
+.btn-tet-sm {
+  padding: 8px 16px;
+  font-size: 12px;
+}
+
+.btn-tet-lg {
+  padding: 16px 32px;
+  font-size: 16px;
+}
+
+/* FALLBACK FOR OLD CLASSES */
+.btn-tet {
+  background: linear-gradient(135deg, var(--tet-red) 0%, var(--tet-gold) 100%);
+  color: white;
+  border: 1px solid var(--tet-gold);
+  padding: 12px 24px;
+  font-size: 14px;
+  border-radius: 0;
+  cursor: pointer;
+  transition: var(--tet-transition);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   4. CARDS & BADGES
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* PRODUCT CARD */
+.card-tet {
+  background: white;
+  border: 1px solid var(--tet-gold-pale);
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(200, 29, 37, 0.08);
+  transition: var(--tet-transition-slow);
+  overflow: hidden;
+}
+
+.card-tet:hover {
+  transform: translateY(-4px);
+  border-color: var(--tet-gold-light);
+  box-shadow: 0 12px 24px rgba(200, 29, 37, 0.12);
+}
+
+.tet-mode.dark .card-tet {
+  background: #1f2937;
+  border-color: var(--tet-gold-pale);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* BADGE - GIFT / SALE / SEASON */
+.badge-tet {
+  display: inline-block;
+  background: linear-gradient(135deg, var(--tet-red) 0%, var(--tet-gold) 100%);
+  color: white;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  box-shadow: 0 2px 8px rgba(200, 29, 37, 0.15);
+  transition: var(--tet-transition);
+}
+
+.badge-tet:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(200, 29, 37, 0.25);
+}
+
+.badge-tet-gold {
+  background: linear-gradient(
+    135deg,
+    var(--tet-gold) 0%,
+    var(--tet-gold-light) 100%
+  );
+  color: var(--tet-red-dark);
+}
+
+.badge-tet-outline {
+  background: transparent;
+  color: var(--tet-red);
+  border: 1px solid var(--tet-red);
+  box-shadow: none;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   5. ANIMATIONS & EFFECTS
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* FALLING FLOWERS */
+@keyframes fall {
+  0% {
+    transform: translateY(-10vh) translateX(0) rotateZ(0deg);
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) translateX(100px) rotateZ(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes fall-slow {
+  0% {
+    transform: translateY(-10vh) translateX(0) rotateZ(0deg);
+    opacity: 1;
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) translateX(-50px) rotateZ(-360deg);
+    opacity: 0;
+  }
+}
+
+.flower-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 10;
+}
+
+.flower {
+  position: absolute;
+  font-size: 24px;
+  opacity: 0.8;
+  animation: fall linear infinite;
+}
+
+.flower:nth-child(1) {
+  left: 10%;
+  animation-duration: 10s;
+  animation-delay: 0s;
+}
+
+.flower:nth-child(2) {
+  left: 20%;
+  animation: fall-slow linear infinite;
+  animation-duration: 12s;
+  animation-delay: 2s;
+}
+
+.flower:nth-child(3) {
+  left: 30%;
+  animation-duration: 11s;
+  animation-delay: 4s;
+}
+
+.flower:nth-child(4) {
+  left: 40%;
+  animation: fall-slow linear infinite;
+  animation-duration: 13s;
+  animation-delay: 1s;
+}
+
+.flower:nth-child(5) {
+  left: 50%;
+  animation-duration: 10s;
+  animation-delay: 3s;
+}
+
+.flower:nth-child(6) {
+  left: 60%;
+  animation: fall-slow linear infinite;
+  animation-duration: 12s;
+  animation-delay: 5s;
+}
+
+.flower:nth-child(7) {
+  left: 70%;
+  animation-duration: 11s;
+  animation-delay: 2s;
+}
+
+.flower:nth-child(8) {
+  left: 80%;
+  animation: fall-slow linear infinite;
+  animation-duration: 13s;
+  animation-delay: 4s;
+}
+
+/* FLOATING DECORATION */
+@keyframes float-up {
+  0% {
+    transform: translateY(0px);
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-20px);
+    opacity: 0.7;
+  }
+}
+
+.floating-decoration {
+  animation: float-up 3s ease-in-out infinite;
+}
+
+/* SWAY ANIMATION (LANTERNS) */
+@keyframes sway {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(2deg);
+  }
+}
+
+.lantern {
+  display: inline-block;
+  animation: sway 2s ease-in-out infinite;
+}
+
+/* GLOW EFFECT */
+@keyframes glow-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 5px rgba(200, 29, 37, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(245, 197, 66, 0.8);
+  }
+}
+
+.tet-glow {
+  box-shadow: 0 0 12px rgba(245, 197, 66, 0.3);
+  transition: var(--tet-transition);
+}
+
+.tet-glow:hover {
+  box-shadow: 0 0 20px rgba(245, 197, 66, 0.5);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   6. UTILITIES
+   ───────────────────────────────────────────────────────────────────────── */
+
+.tet-gradient {
+  background: linear-gradient(135deg, var(--tet-red) 0%, var(--tet-gold) 100%);
+}
+
+.tet-border {
+  border: 1px solid var(--tet-gold);
+}
+
+.tet-shadow {
+  box-shadow: 0 8px 16px rgba(200, 29, 37, 0.15);
+}
+
+.tet-shadow-sm {
+  box-shadow: 0 2px 8px rgba(200, 29, 37, 0.1);
+}
+
+.tet-transition {
+  transition: var(--tet-transition);
+}
+
+.tet-transition-slow {
+  transition: var(--tet-transition-slow);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   7. COMPONENTS
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* BANNER TẾT */
+.banner-tet {
+  background: linear-gradient(
+    135deg,
+    var(--tet-red) 0%,
+    var(--tet-red-light) 50%,
+    var(--tet-gold) 100%
+  );
+  color: white;
+  padding: 24px;
+  border-radius: 12px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 16px rgba(200, 29, 37, 0.2);
+}
+
+.banner-tet::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    rgba(255, 255, 255, 0.05) 10px,
+    rgba(255, 255, 255, 0.05) 20px
+  );
+  pointer-events: none;
+}
+
+.banner-tet-title {
+  font-family: "Playfair Display", serif;
+  font-size: 32px;
+  font-weight: 900;
+  margin: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.banner-tet-subtitle {
+  font-family: "Dancing Script", cursive;
+  font-size: 18px;
+  margin-top: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+/* DECORATION CORNERS */
+.decoration-corner {
+  position: absolute;
+  font-size: 48px;
+  opacity: 0.15;
+}
+
+.decoration-corner.top-left {
+  top: 10px;
+  left: 10px;
+}
+
+.decoration-corner.top-right {
+  top: 10px;
+  right: 10px;
+}
+
+.decoration-corner.bottom-left {
+  bottom: 10px;
+  left: 10px;
+}
+
+.decoration-corner.bottom-right {
+  bottom: 10px;
+  right: 10px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   8. RESPONSIVE
+   ───────────────────────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .banner-tet-title {
+    font-size: 24px;
+  }
+
+  .banner-tet-subtitle {
+    font-size: 14px;
+  }
+
+  .flower {
+    font-size: 18px;
+  }
+
+  .decoration-corner {
+    font-size: 32px;
+  }
+
+  .btn-tet-primary,
+  .btn-tet-secondary {
+    padding: 10px 20px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .banner-tet {
+    padding: 16px;
+  }
+
+  .banner-tet-title {
+    font-size: 20px;
+  }
+
+  .btn-tet-primary,
+  .btn-tet-secondary {
+    padding: 8px 16px;
+    font-size: 11px;
+    gap: 4px;
+  }
+
+  .badge-tet {
+    padding: 4px 10px;
+    font-size: 9px;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   9. DARK MODE
+   ───────────────────────────────────────────────────────────────────────── */
+
+.tet-mode.dark {
+  background: #0f0f0f;
+  color: #e5e7eb;
+}
+
+.tet-mode.dark .card-tet {
+  background: #1f2937;
+  border-color: var(--tet-gold-pale);
+}
+
+.tet-mode.dark .heading-tet {
+  color: var(--tet-gold-light);
+}
+
+.tet-mode.dark .text-tet-gold {
+  color: var(--tet-gold-light);
+}
+
+.tet-mode.dark .btn-tet-secondary {
+  color: var(--tet-gold);
+  border-color: var(--tet-gold);
+}
+
+.tet-mode.dark .btn-tet-secondary:hover {
+  background: rgba(245, 197, 66, 0.1);
+  color: var(--tet-gold-light);
+  border-color: var(--tet-gold-light);
+}
+
+/* ═════════════════════════════════════════════════════════════════════════════
+   END OF TẾT THEME - Comprehensive Styling Guide
+   
+   Usage:
+   - Import this CSS file in your layout.tsx
+   - Apply "tet-mode" class to html element
+   - Use class names: btn-tet-primary, card-tet, badge-tet, etc.
+   - Customize CSS variables in :root for different colors
+   ═════════════════════════════════════════════════════════════════════════════ */

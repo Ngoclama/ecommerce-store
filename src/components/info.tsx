@@ -59,10 +59,9 @@ const Info: React.FC<InfoProps> = ({ data }) => {
   const [selectedSizeId, setSelectedSizeId] = useState<string | null>(null);
   const [selectedColorId, setSelectedColorId] = useState<string | null>(null);
   const [selectedMaterialId, setSelectedMaterialId] = useState<string | null>(
-    null
+    null,
   );
 
-  
   const variants = data.variants || [];
 
   const availableSizes = useMemo(() => {
@@ -108,7 +107,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
         (v) =>
           v.size.id === selectedSizeId &&
           v.color.id === selectedColorId &&
-          (!selectedMaterialId || v.material?.id === selectedMaterialId)
+          (!selectedMaterialId || v.material?.id === selectedMaterialId),
       ) || null
     );
   }, [variants, selectedSizeId, selectedColorId, selectedMaterialId]);
@@ -131,7 +130,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
   const discountPercent =
     data.originalPrice && data.price && data.originalPrice > data.price
       ? Math.round(
-          ((data.originalPrice - data.price) / data.originalPrice) * 100
+          ((data.originalPrice - data.price) / data.originalPrice) * 100,
         )
       : 0;
 
@@ -176,7 +175,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
       triggerAnimation(primaryImage, addToCartButtonRef.current);
     }
 
-    cart.addItem(productData, quantity);
+    cart.addItem(productData, quantity, selectedVariant || undefined);
 
     setTimeout(() => {
       toast.success("Đã thêm vào giỏ hàng");
@@ -230,7 +229,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
       triggerAnimation(primaryImage, buyNowButtonRef.current);
     }
 
-    cart.addItem(productData, quantity);
+    cart.addItem(productData, quantity, selectedVariant || undefined);
 
     let retryCount = 0;
     const maxRetries = 5;
@@ -247,7 +246,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
             window.dispatchEvent(
               new CustomEvent("cart-updated", {
                 detail: { source: "buy-now" },
-              })
+              }),
             );
             router.push("/cart");
             return;
@@ -262,7 +261,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
           window.dispatchEvent(
             new CustomEvent("cart-updated", {
               detail: { source: "buy-now" },
-            })
+            }),
           );
           router.push("/cart");
         }
@@ -271,7 +270,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
         window.dispatchEvent(
           new CustomEvent("cart-updated", {
             detail: { source: "buy-now" },
-          })
+          }),
         );
         router.push("/cart");
       }
@@ -301,7 +300,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
           `https:
             url
           )}`,
-          "_blank"
+          "_blank",
         );
         break;
       case "messenger":
@@ -309,7 +308,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
           `https:
             url
           )}&app_id=YOUR_APP_ID`,
-          "_blank"
+          "_blank",
         );
         break;
       case "twitter":
@@ -317,7 +316,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
           `https:
             url
           )}&text=${encodeURIComponent(text)}`,
-          "_blank"
+          "_blank",
         );
         break;
       case "copy":
@@ -406,13 +405,13 @@ const Info: React.FC<InfoProps> = ({ data }) => {
               "shrink-0 w-11 h-11 flex items-center justify-center border rounded-none transition-all duration-200",
               isInWishlist
                 ? "border-red-600 dark:border-red-500 bg-red-600 dark:bg-red-500 text-white"
-                : "border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:border-red-600 dark:hover:border-red-500 hover:text-red-600 dark:hover:text-red-500"
+                : "border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:border-red-600 dark:hover:border-red-500 hover:text-red-600 dark:hover:text-red-500",
             )}
           >
             <Heart
               className={cn(
                 "w-5 h-5 transition-all",
-                isInWishlist && "fill-current"
+                isInWishlist && "fill-current",
               )}
             />
           </motion.button>
@@ -584,7 +583,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
                     (v) =>
                       v.size.id === value &&
                       v.color.id === selectedColorId &&
-                      v.inventory > 0
+                      v.inventory > 0,
                   );
                   if (!matchingVariant) {
                     setSelectedColorId(null);
@@ -601,7 +600,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
                 (v) =>
                   v.size.id === size.id &&
                   v.inventory > 0 &&
-                  (!selectedColorId || v.color.id === selectedColorId)
+                  (!selectedColorId || v.color.id === selectedColorId),
               );
               return (
                 <ToggleGroupItem
@@ -613,7 +612,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
                     selectedSizeId === size.id
                       ? "border-slate-700 dark:border-slate-300 bg-slate-700 dark:bg-slate-300 text-white dark:text-slate-900 shadow-md"
                       : "border-slate-300 dark:border-slate-700 hover:border-slate-500 dark:hover:border-slate-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800",
-                    !variantAvailable && "opacity-40 cursor-not-allowed"
+                    !variantAvailable && "opacity-40 cursor-not-allowed",
                   )}
                 >
                   {size.name}
@@ -648,7 +647,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
                     (v) =>
                       v.color.id === value &&
                       v.size.id === selectedSizeId &&
-                      v.inventory > 0
+                      v.inventory > 0,
                   );
                   if (!matchingVariant) {
                     setSelectedSizeId(null);
@@ -665,7 +664,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
                 (v) =>
                   v.color.id === color.id &&
                   v.inventory > 0 &&
-                  (!selectedSizeId || v.size.id === selectedSizeId)
+                  (!selectedSizeId || v.size.id === selectedSizeId),
               );
               return (
                 <ToggleGroupItem
@@ -677,7 +676,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
                     selectedColorId === color.id
                       ? "border-slate-700 dark:border-slate-300 bg-slate-700 dark:bg-slate-300 text-white dark:text-slate-900 shadow-md"
                       : "border-slate-300 dark:border-slate-700 hover:border-slate-500 dark:hover:border-slate-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800",
-                    !variantAvailable && "opacity-40 cursor-not-allowed"
+                    !variantAvailable && "opacity-40 cursor-not-allowed",
                   )}
                 >
                   <div className="flex items-center gap-2">
@@ -706,7 +705,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
               disabled={quantity <= 1}
               className={cn(
                 "flex-1 h-12 flex justify-center items-center text-black dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm font-light",
-                quantity <= 1 && "opacity-40 cursor-not-allowed"
+                quantity <= 1 && "opacity-40 cursor-not-allowed",
               )}
             >
               −
@@ -725,13 +724,13 @@ const Info: React.FC<InfoProps> = ({ data }) => {
             <button
               onClick={() =>
                 setQuantity((prev) =>
-                  prev < currentInventory ? prev + 1 : prev
+                  prev < currentInventory ? prev + 1 : prev,
                 )
               }
               disabled={quantity >= currentInventory}
               className={cn(
                 "flex-1 h-12 flex justify-center items-center text-black dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm font-light",
-                quantity >= currentInventory && "opacity-40 cursor-not-allowed"
+                quantity >= currentInventory && "opacity-40 cursor-not-allowed",
               )}
             >
               +
@@ -776,7 +775,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
                 (isOutOfStock ||
                   (variants.length > 0 &&
                     (!selectedSizeId || !selectedColorId))) &&
-                  "opacity-50 cursor-not-allowed"
+                  "opacity-50 cursor-not-allowed",
               )}
             >
               <Zap className="w-4 h-4 mr-2" />
@@ -798,7 +797,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
               (isOutOfStock ||
                 (variants.length > 0 &&
                   (!selectedSizeId || !selectedColorId))) &&
-                "opacity-50 cursor-not-allowed"
+                "opacity-50 cursor-not-allowed",
             )}
           >
             <ShoppingCart className="w-4 h-4" />

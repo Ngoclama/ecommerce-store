@@ -42,7 +42,7 @@ const ProductPageClient: React.FC<ProductPageClientProps> = ({
                 ? Math.round(
                     ((product.originalPrice - product.price) /
                       product.originalPrice) *
-                      100
+                      100,
                   )
                 : 0
             }
@@ -101,7 +101,7 @@ const ProductPageClient: React.FC<ProductPageClientProps> = ({
             whileInView={{ opacity: 1, width: "100%" }}
             viewport={{ once: true }}
             transition={{ duration: 1, delay: 0.4 }}
-            className="h-px bg-gradient-to-r from-transparent via-neutral-300 to-transparent dark:via-neutral-700 mb-8"
+            className="h-px bg-linear-to-r from-transparent via-neutral-300 to-transparent dark:via-neutral-700 mb-8"
           />
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
@@ -124,9 +124,7 @@ const ProductPageClient: React.FC<ProductPageClientProps> = ({
         </div>
         <ProductList
           title=""
-          items={suggestProducts
-            .filter((p) => p.id !== product.id)
-            .slice(0, 8)}
+          items={suggestProducts.filter((p) => p.id !== product.id).slice(0, 8)}
         />
       </motion.div>
     </>
@@ -134,4 +132,3 @@ const ProductPageClient: React.FC<ProductPageClientProps> = ({
 };
 
 export default ProductPageClient;
-

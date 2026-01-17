@@ -7,6 +7,7 @@ import ProductList from "@/components/product-list";
 import CategoryList from "@/components/category-list";
 import Container from "@/components/ui/container";
 import NewsletterForm from "@/components/newsletter-form";
+import { TetBanner } from "@/components/tet-banner";
 import { Suspense } from "react";
 import {
   Shield,
@@ -71,11 +72,11 @@ const HomePageClient: React.FC<HomePageClientProps> = ({
 
       try {
         const navigationType = performance.getEntriesByType(
-          "navigation"
+          "navigation",
         )[0] as PerformanceNavigationTiming;
         if (navigationType?.type === "reload") {
           console.log(
-            "[HOMEPAGE_CLIENT] Page reload detected, refreshing data"
+            "[HOMEPAGE_CLIENT] Page reload detected, refreshing data",
           );
           router.refresh();
         }
@@ -113,7 +114,7 @@ const HomePageClient: React.FC<HomePageClientProps> = ({
         top: Math.random() * 100,
         duration: 4 + Math.random() * 2,
         delay: Math.random() * 4,
-      }))
+      })),
     );
   }, []);
 
@@ -198,6 +199,7 @@ const HomePageClient: React.FC<HomePageClientProps> = ({
       <LuxuryTrustSection />
 
       <Container>
+        <TetBanner />
         {categories && categories.length > 0 && (
           <LuxurySection
             title="Bộ sưu tập"
@@ -432,7 +434,7 @@ const LuxurySection: React.FC<LuxurySectionProps> = ({
         "px-4 sm:px-6 lg:px-8 py-24 md:py-32 border-b border-neutral-200 dark:border-neutral-800",
         bgVariant === "light"
           ? "bg-neutral-50 dark:bg-neutral-950"
-          : "bg-white dark:bg-gray-900"
+          : "bg-white dark:bg-gray-900",
       )}
     >
       <motion.div

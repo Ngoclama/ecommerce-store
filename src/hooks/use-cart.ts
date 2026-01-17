@@ -1,13 +1,12 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { Product, CartItem } from "@/types";
+import { Product, CartItem, ProductVariant } from "@/types";
 import { toast } from "sonner";
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
 
 // Cấu hình axios để gửi credentials (cookies) với mọi request
 axios.defaults.withCredentials = true;
-
 
 interface WishlistState {
   wishlistItems: string[];
@@ -18,10 +17,13 @@ interface WishlistState {
   removeFromWishlist: (productId: string) => void;
 }
 
-
 interface CartState {
   items: CartItem[];
-  addItem: (data: Product, quantity?: number) => void;
+  addItem: (
+    data: Product,
+    quantity?: number,
+    selectedVariant?: ProductVariant,
+  ) => void;
   removeItem: (cartItemId: string) => void;
   removeAll: () => void;
   setQuantity: (cartItemId: string, newQuantity: number) => void;
@@ -35,18 +37,20 @@ type CartStore = CartState & WishlistState;
 const useCart = create(
   persist<CartStore>(
     (set, get) => ({
-      
       items: [],
 
-      addItem: (data: Product, quantity = 1) => {
+      addItem: (
+        data: Product,
+        quantity = 1,
+        selectedVariant?: ProductVariant,
+      ) => {
         const currentItems = get().items;
 
-        
         const existingItem = currentItems.find(
           (item) =>
             item.id === data.id &&
             item.size?.id === data.size?.id &&
-            item.color?.id === data.color?.id
+            item.color?.id === data.color?.id,
         );
 
         const inventory = data.inventory ?? 999;
@@ -54,30 +58,28 @@ const useCart = create(
         if (existingItem) {
           const newQuantity = existingItem.quantity + quantity;
 
-          
           if (newQuantity > inventory) {
             toast.error(
-              `Chỉ còn ${inventory} sản phẩm trong kho. Bạn đã có ${existingItem.quantity} trong giỏ.`
+              `Chỉ còn ${inventory} sản phẩm trong kho. Bạn đã có ${existingItem.quantity} trong giỏ.`,
             );
             return;
           }
 
-          
           set({
             items: currentItems.map((item) =>
               item.cartItemId === existingItem.cartItemId
                 ? { ...item, quantity: newQuantity }
-                : item
+                : item,
             ),
           });
           toast.success(`Đã tăng số lượng lên ${newQuantity}.`);
         } else {
-          
           const newItem: CartItem = {
             ...data,
             cartItemId: uuidv4(),
             quantity: quantity,
             inventory: inventory,
+            selectedVariant: selectedVariant,
           } as CartItem;
 
           set({ items: [...currentItems, newItem] });
@@ -110,16 +112,14 @@ const useCart = create(
           return;
         }
 
-        
         if (safeQuantity === 0) {
           get().removeItem(cartItemId);
           return;
         }
 
-        
         set({
           items: get().items.map((i) =>
-            i.cartItemId === cartItemId ? { ...i, quantity: safeQuantity } : i
+            i.cartItemId === cartItemId ? { ...i, quantity: safeQuantity } : i,
           ),
         });
       },
@@ -152,7 +152,6 @@ const useCart = create(
         }
       },
 
-      
       wishlistItems: [],
       isItemInWishlist: (id: string) => get().wishlistItems.includes(id),
       setWishlist: (productIds: string[]) => {
@@ -200,7 +199,7 @@ const useCart = create(
               headers: {
                 "Content-Type": "application/json",
               },
-            }
+            },
           );
 
           if (
@@ -213,7 +212,7 @@ const useCart = create(
               ("message" in response.data &&
                 typeof response.data.message === "string" &&
                 response.data.message) ||
-                "Failed to update wishlist"
+                "Failed to update wishlist",
             );
           }
         } catch (error: unknown) {
@@ -232,7 +231,7 @@ const useCart = create(
             httpError.response?.data?.message?.includes("User not found")
           ) {
             toast.error(
-              "Tài khoản chưa được kích hoạt. Vui lòng liên hệ admin."
+              "Tài khoản chưa được kích hoạt. Vui lòng liên hệ admin.",
             );
           } else if (httpError.response?.data?.message) {
             toast.error(httpError.response.data.message);
@@ -243,7 +242,7 @@ const useCart = create(
               toast.error(errorMessage);
             } else {
               toast.error(
-                "Không thể cập nhật danh sách yêu thích. Vui lòng thử lại."
+                "Không thể cập nhật danh sách yêu thích. Vui lòng thử lại.",
               );
             }
           }
@@ -253,8 +252,8 @@ const useCart = create(
     {
       name: "ecommerce-cart-wishlist-storage",
       storage: createJSONStorage(() => localStorage),
-    }
-  )
+    },
+  ),
 );
 
 export default useCart;

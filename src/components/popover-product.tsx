@@ -53,7 +53,7 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
   const [selectedSizeId, setSelectedSizeId] = useState<string | null>(null);
   const [selectedColorId, setSelectedColorId] = useState<string | null>(null);
   const [selectedMaterialId, setSelectedMaterialId] = useState<string | null>(
-    null
+    null,
   );
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
@@ -106,7 +106,7 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
       (variant) =>
         (!selectedSizeId || variant.size?.id === selectedSizeId) &&
         (!selectedColorId || variant.color?.id === selectedColorId) &&
-        (!selectedMaterialId || variant.material?.id === selectedMaterialId)
+        (!selectedMaterialId || variant.material?.id === selectedMaterialId),
     );
   }, [variants, selectedSizeId, selectedColorId, selectedMaterialId]);
 
@@ -121,7 +121,7 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
       product.originalPrice > product.price
     ) {
       return Math.round(
-        ((product.originalPrice - product.price) / product.originalPrice) * 100
+        ((product.originalPrice - product.price) / product.originalPrice) * 100,
       );
     }
     return 0;
@@ -248,12 +248,12 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
         material: selectedVariant?.material || undefined,
       };
 
-      cart.addItem(productData, quantity);
+      cart.addItem(productData, quantity, selectedVariant || undefined);
 
       // Trigger animation
       const primaryImage = images[0]?.url || "/placeholder.svg";
       const addToCartButton = popoverRef.current?.querySelector(
-        'button:has(svg[class*="ShoppingCart"])'
+        'button:has(svg[class*="ShoppingCart"])',
       ) as HTMLElement | null;
 
       if (addToCartButton && primaryImage) {
@@ -279,7 +279,7 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
       await toggleWishlistWithAuth(product.id);
       setIsInWishlist((prev) => !prev);
       toast.success(
-        isInWishlist ? "Đã xóa khỏi yêu thích" : "Đã thêm vào yêu thích"
+        isInWishlist ? "Đã xóa khỏi yêu thích" : "Đã thêm vào yêu thích",
       );
     } catch (error) {
       toast.error("Có lỗi xảy ra");
@@ -467,7 +467,7 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
                           "relative w-16 h-16 border-2 rounded-none overflow-hidden shrink-0 transition-all",
                           idx === currentImage
                             ? "border-black"
-                            : "border-gray-300 hover:border-gray-400"
+                            : "border-gray-300 hover:border-gray-400",
                         )}
                       >
                         <Image
@@ -496,7 +496,7 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
                           "relative w-16 h-16 border-2 rounded-none overflow-hidden shrink-0 transition-all",
                           idx === currentImage
                             ? "border-black"
-                            : "border-gray-300 hover:border-gray-400"
+                            : "border-gray-300 hover:border-gray-400",
                         )}
                       >
                         <Image
@@ -727,7 +727,7 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
                       <Heart
                         className={cn(
                           "w-4 h-4 mr-2",
-                          isInWishlist && "fill-red-500 text-red-500"
+                          isInWishlist && "fill-red-500 text-red-500",
                         )}
                       />
                       {isInWishlist ? "Đã yêu thích" : "Yêu thích"}
@@ -757,7 +757,7 @@ const PopoverProduct: React.FC<PopoverProductProps> = ({
         </motion.div>
       )}
     </AnimatePresence>,
-    document.body
+    document.body,
   );
 };
 

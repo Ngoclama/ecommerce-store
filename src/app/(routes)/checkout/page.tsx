@@ -46,6 +46,7 @@ import {
   calculateShippingWithDetails,
   type ShippingCalculation,
 } from "@/lib/shipping-calculator";
+import { useCreateOrder } from "@/hooks/use-create-order";
 
 type PaymentMethod = "cod" | "momo" | "vnpay" | "qr" | "stripe" | null;
 
@@ -54,6 +55,7 @@ export default function CheckoutPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { requireAuth, user } = useAuth();
+  const { createOrder } = useCreateOrder();
   const [step, setStep] = useState(1);
   const [shippingMethod, setShippingMethod] = useState("standard");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(null);
@@ -104,7 +106,7 @@ export default function CheckoutPage() {
   const handleProvinceChange = (provinceCode: string) => {
     setSelectedProvinceCode(provinceCode);
     const province = vietnamProvinces.find(
-      (p) => String(p.code) === provinceCode
+      (p) => String(p.code) === provinceCode,
     );
     if (province) {
       setShippingAddress({
@@ -124,7 +126,7 @@ export default function CheckoutPage() {
   const handleDistrictChange = (districtCode: string) => {
     setSelectedDistrictCode(districtCode);
     const district = availableDistricts.find(
-      (d) => String(d.code) === districtCode
+      (d) => String(d.code) === districtCode,
     );
     if (district) {
       setShippingAddress({
@@ -168,7 +170,7 @@ export default function CheckoutPage() {
 
   const subtotal = cart.items.reduce(
     (sum, item) => sum + item.price * item.quantity,
-    0
+    0,
   );
 
   const discount = appliedCoupon
@@ -187,7 +189,7 @@ export default function CheckoutPage() {
     return calculateShippingWithDetails(
       selectedProvinceCode,
       shippingMethod as "standard" | "express",
-      subtotal
+      subtotal,
     );
   }, [selectedProvinceCode, shippingMethod, subtotal]);
 
@@ -238,7 +240,7 @@ export default function CheckoutPage() {
       // Redirect to payment failure page
       if (orderId) {
         router.push(
-          `/payment/failure?orderId=${orderId}&method=${method}&reason=cancelled`
+          `/payment/failure?orderId=${orderId}&method=${method}&reason=cancelled`,
         );
       } else {
         router.push(`/payment/failure?method=${method}&reason=cancelled`);
@@ -302,6 +304,77 @@ export default function CheckoutPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  // Tạo order và trừ tồn kho TRƯỚC thanh toán
+  const createOrderAndDecrementInventory = async () => {
+    if (!user?.id) {
+      toast.error("Vui lòng đăng nhập");
+      return null;
+    }
+
+    // Lấy storeId từ product đầu tiên trong cart hoặc env
+    let storeId = process.env.NEXT_PUBLIC_STORE_ID;
+
+    if (!storeId && cart.items.length > 0) {
+      // Cố gắng lấy storeId từ product
+      storeId = (cart.items[0] as any).storeId;
+    }
+
+    if (!storeId) {
+      toast.error("Không thể xác định store. Vui lòng làm mới trang.");
+      console.error("[ORDER_CREATE] Missing storeId");
+      return null;
+    }
+
+    const orderResult = await createOrder({
+      userId: user.id,
+      storeId,
+      orderItems: cart.items.map((item) => {
+        // Lấy variantId từ selectedVariant.id hoặc từ first variant của product
+        const variantId =
+          (item.selectedVariant as any)?.id ||
+          (item.variants && item.variants.length > 0
+            ? item.variants[0].id
+            : "");
+
+        if (!variantId) {
+          console.warn(
+            "[CHECKOUT] Could not find variantId for product:",
+            item.id,
+            "name:",
+            item.name,
+          );
+        }
+
+        return {
+          productId: item.id,
+          variantId,
+          productName: item.name,
+          quantity: item.quantity,
+          price: item.price,
+        };
+      }),
+      shippingAddress: shippingAddress.address,
+      phoneNumber: shippingAddress.phone,
+      email: userEmail || shippingAddress.email,
+      paymentMethod: paymentMethod as any,
+    });
+
+    if (!orderResult.success) {
+      const errorMsg = orderResult.error || "Tạo order thất bại";
+
+      // Check if error is about inventory
+      if (errorMsg.includes("hiện chỉ còn") || errorMsg.includes("sản phẩm")) {
+        toast.error(errorMsg);
+      } else {
+        toast.error(`${errorMsg}. Vui lòng thử lại.`);
+      }
+      return null;
+    }
+
+    console.log("[ORDER_CREATED]", orderResult.order);
+    return orderResult.order;
+  };
+
   const handleCheckout = async () => {
     if (cart.items.length === 0) {
       toast.error("Giỏ hàng trống");
@@ -337,77 +410,31 @@ export default function CheckoutPage() {
 
     try {
       if (paymentMethod === "cod") {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-        if (!apiUrl) {
-          console.error("[CHECKOUT] NEXT_PUBLIC_API_URL is not configured");
-          toast.error("Cấu hình API không hợp lệ. Vui lòng liên hệ hỗ trợ.");
+        // 1️⃣ Tạo order và trừ tồn kho TRƯỚC
+        const order = await createOrderAndDecrementInventory();
+        if (!order) {
           setLoading(false);
           return;
         }
 
-        // Normalize API URL (remove trailing slash, ensure proper format)
-        const normalizedApiUrl = apiUrl.replace(/\/$/, "");
-        const checkoutUrl = `${normalizedApiUrl}/api/checkout`;
-
-        console.log("[CHECKOUT] Calling API:", checkoutUrl);
-
-        const response = await axios.post<{
-          success?: boolean;
-          message?: string;
-          orderId?: string;
-        }>(
-          checkoutUrl,
-          {
-            items: cart.items.map((item) => ({
-              productId: item.id,
-              quantity: item.quantity,
-              sizeId: item.size?.id,
-              colorId: item.color?.id,
-              materialId: item.material?.id,
-            })),
-            shippingAddress: {
-              fullName: shippingAddress.fullName,
-              phone: shippingAddress.phone,
-              email: userEmail || shippingAddress.email || undefined, // Prioritize Clerk email
-              address: shippingAddress.address,
-              province: shippingAddress.province,
-              district: shippingAddress.district,
-              ward: shippingAddress.ward,
-            },
-            shippingMethod: shippingMethod,
-            shippingCost: shippingFee,
-            shippingDetails: shippingCalculation,
-            paymentMethod: "COD",
-            coupon: appliedCoupon
-              ? {
-                  code: appliedCoupon.code,
-                  value: appliedCoupon.value,
-                  type: appliedCoupon.type,
-                }
-              : null,
-            customerNote: customerNote.trim() || null,
-          },
-          {
-            withCredentials: true,
-            timeout: 30000, // 30 seconds timeout
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
+        // 2️⃣ Order đã tạo, tồn kho đã trừ, chuyển đến success page
+        toast.success(
+          "Đơn hàng đã được tạo. Vui lòng chọn hình thức thanh toán.",
         );
-
-        if (response.data.success) {
-          cart.removeAll();
-          router.push(
-            `/payment/success?orderId=${response.data.orderId || ""}&method=cod`
-          );
-        } else {
-          toast.error(response.data.message || "Có lỗi xảy ra khi đặt hàng");
-        }
+        cart.removeAll();
+        router.push(`/payment/success?orderId=${order.id}&method=cod`);
         return;
       }
 
       if (paymentMethod === "stripe") {
+        // 1️⃣ Tạo order và trừ tồn kho TRƯỚC
+        const order = await createOrderAndDecrementInventory();
+        if (!order) {
+          setLoading(false);
+          return;
+        }
+
+        // 2️⃣ Có order rồi, gọi Stripe checkout với orderId
         const apiUrl = process.env.NEXT_PUBLIC_API_URL;
         if (!apiUrl) {
           console.error("[CHECKOUT] NEXT_PUBLIC_API_URL is not configured");
@@ -416,11 +443,8 @@ export default function CheckoutPage() {
           return;
         }
 
-        // Normalize API URL (remove trailing slash, ensure proper format)
         const normalizedApiUrl = apiUrl.replace(/\/$/, "");
         const checkoutUrl = `${normalizedApiUrl}/api/checkout`;
-
-        console.log("[CHECKOUT] Calling API:", checkoutUrl);
 
         const response = await axios.post<{
           url?: string;
@@ -440,7 +464,7 @@ export default function CheckoutPage() {
             shippingAddress: {
               fullName: shippingAddress.fullName,
               phone: shippingAddress.phone,
-              email: userEmail || shippingAddress.email || undefined, // Prioritize Clerk email
+              email: userEmail || shippingAddress.email || undefined,
               address: shippingAddress.address,
               province: shippingAddress.province,
               district: shippingAddress.district,
@@ -461,24 +485,23 @@ export default function CheckoutPage() {
           },
           {
             withCredentials: true,
-            timeout: 30000, // 30 seconds timeout
+            timeout: 30000,
             headers: {
               "Content-Type": "application/json",
             },
-          }
+          },
         );
 
         if (response.data?.url) {
           window.location.href = response.data.url;
         } else if (response.data?.success) {
-          // Đơn hàng miễn phí hoàn toàn (total = 0)
           const orderId = response.data.orderId || "";
           cart.removeAll();
           router.push(`/payment/success?orderId=${orderId}&method=stripe`);
         } else {
           toast.error(
             response.data?.message ||
-              "Không thể tạo phiên thanh toán. Vui lòng thử lại."
+              "Không thể tạo phiên thanh toán. Vui lòng thử lại.",
           );
           setLoading(false);
         }
@@ -486,6 +509,14 @@ export default function CheckoutPage() {
       }
 
       if (paymentMethod === "momo") {
+        // 1️⃣ Tạo order và trừ tồn kho TRƯỚC
+        const order = await createOrderAndDecrementInventory();
+        if (!order) {
+          setLoading(false);
+          return;
+        }
+
+        // 2️⃣ Gọi MoMo payment
         const apiUrl = process.env.NEXT_PUBLIC_API_URL;
         if (!apiUrl) {
           console.error("[CHECKOUT] NEXT_PUBLIC_API_URL is not configured");
@@ -494,11 +525,8 @@ export default function CheckoutPage() {
           return;
         }
 
-        // Normalize API URL (remove trailing slash, ensure proper format)
         const normalizedApiUrl = apiUrl.replace(/\/$/, "");
         const checkoutUrl = `${normalizedApiUrl}/api/checkout`;
-
-        console.log("[CHECKOUT] Calling API:", checkoutUrl);
 
         const response = await axios.post<{
           success?: boolean;
@@ -520,7 +548,7 @@ export default function CheckoutPage() {
             shippingAddress: {
               fullName: shippingAddress.fullName,
               phone: shippingAddress.phone,
-              email: userEmail || shippingAddress.email || undefined, // Prioritize Clerk email
+              email: userEmail || shippingAddress.email || undefined,
               address: shippingAddress.address,
               province: shippingAddress.province,
               district: shippingAddress.district,
@@ -541,25 +569,23 @@ export default function CheckoutPage() {
           },
           {
             withCredentials: true,
-            timeout: 30000, // 30 seconds timeout
+            timeout: 30000,
             headers: {
               "Content-Type": "application/json",
             },
-          }
+          },
         );
 
         if (response.data?.payUrl) {
-          // Redirect to MoMo payment page
           window.location.href = response.data.payUrl;
         } else if (response.data?.success) {
-          // Đơn hàng miễn phí hoàn toàn (total = 0)
           const orderId = response.data.orderId || "";
           cart.removeAll();
           router.push(`/payment/success?orderId=${orderId}&method=momo`);
         } else {
           toast.error(
             response.data?.message ||
-              "Không thể tạo thanh toán MoMo. Vui lòng thử lại."
+              "Không thể tạo thanh toán MoMo. Vui lòng thử lại.",
           );
           setLoading(false);
         }
@@ -567,6 +593,14 @@ export default function CheckoutPage() {
       }
 
       if (paymentMethod === "vnpay") {
+        // 1️⃣ Tạo order và trừ tồn kho TRƯỚC
+        const order = await createOrderAndDecrementInventory();
+        if (!order) {
+          setLoading(false);
+          return;
+        }
+
+        // 2️⃣ Gọi VNPay payment
         const apiUrl = process.env.NEXT_PUBLIC_API_URL;
         if (!apiUrl) {
           console.error("[CHECKOUT] NEXT_PUBLIC_API_URL is not configured");
@@ -577,8 +611,6 @@ export default function CheckoutPage() {
 
         const normalizedApiUrl = apiUrl.replace(/\/$/, "");
         const checkoutUrl = `${normalizedApiUrl}/api/checkout`;
-
-        console.log("[CHECKOUT] Calling VNPay API:", checkoutUrl);
 
         const response = await axios.post<{
           success?: boolean;
@@ -598,7 +630,7 @@ export default function CheckoutPage() {
             shippingAddress: {
               fullName: shippingAddress.fullName,
               phone: shippingAddress.phone,
-              email: userEmail || shippingAddress.email || undefined, // Prioritize Clerk email
+              email: userEmail || shippingAddress.email || undefined,
               address: shippingAddress.address,
               province: shippingAddress.province,
               district: shippingAddress.district,
@@ -623,7 +655,7 @@ export default function CheckoutPage() {
             headers: {
               "Content-Type": "application/json",
             },
-          }
+          },
         );
 
         if (response.data?.paymentUrl) {
@@ -635,7 +667,7 @@ export default function CheckoutPage() {
         } else {
           toast.error(
             response.data?.message ||
-              "Không thể tạo thanh toán VNPay. Vui lòng thử lại."
+              "Không thể tạo thanh toán VNPay. Vui lòng thử lại.",
           );
           setLoading(false);
         }
@@ -644,7 +676,7 @@ export default function CheckoutPage() {
 
       if (paymentMethod === "qr") {
         toast.info(
-          "Tính năng thanh toán này đang được phát triển. Vui lòng chọn phương thức khác."
+          "Tính năng thanh toán này đang được phát triển. Vui lòng chọn phương thức khác.",
         );
         setLoading(false);
         return;
@@ -784,7 +816,7 @@ export default function CheckoutPage() {
                       "w-12 h-12 md:w-14 md:h-14 rounded-sm flex items-center justify-center border-2 transition-all duration-300 font-light text-sm md:text-base",
                       step >= stepNum
                         ? "bg-linear-to-br from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 text-white dark:text-neutral-900 border-neutral-900 dark:border-neutral-100 shadow-lg"
-                        : "bg-white dark:bg-gray-900 text-neutral-400 dark:text-neutral-600 border-neutral-300 dark:border-neutral-700"
+                        : "bg-white dark:bg-gray-900 text-neutral-400 dark:text-neutral-600 border-neutral-300 dark:border-neutral-700",
                     )}
                   >
                     {step > stepNum ? (
@@ -802,7 +834,7 @@ export default function CheckoutPage() {
                         "w-16 md:w-24 h-0.5 transition-all duration-300",
                         step > stepNum
                           ? "bg-linear-to-r from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200"
-                          : "bg-neutral-300 dark:bg-neutral-700"
+                          : "bg-neutral-300 dark:bg-neutral-700",
                       )}
                     />
                   )}
@@ -888,7 +920,7 @@ export default function CheckoutPage() {
                             className={cn(
                               "rounded-sm border-2 border-neutral-200 dark:border-neutral-800 focus:border-neutral-900 dark:focus:border-neutral-100 h-12 font-light bg-white dark:bg-gray-900 transition-all duration-300",
                               errors.fullName &&
-                                "border-red-500 dark:border-red-500"
+                                "border-red-500 dark:border-red-500",
                             )}
                           />
                           {errors.fullName && (
@@ -921,7 +953,7 @@ export default function CheckoutPage() {
                             className={cn(
                               "rounded-sm border-2 border-neutral-200 dark:border-neutral-800 focus:border-neutral-900 dark:focus:border-neutral-100 h-12 font-light bg-white dark:bg-gray-900 transition-all duration-300",
                               errors.phone &&
-                                "border-red-500 dark:border-red-500"
+                                "border-red-500 dark:border-red-500",
                             )}
                           />
                           {errors.phone && (
@@ -955,7 +987,7 @@ export default function CheckoutPage() {
                           className={cn(
                             "rounded-sm border-2 border-neutral-200 dark:border-neutral-800 focus:border-neutral-900 dark:focus:border-neutral-100 h-12 font-light bg-white dark:bg-gray-900 transition-all duration-300",
                             errors.address &&
-                              "border-red-500 dark:border-red-500"
+                              "border-red-500 dark:border-red-500",
                           )}
                         />
                         {errors.address && (
@@ -987,7 +1019,7 @@ export default function CheckoutPage() {
                               className={cn(
                                 "rounded-sm border-2 border-neutral-200 dark:border-neutral-800 focus:border-neutral-900 dark:focus:border-neutral-100 h-12 font-light bg-white dark:bg-gray-900 transition-all duration-300",
                                 errors.province &&
-                                  "border-red-500 dark:border-red-500"
+                                  "border-red-500 dark:border-red-500",
                               )}
                             >
                               <SelectValue placeholder="Chọn tỉnh/thành phố" />
@@ -1035,7 +1067,7 @@ export default function CheckoutPage() {
                                 errors.district &&
                                   "border-red-500 dark:border-red-500",
                                 !selectedProvinceCode &&
-                                  "opacity-50 cursor-not-allowed"
+                                  "opacity-50 cursor-not-allowed",
                               )}
                             >
                               <SelectValue placeholder="Chọn quận/huyện" />
@@ -1083,7 +1115,7 @@ export default function CheckoutPage() {
                                 errors.ward &&
                                   "border-red-500 dark:border-red-500",
                                 !selectedDistrictCode &&
-                                  "opacity-50 cursor-not-allowed"
+                                  "opacity-50 cursor-not-allowed",
                               )}
                             >
                               <SelectValue placeholder="Chọn phường/xã" />
@@ -1164,7 +1196,7 @@ export default function CheckoutPage() {
                             "relative flex items-start gap-4 p-6 md:p-8 border-2 rounded-sm cursor-pointer transition-all duration-300 shadow-lg hover:shadow-xl",
                             shippingMethod === "standard"
                               ? "border-neutral-900 dark:border-neutral-100 bg-linear-to-br from-neutral-50 to-white dark:from-neutral-900 dark:to-neutral-800"
-                              : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 bg-white dark:bg-gray-900"
+                              : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 bg-white dark:bg-gray-900",
                           )}
                           onClick={() => setShippingMethod("standard")}
                         >
@@ -1242,7 +1274,7 @@ export default function CheckoutPage() {
                             "relative flex items-start gap-4 p-6 border-2 rounded-none cursor-pointer transition-all duration-200",
                             shippingMethod === "express"
                               ? "border-black dark:border-white bg-gray-50 dark:bg-gray-800"
-                              : "border-gray-300 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-600 bg-white dark:bg-gray-900"
+                              : "border-gray-300 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-600 bg-white dark:bg-gray-900",
                           )}
                           onClick={() => setShippingMethod("express")}
                         >
@@ -1356,7 +1388,7 @@ export default function CheckoutPage() {
                             "flex items-center gap-4 p-6 md:p-8 border-2 rounded-sm cursor-pointer transition-all duration-300 shadow-lg hover:shadow-xl",
                             paymentMethod === "cod"
                               ? "border-neutral-900 dark:border-neutral-100 bg-linear-to-br from-neutral-50 to-white dark:from-neutral-900 dark:to-neutral-800"
-                              : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 bg-white dark:bg-gray-900"
+                              : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 bg-white dark:bg-gray-900",
                           )}
                           onClick={() => setPaymentMethod("cod")}
                         >
@@ -1393,7 +1425,7 @@ export default function CheckoutPage() {
                             "flex items-center gap-4 p-6 md:p-8 border-2 rounded-sm cursor-pointer transition-all duration-300 shadow-lg hover:shadow-xl",
                             paymentMethod === "stripe"
                               ? "border-neutral-900 dark:border-neutral-100 bg-linear-to-br from-neutral-50 to-white dark:from-neutral-900 dark:to-neutral-800"
-                              : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 bg-white dark:bg-gray-900"
+                              : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 bg-white dark:bg-gray-900",
                           )}
                           onClick={() => setPaymentMethod("stripe")}
                         >
@@ -1430,7 +1462,7 @@ export default function CheckoutPage() {
                             "flex items-center gap-4 p-6 md:p-8 border-2 rounded-sm cursor-pointer transition-all duration-300 shadow-lg hover:shadow-xl",
                             paymentMethod === "momo"
                               ? "border-neutral-900 dark:border-neutral-100 bg-linear-to-br from-neutral-50 to-white dark:from-neutral-900 dark:to-neutral-800"
-                              : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 bg-white dark:bg-gray-900"
+                              : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 bg-white dark:bg-gray-900",
                           )}
                           onClick={() => setPaymentMethod("momo")}
                         >
@@ -1467,7 +1499,7 @@ export default function CheckoutPage() {
                             "flex items-center gap-4 p-6 md:p-8 border-2 rounded-sm cursor-pointer transition-all duration-300 shadow-lg hover:shadow-xl",
                             paymentMethod === "vnpay"
                               ? "border-neutral-900 dark:border-neutral-100 bg-linear-to-br from-neutral-50 to-white dark:from-neutral-900 dark:to-neutral-800"
-                              : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 bg-white dark:bg-gray-900"
+                              : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 bg-white dark:bg-gray-900",
                           )}
                           onClick={() => setPaymentMethod("vnpay")}
                         >
@@ -1587,7 +1619,7 @@ export default function CheckoutPage() {
                             "w-full rounded-sm text-sm font-light uppercase tracking-[0.15em] h-12 transition-all duration-300",
                             !paymentMethod
                               ? "bg-neutral-200 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-600 cursor-not-allowed border-2 border-neutral-200 dark:border-neutral-800"
-                              : "bg-linear-to-r from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 text-white dark:text-neutral-900 hover:from-neutral-800 hover:to-neutral-700 dark:hover:from-neutral-200 dark:hover:to-neutral-300 border-2 border-neutral-900 dark:border-neutral-100 hover:shadow-xl"
+                              : "bg-linear-to-r from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 text-white dark:text-neutral-900 hover:from-neutral-800 hover:to-neutral-700 dark:hover:from-neutral-200 dark:hover:to-neutral-300 border-2 border-neutral-900 dark:border-neutral-100 hover:shadow-xl",
                           )}
                         >
                           Tiếp tục
@@ -1712,10 +1744,10 @@ export default function CheckoutPage() {
                               {paymentMethod === "cod"
                                 ? "Đặt hàng"
                                 : paymentMethod === "momo"
-                                ? "Thanh toán MoMo"
-                                : paymentMethod === "vnpay"
-                                ? "Thanh toán VNPay"
-                                : "Thanh toán"}
+                                  ? "Thanh toán MoMo"
+                                  : paymentMethod === "vnpay"
+                                    ? "Thanh toán VNPay"
+                                    : "Thanh toán"}
                             </>
                           )}
                         </Button>

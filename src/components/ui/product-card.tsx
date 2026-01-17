@@ -38,7 +38,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
     if (data.variants && data.variants.length > 0) {
       return data.variants.reduce(
         (sum, variant) => sum + (variant.inventory || 0),
-        0
+        0,
       );
     }
     return data.inventory ?? 0;
@@ -47,14 +47,14 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const discountPercent = useMemo(() => {
     if (data.originalPrice && data.price && data.originalPrice > data.price) {
       return Math.round(
-        ((data.originalPrice - data.price) / data.originalPrice) * 100
+        ((data.originalPrice - data.price) / data.originalPrice) * 100,
       );
     }
     return 0;
   }, [data.originalPrice, data.price]);
 
   const images = data.images || [];
-  
+
   const primaryImage =
     images[0]?.url && images[0].url.trim()
       ? images[0].url.trim()
@@ -106,7 +106,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const isOutOfStock = productInventory <= 0;
   const isLowStock = productInventory > 0 && productInventory <= 5;
 
-  
   const formatVND = (value: number) => {
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",
@@ -210,7 +209,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
         transition={{ duration: 0.3 }}
         className={cn(
           "group relative bg-white dark:bg-gray-800 transition-all duration-300 w-full",
-          isOutOfStock && "opacity-60"
+          isOutOfStock && "opacity-60",
         )}
         onMouseEnter={handleImageHover}
         onMouseLeave={handleImageLeave}
@@ -235,8 +234,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
                   imageError
                     ? "/placeholder.svg"
                     : imageIndex === 0
-                    ? primaryImage
-                    : secondaryImage
+                      ? primaryImage
+                      : secondaryImage
                 }
                 alt={data.name}
                 fill
@@ -259,16 +258,16 @@ const ProductCard: React.FC<ProductCardProps> = ({
               <motion.span
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                className="px-3 py-1.5 bg-gray-400 text-white text-sm font-light uppercase tracking-wide rounded-none"
+                className="badge-tet badge-tet-gold px-3 py-1.5 text-sm font-semibold uppercase tracking-wide"
               >
-                -{discountPercent}%
+                🎁 Lộc Xuân {discountPercent}%
               </motion.span>
             )}
             {isOutOfStock && (
               <motion.span
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                className="px-3 py-1.5 bg-white dark:bg-gray-800 text-black dark:text-white text-sm font-light uppercase border border-black dark:border-white rounded-none"
+                className="badge-tet px-3 py-1.5 text-sm font-semibold uppercase"
               >
                 Hết hàng
               </motion.span>
@@ -277,7 +276,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
               <motion.span
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                className="px-3 py-1.5 bg-yellow-500 text-black text-sm font-light uppercase rounded-none"
+                className="badge-tet badge-tet-gold px-3 py-1.5 text-sm font-semibold uppercase"
               >
                 Sắp hết
               </motion.span>
@@ -295,7 +294,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                       "w-6 h-6 transition-all duration-300",
                       isWishlistActive
                         ? "text-red-500 fill-red-500"
-                        : "text-black"
+                        : "text-black",
                     )}
                   />
                 }
@@ -323,7 +322,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
               onClick={handleQuickView}
               variant="outline"
               size="default"
-              className="w-full h-9 rounded-none border-gray-300 dark:border-gray-600 hover:border-black dark:hover:border-white text-black dark:text-white font-light uppercase tracking-wide text-[10px] leading-tight transition-all duration-300  dark:hover:bg-gray-700  dark:bg-gray-800 overflow-hidden flex items-center justify-center gap-1.5 px-2"
+              className="w-full h-9 rounded-lg border-amber-500 dark:border-amber-600 hover:border-amber-600 text-amber-700 dark:text-amber-300 font-semibold uppercase tracking-wide text-[10px] leading-tight transition-all duration-300 hover:bg-amber-50 dark:hover:bg-amber-900/20 dark:bg-gray-800 overflow-hidden flex items-center justify-center gap-1.5 px-2"
             >
               <Eye className="w-3.5 h-3.5 shrink-0" />
               <span className="truncate flex-1 min-w-0 text-center">
@@ -341,13 +340,13 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 size="default"
                 disabled={isOutOfStock}
                 className={cn(
-                  "w-full h-9 rounded-none border-gray-300 dark:border-gray-600 hover:border-black dark:hover:border-white text-black dark:text-white font-light uppercase tracking-wide text-[10px] leading-tight transition-all duration-300  dark:bg-gray-800 overflow-hidden flex items-center justify-center gap-1.5 px-2",
-                  isOutOfStock && "opacity-40 cursor-not-allowed"
+                  "btn-tet w-full h-9 rounded-lg text-white font-semibold uppercase tracking-wide text-[10px] leading-tight transition-all duration-300 overflow-hidden flex items-center justify-center gap-1.5 px-2",
+                  isOutOfStock && "opacity-40 cursor-not-allowed",
                 )}
               >
                 <ShoppingBag className="w-3.5 h-3.5 shrink-0" />
                 <span className="truncate flex-1 min-w-0 text-center">
-                  Thêm vào giỏ hàng
+                  Thêm vào giỏ
                 </span>
               </Button>
             </motion.div>
@@ -357,8 +356,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
               size="default"
               disabled={isOutOfStock}
               className={cn(
-                "w-full h-9 rounded-none bg-gray-400 dark:bg-gray-500 text-white hover:bg-gray-900 dark:hover:bg-gray-900 hover:shadow-lg hover:shadow-gray-400/30 font-light uppercase tracking-wide text-[10px] leading-tight transition-all duration-300 ease-in-out overflow-hidden flex items-center justify-center gap-1.5 px-2 hover:scale-[1.01] active:scale-[0.99]",
-                isOutOfStock && "opacity-40 cursor-not-allowed"
+                "btn-tet w-full h-9 rounded-lg text-white font-semibold uppercase tracking-wide text-[10px] leading-tight transition-all duration-300 ease-in-out overflow-hidden flex items-center justify-center gap-1.5 px-2 hover:scale-[1.01] active:scale-[0.99]",
+                isOutOfStock && "opacity-40 cursor-not-allowed",
               )}
             >
               <Zap className="w-3.5 h-3.5 shrink-0" />
@@ -373,10 +372,10 @@ const ProductCard: React.FC<ProductCardProps> = ({
         </div>
 
         {}
-        <div className="pt-5 pb-4 px-3 space-y-3">
+        <div className="pt-5 pb-4 px-3 space-y-3 card-tet">
           {/* Product Name */}
           <h3
-            className="text-lg font-light text-black dark:text-white uppercase tracking-wide line-clamp-2 min-h-14 cursor-pointer hover:text-gray-600 dark:hover:text-gray-400 transition-colors duration-300"
+            className="text-lg font-semibold text-black dark:text-white uppercase tracking-wide line-clamp-2 min-h-14 cursor-pointer hover:text-amber-700 dark:hover:text-amber-400 transition-colors duration-300"
             onClick={handleClick}
           >
             {data.name}
@@ -384,7 +383,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
           {/* Price Section */}
           <div className="flex items-baseline gap-3 flex-wrap">
-            <span className="text-xl md:text-2xl font-light text-black dark:text-white">
+            <span className="text-xl md:text-2xl font-bold text-amber-700 dark:text-amber-400">
               {formatVND(Number(data.price))}
             </span>
             {data.originalPrice && data.originalPrice > data.price && (
@@ -393,8 +392,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
                   {formatVND(Number(data.originalPrice))}
                 </span>
                 {discountPercent > 0 && (
-                  <span className="text-base text-gray-600 dark:text-gray-400 font-light">
-                    (-{discountPercent}%)
+                  <span className="text-sm font-semibold text-amber-600 dark:text-amber-400">
+                    Tiết kiệm {discountPercent}%
                   </span>
                 )}
               </>
